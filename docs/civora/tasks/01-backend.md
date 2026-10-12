@@ -173,4 +173,3 @@ decision adalah approve/reject. changes/proposedChange memakai operation cancel/
 - [ ] Tulis test cleanup: selection yang direferensikan record tetap ada; file staged yatim 24 jam dan export 7 hari dibersihkan; file path bukan input pengguna.
 - [ ] Jalankan `php artisan test --filter='NotificationDeliveryTest|TemporaryCleanupTest'`; implementasikan worker, retry terbatas/backoff, session device binding, safe public message, dan scheduler cleanup.
 - [ ] Jalankan seluruh `php artisan test` dan dokumentasikan queue/scheduler pada docs/development.md. Commit; tidak menandai push produksi siap tanpa I-01.
-
