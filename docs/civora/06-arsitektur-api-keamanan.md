@@ -41,6 +41,8 @@ Civora/
 
 Satu backend modular cukup: modul akun, akademik, katalog poin, pencatatan, pemeriksaan, laporan, notifikasi. Controller/Livewire tidak menggandakan aturan domain; keduanya memanggil action/service yang sama. Tidak ada microservice atau event broker eksternal.
 
+Timezone server/aplikasi adalah UTC. Default timezone tampilan dan tanggal kalender sekolah adalah Asia/Jakarta, melalui school_settings.timezone dengan fallback app.school_timezone. Penulisan datetime PostgreSQL mempertahankan offset/microsecond sehingga DateTime +07 dan timestamp otomatis mewakili instant yang sama setelah dibaca sebagai UTC. Field date akademik mempertahankan tanggal kalender, tidak digeser sebagai timestamp.
+
 ## Autentikasi dan sesi
 
 Mobile memakai Laravel Sanctum dengan token per sesi/perangkat, disimpan di penyimpanan aman Android. TTL teknis awal 7 hari, tanpa refresh token buatan sendiri. Login ulang diminta setelah expired; perubahan password/reset/penonaktifan mencabut sesi sesuai dokumen role.

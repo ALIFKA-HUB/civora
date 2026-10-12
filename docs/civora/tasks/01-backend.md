@@ -30,11 +30,11 @@ backend/app/Models berisi model Eloquent. backend/app/Actions/{Accounts,Academic
 
 **Interfaces:** Produces model/relasi dokumen 05, endpoint GET /api/v1/health dengan status saja, koneksi test PostgreSQL terisolasi. PointRecord::revisions() menghasilkan semua revisi; PointRecord::latestRevision() menghasilkan revisi terbesar. Tidak ada seeder data sekolah nyata.
 
-- [ ] Verifikasi runtime PHP/Composer/Node/PostgreSQL, buat proyek Laravel pada backend, dan dokumentasikan versi serta perintah setup. Siapkan Git hanya ketika eksekusi dimulai.
-- [ ] Buat fixture sintetis dan test constraint: NISN identik ditolak, satu semester active, satu pending review, selection_id catatan unik, points positif. Assertion untuk duplicate adalah exception database yang sesuai, bukan keberhasilan validasi UI saja.
-- [ ] Jalankan `php artisan test --filter=DatabaseConstraintsTest` dari backend dan catat kegagalan constraint yang belum diterapkan.
-- [ ] Implementasikan migration, model, relasi, foreign key, indeks, dan constraint sesuai dokumen 05. Periksa migration naik/turun di database test sekali pakai.
-- [ ] Jalankan test sampai lulus; GET health tidak menampilkan konfigurasi/credential. Commit fondasi setelah hasil lulus.
+- [x] Verifikasi runtime PHP/Composer/Node/PostgreSQL, buat proyek Laravel pada backend, dan dokumentasikan versi serta perintah setup. Siapkan Git hanya ketika eksekusi dimulai.
+- [x] Buat fixture sintetis dan test constraint: NISN identik ditolak, satu semester active, satu pending review, selection_id catatan unik, points positif. Assertion untuk duplicate adalah exception database yang sesuai, bukan keberhasilan validasi UI saja.
+- [x] Jalankan `php artisan test --filter=DatabaseConstraintsTest` dari backend dan catat kegagalan constraint yang belum diterapkan.
+- [x] Implementasikan migration, model, relasi, foreign key, indeks, dan constraint sesuai dokumen 05. Periksa migration naik/turun di database test sekali pakai.
+- [x] Jalankan test sampai lulus; GET health tidak menampilkan konfigurasi/credential. Commit fondasi setelah hasil lulus.
 
 ### B-02: Login, aktivasi, reset, dan policy akun
 
@@ -173,3 +173,4 @@ decision adalah approve/reject. changes/proposedChange memakai operation cancel/
 - [ ] Tulis test cleanup: selection yang direferensikan record tetap ada; file staged yatim 24 jam dan export 7 hari dibersihkan; file path bukan input pengguna.
 - [ ] Jalankan `php artisan test --filter='NotificationDeliveryTest|TemporaryCleanupTest'`; implementasikan worker, retry terbatas/backoff, session device binding, safe public message, dan scheduler cleanup.
 - [ ] Jalankan seluruh `php artisan test` dan dokumentasikan queue/scheduler pada docs/development.md. Commit; tidak menandai push produksi siap tanpa I-01.
+
