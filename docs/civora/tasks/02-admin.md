@@ -26,6 +26,8 @@ File import berubah referensinya setelah preview (A-02), password temporary suda
 
 **Interfaces:** Login::authenticate(): void memanggil authenticator web dengan role admin; Dashboard memakai query pending review dan current threshold tanpa mengubah data. Route /admin/login, /admin, serta named group admin.* hanya menerima admin active.
 
+Admin pending setelah reset memiliki jalur aktivasi terbatas untuk identitas, ganti password, dan logout. Konfirmasi password terbaru untuk mutasi akun administratif diterapkan pada caller web; action B-02 tetap memakai interface yang disetujui.
+
 - [ ] Tulis test guru/siswa ditolak dari /admin, session idle 30 menit habis, CSRF gagal ditolak, dan admin last-account protection dari B-02 tetap berlaku.
 - [ ] Pin akses `self::assertFalse(Gate::forUser($teacher)->allows('access-admin'));`; login admin valid diarahkan ke /admin tanpa menampilkan password.
 - [ ] Jalankan `php artisan test --filter=AdminSessionTest` dan lihat gagal.
@@ -39,6 +41,8 @@ File import berubah referensinya setelah preview (A-02), password temporary suda
 **Files:** Create backend/app/Livewire/Admin/{Students,StudentDetail,Teachers,Academic,AccountsImport}.php; backend/resources/views/livewire/admin/{students,student-detail,teachers,academic,accounts-import}.blade.php; backend/tests/Feature/AdminDataManagementTest.php; Modify backend/routes/web.php.
 
 **Interfaces:** Students/Teachers memanggil CreateAccount/ResetAccountPassword/DeactivateAccount B-02; Academic memanggil OpenSemester/MoveStudent/ChangeStudentStatus B-03. AccountsImport::preview(): void dan AccountsImport::confirm(): void memakai PreviewAccountsImport/CommitAccountsImport B-09. Komponen memakai batch ID milik admin, bukan membaca baris yang dikirim browser sebagai sumber kebenaran.
+
+B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahkan pembukaan credential sementara guru khusus admin, dengan konfirmasi password terbaru, TTL 24 jam, audit tanpa secret, dan penolakan setelah aktivasi/kedaluwarsa. Jangan memperluas hak guru ke credential guru lain.
 
 - [ ] Tulis Livewire test tambah siswa/guru tanpa NIP, class movement, lulus, temporary expired, import errors per baris, dan konfirmasi batch admin lain.
 - [ ] Pin import invalid dengan `->assertHasErrors()` dan jumlah User tidak berubah; confirm batch valid menghasilkan NISN nol awal persis. Uji kode kelas yang dinonaktifkan setelah preview memblokir commit.
