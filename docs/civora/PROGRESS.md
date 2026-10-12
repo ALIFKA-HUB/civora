@@ -16,7 +16,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-02 login/akun/role | Fondasi G0 lulus; hasil auth belum tersedia |
+| G1: Backend | Menunggu review: B-02 login/akun/role | Commit 8faf8db; laporan 113 test/409 assertion lulus, keputusan review belum tersedia |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -43,3 +43,9 @@ Commit perbaikan pertama 5b83c94 melaporkan 78 test/242 assertion lulus. Re-revi
 Commit 3bd1c1a menutup celah koneksi direct/pooled. MigrationSafetyTest: 20 test/59 assertion lulus; full suite: 84 test/260 assertion, exit 0; Pint lulus. Re-review kedua menyatakan seluruh temuan terselesaikan dan tidak ada breakage baru. B-01/G0 Lulus. Langkah berikutnya B-02: login, aktivasi, reset/penonaktifan akun, bantuan password sementara, dan policy role.
 
 Timezone server kini UTC; tampilan/tanggal kalender sekolah tetap memakai timezone sekolah dengan default Asia/Jakarta. Penulisan DateTime memakai format PostgreSQL ber-offset, dengan regresi model domain, token native, dan tanggal kalender.
+
+#### B-02: implementasi selesai, menunggu review independen
+
+Commit 8faf8db menyediakan login terpisah siswa/guru, aktivasi, reset/penonaktifan, bantuan password sementara, policy akses, dan bootstrap admin interaktif. Laporan implementer: 113 test/409 assertion lulus pada PostgreSQL, Pint dan diff check lulus. Review independen belum memutuskan kelulusan.
+
+Logout mencabut perangkat yang terikat sesi saat ini; reset/penonaktifan mencabut seluruh perangkat. Reset admin aktif terakhir ditolak agar tetap ada administrator yang dapat mengelola sekolah. Hashing memakai Argon2id setelah test menemukan pemotongan frasa sandi panjang oleh bcrypt. Konfirmasi password terbaru pada website admin dan pembukaan password sementara guru khusus admin tetap menjadi dependensi A-01/A-02; registrasi perangkat dengan ikatan sesi server menjadi dependensi B-11.
