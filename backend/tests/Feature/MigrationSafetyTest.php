@@ -95,4 +95,28 @@ class MigrationSafetyTest extends TestCase
         $this->assertStringContainsString('Destructive database commands require the owned civora_test PostgreSQL database.', $output);
         $this->assertFalse($executed);
     }
+
+    public static function alternateEndpoints(): array
+    {
+        $directUrl = 'postgresql://127.0.0.1:54329/civora_test?direct%5Bdatabase%5D=civora_dev';
+
+        return [
+            'cached direct with default name' => [['database.connections.pgsql.direct' => ['database' => 'civora_dev']], []],
+            'cached direct with explicit ordinary name' => [['database.connections.pgsql.direct' => ['database' => 'civora_dev']], ['--database=pgsql']],
+            'cached URL direct with default name' => [['database.connections.pgsql.url' => $directUrl], []],
+            'cached URL direct with explicit ordinary name' => [['database.connections.pgsql.url' => $directUrl], ['--database=pgsql']],
+            'cached pooled flag' => [['database.connections.pgsql.pooled' => true], []],
+            'cached URL pooled flag' => [['database.connections.pgsql.url' => 'postgresql://127.0.0.1:54329/civora_test?pooled=true'], []],
+        ];
+    }
+
+    #[DataProvider('alternateEndpoints')]
+    public function test_direct_and_pooled_endpoints_are_refused_before_handler_execution(array $overrides, array $options): void
+    {
+        // The real db:wipe handler is replaced by the probe; no direct PDO or schema is touched.
+        [$exit, $output, $executed] = $this->probe('db:wipe', $overrides, $options);
+        $this->assertNotSame(0, $exit, $output);
+        $this->assertStringContainsString('Destructive database commands require the owned civora_test PostgreSQL database.', $output);
+        $this->assertFalse($executed);
+    }
 }

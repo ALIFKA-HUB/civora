@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Console\Events\CommandStarting;
+use Illuminate\Support\ConfigurationUrlParser;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Throwable;
@@ -25,6 +26,11 @@ class GuardDestructiveMigrations
             if (! is_string($name) || str_contains($name, '::')) {
                 throw new RuntimeException(self::MESSAGE);
             }
+            $configuration = (new ConfigurationUrlParser)->parseConfiguration(config("database.connections.$name"));
+            // db:wipe internally selects a configured direct endpoint without another command event.
+            if (! empty($configuration['direct']) || ! empty($configuration['pooled'])) {
+                throw new RuntimeException(self::MESSAGE);
+            }
             $connection = DB::connection($name);
             // Laravel resolves cached configuration and URL overrides before constructing this connection.
             if (! $expectedData || $this->path($marker['data']) !== $this->path($expectedData)
@@ -34,6 +40,7 @@ class GuardDestructiveMigrations
                 || $connection->getConfig('host') !== '127.0.0.1'
                 || (string) $connection->getConfig('port') !== (string) $marker['port']
                 || $connection->getConfig('read') || $connection->getConfig('write')
+                || $connection->hasDirectConnection() || $connection->getConfig('pooled')
                 || $connection->getConfig('search_path') !== 'public') {
                 throw new RuntimeException(self::MESSAGE);
             }
