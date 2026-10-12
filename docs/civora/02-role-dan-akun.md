@@ -27,6 +27,8 @@
 
 Role diperiksa server pada setiap permintaan. Menyembunyikan menu saja tidak memenuhi kontrol akses. Tidak ada role wali kelas/BK terpisah dalam versi pertama.
 
+Status aktif dalam daftar sekolah berarti education_status siswa active dan akun tidak inactive. Siswa yang masih pending_activation tetap terlihat oleh guru untuk bantuan akun dan pencatatan manual; aktivitas sekolah tidak menunggu siswa memiliki HP atau login pertama. Namun siswa tersebut sendiri hanya dapat mengganti password/logout dan membaca identitas aktivasi, belum menampilkan QR atau memakai fitur riwayat. Guru yang belum aktivasi tidak dapat mengakses data siswa.
+
 Guru tetap dapat membaca catatan yang dibuatnya sendiri ketika siswa sudah pindah/lulus/nonaktif, termasuk mengajukan koreksi atas catatan tersebut. Akses ke seluruh arsip siswa nonaktif milik guru lain hanya tersedia untuk admin; pencatatan baru terhadap siswa nonaktif tetap ditolak.
 
 ## Identitas login
