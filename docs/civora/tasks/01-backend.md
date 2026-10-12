@@ -44,11 +44,11 @@ backend/app/Models berisi model Eloquent. backend/app/Actions/{Accounts,Academic
 
 **Interfaces:** CreateAccount::execute(User $admin, array $attributes): User; ActivateAccount::execute(User $user, string $newPassword): User; ResetAccountPassword::execute(User $admin, User $target, string $reason): void; DeactivateAccount::execute(User $admin, User $target, string $reason): void; RevealTemporaryCredential::execute(User $actor, Student $student): array{password:string,expires_at:string}. Produces endpoint auth/me dan alias login pada dokumen 06.
 
-- [ ] Tulis test login siswa tidak diterima guru, NIP/kode ambigu ditolak, pending_activation hanya boleh ganti password, temporary expired 24 jam ditolak, password aktif tidak terungkap, dan admin aktif terakhir tidak dinonaktifkan.
-- [ ] Pin hasil login terbatas: `self::assertTrue($response->json('data.must_change_password'));`; pada test, daftarkan route probe khusus middleware aktif untuk membuktikan akun belum aktivasi mendapat `assertForbidden()` tanpa menunggu endpoint QR B-06. User siswa pada endpoint guru mendapat `assertUnauthorized()`.
-- [ ] Jalankan `php artisan test --filter='RoleAuthenticationTest|TemporaryCredentialTest'` dan lihat gagal sebelum action/policy tersedia.
-- [ ] Implementasikan hash, salinan sementara terenkripsi, TTL, penghapusan saat aktivasi, sesi Sanctum 7 hari, rate limit, autentikasi ulang reveal/reset, serta audit aman. Policy file menangani guru semua siswa aktif dan arsip catatan sendiri.
-- [ ] Verifikasi test lulus dan reset/deactivate menolak token lama. Commit hasil akun; tidak ada password contoh pada seeder/.env.example.
+- [x] Tulis test login siswa tidak diterima guru, NIP/kode ambigu ditolak, pending_activation hanya boleh ganti password, temporary expired 24 jam ditolak, password aktif tidak terungkap, dan admin aktif terakhir tidak dinonaktifkan.
+- [x] Pin hasil login terbatas: `self::assertTrue($response->json('data.must_change_password'));`; pada test, daftarkan route probe khusus middleware aktif untuk membuktikan akun belum aktivasi mendapat `assertForbidden()` tanpa menunggu endpoint QR B-06. User siswa pada endpoint guru mendapat `assertUnauthorized()`.
+- [x] Jalankan `php artisan test --filter='RoleAuthenticationTest|TemporaryCredentialTest'` dan lihat gagal sebelum action/policy tersedia.
+- [x] Implementasikan hash, salinan sementara terenkripsi, TTL, penghapusan saat aktivasi, sesi Sanctum 7 hari, rate limit, autentikasi ulang reveal/reset, serta audit aman. Policy file menangani guru semua siswa aktif dan arsip catatan sendiri.
+- [x] Verifikasi test lulus dan reset/deactivate menolak token lama. Commit hasil akun; tidak ada password contoh pada seeder/.env.example.
 
 ### B-03: Akademik, penempatan, dan siklus siswa
 

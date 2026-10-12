@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 Lulus setelah implementasi, dua putaran perbaikan, dan review independen. 1 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 dan B-02 Lulus setelah implementasi dan review independen. 2 dari 26 tugas Lulus; backend keseluruhan belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Menunggu review: B-02 login/akun/role | Commit 8faf8db; laporan 113 test/409 assertion lulus, keputusan review belum tersedia |
+| G1: Backend | Dikerjakan: B-03 akademik/penempatan | B-02 commit 8faf8db; 113 test/409 assertion lulus, review bersih |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -49,3 +49,5 @@ Timezone server kini UTC; tampilan/tanggal kalender sekolah tetap memakai timezo
 Commit 8faf8db menyediakan login terpisah siswa/guru, aktivasi, reset/penonaktifan, bantuan password sementara, policy akses, dan bootstrap admin interaktif. Laporan implementer: 113 test/409 assertion lulus pada PostgreSQL, Pint dan diff check lulus. Review independen belum memutuskan kelulusan.
 
 Logout mencabut perangkat yang terikat sesi saat ini; reset/penonaktifan mencabut seluruh perangkat. Reset admin aktif terakhir ditolak agar tetap ada administrator yang dapat mengelola sekolah. Hashing memakai Argon2id setelah test menemukan pemotongan frasa sandi panjang oleh bcrypt. Konfirmasi password terbaru pada website admin dan pembukaan password sementara guru khusus admin tetap menjadi dependensi A-01/A-02; registrasi perangkat dengan ikatan sesi server menjadi dependensi B-11.
+
+Reviewer B-02 menyetujui kesesuaian rancangan dan kualitas tanpa temuan blocking/minor. B-02 Lulus; langkah berikutnya B-03 untuk semester, penempatan, perpindahan, serta status pendidikan siswa. G1 belum lulus sampai seluruh backend selesai.
