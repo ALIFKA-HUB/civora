@@ -54,9 +54,11 @@ backend/app/Models berisi model Eloquent. backend/app/Actions/{Accounts,Academic
 
 **Depends:** B-02.
 
-**Files:** Create backend/app/Actions/Academic/{OpenSemester,MoveStudent,ChangeStudentStatus}.php; backend/app/Services/Academic/CurrentEnrollment.php; Test backend/tests/Feature/AcademicLifecycleTest.php.
+**Files:** Create backend/app/Actions/Academic/{OpenSemester,EnrollStudent,MoveStudent,ChangeStudentStatus}.php; backend/app/Services/Academic/CurrentEnrollment.php; Test backend/tests/Feature/AcademicLifecycleTest.php.
 
 **Interfaces:** OpenSemester::execute(User $admin, Semester $semester): Semester; MoveStudent::execute(User $admin, Student $student, string $classroomId, string $effectiveAt): Enrollment; ChangeStudentStatus::execute(User $admin, Student $student, string $status, string $reason): Student; CurrentEnrollment::forStudent(Student $student, Semester $semester, string $at): ?Enrollment.
+
+EnrollStudent::execute(User $admin, Student $student, Semester $semester, string $classroomId, string $effectiveAt): Enrollment menyiapkan penempatan awal pada semester draft/active untuk A-02/B-09. MoveStudent menangani perpindahan penempatan pada semester aktif; ChangeStudentStatus hanya transferred/graduated. EnrollStudent memakai validasi tahun ajaran/kelas aktif/rentang semester/tanpa overlap dan urutan lock yang sama; akhir penempatan berupa batas eksklusif setelah end_date pada timezone sekolah.
 
 - [ ] Tulis test semester rentang tumpang tindih/di luar tanggal ditolak, dua penempatan overlap ditolak, perpindahan mengakhiri penempatan lama, dan pindah/lulus mencabut akun tanpa menghapus record.
 - [ ] Pin riwayat: `self::assertSame($oldEnrollment->id, $record->fresh()->enrollment_id);` setelah pindah kelas; token siswa lulus pada endpoint /me mendapat `assertUnauthorized()`. Pembacaan record guru setelah siswa lulus diuji B-08 ketika endpoint riwayat sudah tersedia.
@@ -140,7 +142,7 @@ decision adalah approve/reject. changes/proposedChange memakai operation cancel/
 
 **Files:** Create backend/app/Actions/Imports/{PreviewAccountsImport,CommitAccountsImport}.php; backend/app/Services/Imports/AccountImportReader.php; backend/resources/import-templates/{students.csv,teachers.csv}; Test backend/tests/Feature/AccountImportTest.php.
 
-**Interfaces:** PreviewAccountsImport::execute(User $admin, UploadedFile $file, string $entityType, ?Semester $semester): ImportBatch; CommitAccountsImport::execute(User $admin, ImportBatch $batch): ImportBatch. Preview menyimpan rows/errors privat; commit memakai CreateAccount B-02 dan penempatan B-03. XLSX template dihasilkan endpoint admin, bukan binary mock dalam repo.
+**Interfaces:** PreviewAccountsImport::execute(User $admin, UploadedFile $file, string $entityType, ?Semester $semester): ImportBatch; CommitAccountsImport::execute(User $admin, ImportBatch $batch): ImportBatch. Preview menyimpan rows/errors privat; commit memakai CreateAccount B-02 dan EnrollStudent B-03. XLSX template dihasilkan endpoint admin, bukan binary mock dalam repo.
 
 - [ ] Tulis fixture CSV/XLSX NISN "0012345678", duplicate dalam file/database, guru tanpa NIP, kode kelas salah, formula berbahaya, file melebihi 10 MB/5.000 baris, dan batch admin lain.
 - [ ] Pin identifier `self::assertSame('0012345678', $student->nisn);`; satu row invalid menghasilkan `self::assertSame(0, $createdAccountCount);`.

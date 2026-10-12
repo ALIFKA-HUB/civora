@@ -40,7 +40,7 @@ Admin pending setelah reset memiliki jalur aktivasi terbatas untuk identitas, ga
 
 **Files:** Create backend/app/Livewire/Admin/{Students,StudentDetail,Teachers,Academic,AccountsImport}.php; backend/resources/views/livewire/admin/{students,student-detail,teachers,academic,accounts-import}.blade.php; backend/tests/Feature/AdminDataManagementTest.php; Modify backend/routes/web.php.
 
-**Interfaces:** Students/Teachers memanggil CreateAccount/ResetAccountPassword/DeactivateAccount B-02; Academic memanggil OpenSemester/MoveStudent/ChangeStudentStatus B-03. AccountsImport::preview(): void dan AccountsImport::confirm(): void memakai PreviewAccountsImport/CommitAccountsImport B-09. Komponen memakai batch ID milik admin, bukan membaca baris yang dikirim browser sebagai sumber kebenaran.
+**Interfaces:** Students/Teachers memanggil CreateAccount/ResetAccountPassword/DeactivateAccount B-02; Academic memanggil OpenSemester/EnrollStudent/MoveStudent/ChangeStudentStatus B-03. EnrollStudent menyiapkan penempatan awal sebelum semester dibuka. AccountsImport::preview(): void dan AccountsImport::confirm(): void memakai PreviewAccountsImport/CommitAccountsImport B-09. Komponen memakai batch ID milik admin, bukan membaca baris yang dikirim browser sebagai sumber kebenaran.
 
 B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahkan pembukaan credential sementara guru khusus admin, dengan konfirmasi password terbaru, TTL 24 jam, audit tanpa secret, dan penolakan setelah aktivasi/kedaluwarsa. Jangan memperluas hak guru ke credential guru lain.
 
