@@ -98,7 +98,7 @@ Token QR dihasilkan secara kriptografis, 32 byte acak dalam format URL-safe, den
 
 Redeem memakai transaction dan row lock dengan urutan global pada dokumen 05. Permintaan pertama valid membuat selection dan redemption. Retry dengan request_key/token/guru yang sama mengembalikan hasil yang sama, tanpa mengonsumsi token dua kali. Guru lain atau request_key berbeda mendapat penolakan token terpakai. Jika semester/siswa berubah setelah scan, selection tidak mengizinkan simpan.
 
-QR tidak berisi NISN, password, nilai poin, atau tautan yang dapat mengubah data tanpa login guru. Validitas mengikuti waktu server, bukan waktu HP. Tidak ada grace period untuk screenshot kedaluwarsa.
+QR tidak berisi NISN, password, nilai poin, atau tautan yang dapat mengubah data tanpa login guru. Validitas mengikuti waktu server, bukan waktu HP. Tidak ada grace period untuk screenshot kedaluwarsa. QR yang diterbitkan oleh sesi/token login yang sudah dicabut juga ditolak, sekalipun batas 20 detiknya belum habis.
 
 ## Konsistensi dan idempotensi
 
