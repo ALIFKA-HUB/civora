@@ -1,6 +1,6 @@
 # Pengembangan backend Civora
 
-Fondasi B-01 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login, aksi akademik/poin, dan admin UI belum tersedia.
+Fondasi B-01 dan autentikasi B-02 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun, dan policy resource tersedia. Aksi akademik/poin dan admin UI belum tersedia.
 
 ## Versi terverifikasi pada 12 Oktober 2026
 
@@ -54,6 +54,25 @@ Wrapper PHP selalu berjalan dari `backend`. Setup manual pada sistem lain: sedia
 Domain memakai UUID, NISN/NIP teks, dan timestamp PostgreSQL bertimezone. Timezone server/aplikasi dan sesi database adalah UTC. Timezone tampilan sekolah terpisah: `app.school_timezone`/`SCHOOL_TIMEZONE` default Asia/Jakarta, sama dengan default `school_settings.timezone`. Grammar PostgreSQL mengikat DateTime dengan mikrodetik dan offset (`Y-m-d H:i:s.uP`), termasuk timestamp otomatis model domain dan Sanctum. Instant `09:00+07:00` disimpan sebagai `02:00 UTC` dan diserialisasi sebagai JSON UTC. Kolom date-only akademik mempertahankan tanggal kalender; konversi tampilan dilakukan memakai timezone sekolah. Foreign key riwayat memakai RESTRICT. Seluruh entitas dokumen data, relasi Eloquent, constraint unik/check, partial unique semester aktif/review pending, exclusion rentang enrollment `[valid_from, valid_until)`, dan indeks riwayat tersedia.
 
 `PointRecord::revisions()` menyimpan semua revisi; `latestRevision()` memilih revision_number terbesar melalui subquery berkorelasi. `ofMany()` bawaan mengagregasi UUID yang tidak didukung PostgreSQL. Bukti lama tetap direferensikan revisi lama.
+
+## Akun dan bootstrap admin
+
+Jalankan migrasi sebelum membuat admin pertama melalui terminal lokal yang berwenang:
+
+```powershell
+./ops/dev/php.ps1 artisan migrate
+./ops/dev/php.ps1 artisan civora:create-admin <username> --name="<nama admin>"
+```
+
+Command meminta password dan konfirmasi melalui prompt tersembunyi. Tidak ada argumen password, credential yang dicetak, atau seeder admin. Password pribadi minimal 12 dan maksimal 1.024 karakter; default Argon2id Laravel menjaga seluruh frasa sandi, termasuk bagian sesudah 72 byte. Cost production memakai memory 65.536 KiB, time 4, threads 1; PHPUnit saja memakai cost rendah. Verifikasi algoritma hash tetap aktif.
+
+Login siswa memakai body `nisn/password`; guru memakai `identifier/password` untuk NIP atau kode guru. Identifier tetap teks; kode guru/username dinormalisasi trim + huruf kecil, NISN/NIP mempertahankan nol awal. `GET /api/v1/me` dan alias `/api/v1/auth/me` mengembalikan profil/identitas aktivasi. Password sementara 24 jam; Sanctum 7 hari. Ganti password mencabut seluruh sesi sehingga klien perlu login kembali. Login gagal memakai pesan yang sama untuk akun tidak ada, password salah, nonaktif, atau credential sementara kedaluwarsa; ada batas per IP dan identitas login. Route bantuan guru meminta `current_password` dan memberi response `no-store`.
+
+`CreateAccount`, `ActivateAccount`, `ResetAccountPassword`, `DeactivateAccount`, dan `RevealTemporaryCredential` dipakai bersama oleh API dan admin UI. Action admin memeriksa admin aktif dari database; alasan reset/deactivate 5–1.000 karakter dan proses verifikasi identitas sekolah wajib pada caller. Admin UI A-01/A-02 harus menerapkan konfirmasi password terkini sebelum tindakan administratif. `ActivateAccount` adalah action terpercaya: caller wajib mengonfirmasi password lama/sementara sebelum memanggilnya. API menjalankan konfirmasi dan mutasi di transaksi yang sama. Bantuan sementara guru oleh admin akan ditambahkan A-02 dengan aturan autentikasi ulang, TTL, dan audit yang sama; action reveal B-02 menerima `Student`.
+
+Perubahan admin dikunci melalui advisory lock transaksi PostgreSQL sebelum row lock pengguna. Reset admin aktif terakhir ditolak karena mengubahnya menjadi pending_activation; reset admin lain dapat diaktifkan kembali melalui action aktivasi. Penonaktifan admin aktif terakhir juga ditolak. Audit hanya menyimpan identitas resource, role, status, dan alasan; tidak berisi password, hash, secret, atau token. Reset/deactivate/change-password menghapus sesi web/mobile, menonaktifkan semua push binding, mencabut QR, dan mengakhiri selection pending.
+
+`device_tokens.personal_access_token_id` adalah FK bigint nullable ke token Sanctum, SET NULL saat sesi dihapus. Logout menonaktifkan hanya binding milik token saat ini sebelum menghapus token, sehingga sesi lain tetap aktif. B-11 harus mengisi FK tersebut dari token server yang terautentikasi; client tidak memilih ID sesi. Binding lama tanpa FK ikut dinonaktifkan saat reset/deactivate/change-password.
 
 Sanctum memakai token ID bigint bawaan dengan `tokenable_id` UUID. `qr_tokens.session_id` nullable bigint FK dengan ON DELETE SET NULL: pencabutan sesi mempertahankan metadata QR. B-06 wajib menolak QR bila issuing token hilang/dicabut. Session/cache/queue/failed jobs memakai tabel Laravel. TTL Sanctum 10.080 menit (7 hari), session idle 30 menit; alur autentikasi dan pemeriksaan akun aktif adalah B-02.
 
