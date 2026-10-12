@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => env('APP_TIMEZONE', 'Asia/Jakarta'),
+    'timezone' => 'UTC',
+
+    'school_timezone' => env('SCHOOL_TIMEZONE', 'Asia/Jakarta'),
 
     /*
     |--------------------------------------------------------------------------
