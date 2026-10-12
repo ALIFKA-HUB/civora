@@ -70,6 +70,8 @@ Profil siswa menyimpan status pendidikan aktif, pindah, atau lulus secara terpis
 
 Penonaktifan mencabut sesi mobile, sesi web terkait, token perangkat push, QR, dan sesi pemilihan yang belum selesai. Permintaan dengan token lama harus ditolak meskipun token belum mencapai waktu kedaluwarsanya.
 
+Logout mobile mencabut token login dan ikatan push sesi saat ini; sesi lain tetap berlaku. Reset dan penonaktifan mencabut semua sesi serta seluruh perangkat, termasuk perangkat lama yang belum memiliki ikatan sesi.
+
 ## Admin pertama
 
 Admin pertama dibuat melalui prosedur bootstrap lokal pada tahap implementasi. Tidak ada endpoint registrasi publik. Admin dapat mengelola akun admin lain dari website; akun admin aktif terakhir tidak boleh dinonaktifkan. Semua perubahan role administratif memerlukan autentikasi ulang dan audit.

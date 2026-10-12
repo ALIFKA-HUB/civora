@@ -53,7 +53,7 @@ Kepemilikan siswa, guru pencatat, penempatan, dan semester pada point_records ti
 | threshold_alerts | id, student_id, semester_id, threshold_level_id, reached_at, currently_reached, last_evaluated_at |
 | follow_ups | id, threshold_alert_id, performed_by, action, scheduled_or_performed_at, notes, status planned/completed/cancelled |
 | notifications | id, user_id, event_key, type, resource_id, public_message, read_at, created_at |
-| device_tokens | id, user_id, app student/teacher, token unik, platform, active, updated_at |
+| device_tokens | id, user_id, personal_access_token_id nullable native bigint FK Sanctum ON DELETE SET NULL, app student/teacher, token unik, platform, active, updated_at |
 | outbox_events | id, event_key unik, type, resource_id, payload minimal, processed_at, attempts, next_attempt_at |
 | import_batches | id, admin_id, entity_type, file_path privat, semester_id nullable, status, row_count, error_summary, confirmed_at |
 | report_exports | id, admin_id, filters, status, file_path privat, generated_at, expires_at |
@@ -61,6 +61,8 @@ Kepemilikan siswa, guru pencatat, penempatan, dan semester pada point_records ti
 | auth/session/queue tables | Tabel bawaan Laravel untuk Sanctum, session, cache, jobs, dan failed_jobs |
 
 Outbox adalah daftar event yang ditulis dalam transaksi bisnis yang sama, lalu dikirim worker. Ia mencegah hilangnya notifikasi jika proses mati setelah catatan berhasil disimpan. Payload tidak memuat password, QR mentah, atau foto.
+
+Registrasi perangkat mengikat personal_access_token_id dari sesi autentikasi server, bukan ID kiriman klien. Logout menonaktifkan perangkat yang terikat sesi itu sebelum menghapus token login. Reset/penonaktifan menonaktifkan seluruh perangkat pengguna, termasuk baris lama tanpa ikatan sesi.
 
 ## Batasan database
 

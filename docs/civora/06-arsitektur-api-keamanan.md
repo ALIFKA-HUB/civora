@@ -86,7 +86,7 @@ Status umum: 401 sesi tidak sah, 403 akses ditolak, 404 resource tidak ada/tidak
 | POST /teacher/students/{id}/temporary-credential/reveal | Guru | Body current_password guru; password sementara belum aktivasi; audit dan autentikasi ulang |
 | GET /notifications | Siswa/guru | Daftar milik sendiri |
 | POST /notifications/{id}/read | Siswa/guru | Tandai milik sendiri dibaca |
-| POST /device-tokens | Siswa/guru | Daftarkan token push untuk aplikasi/role yang sesuai |
+| POST /device-tokens | Siswa/guru | Daftarkan token push untuk aplikasi/role yang sesuai; server mengikat sesi Sanctum saat ini |
 | DELETE /device-tokens/{id} | Siswa/guru | Cabut token perangkat milik sendiri |
 | GET /attachments/{id} | Login | Streaming privat setelah policy atas catatan/revisi atau staged owner |
 
@@ -123,7 +123,7 @@ Event utama: poin dibuat, keputusan keberatan/koreksi, revisi/pembatalan, dan am
 
 Notification dan outbox ditulis bersama perubahan bisnis. Worker membuat push dengan pesan umum dan resource ID; ketika diklik, aplikasi meminta detail melalui sesi login. Jika push gagal atau izin notifikasi ditolak, notifikasi in-app tetap tersedia. Retry dengan event_key sama tidak menggandakan notifikasi.
 
-Token push lama yang tidak valid dicabut; token perangkat yang berpindah pengguna dilepas dari pemilik lama. Logout/penonaktifan mencabut ikatan perangkat. Kegagalan FCM tidak membatalkan pencatatan poin yang sudah commit.
+Token push lama yang tidak valid dicabut; token perangkat yang berpindah pengguna dilepas dari pemilik lama. ID sesi perangkat diambil dari token autentikasi server, tidak diterima dari body. Logout mencabut ikatan perangkat sesi saat ini; reset/penonaktifan mencabut seluruh perangkat pengguna. Kegagalan FCM tidak membatalkan pencatatan poin yang sudah commit.
 
 ## Referensi teknis
 
