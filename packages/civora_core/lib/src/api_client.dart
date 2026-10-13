@@ -22,6 +22,7 @@ class ApiResponse {
 
 abstract interface class ApiTransport {
   Future<ApiResponse> send(ApiRequest request);
+  void close();
 }
 
 class IoApiTransport implements ApiTransport {
@@ -38,6 +39,7 @@ class IoApiTransport implements ApiTransport {
     return ApiResponse(response.statusCode, await utf8.decoder.bind(response).join());
   }
 
+  @override
   void close() => _client.close(force: true);
 }
 
@@ -51,6 +53,8 @@ class ApiClient {
   final Uri baseUrl;
   final ApiTransport _transport;
   final SessionController? sessionController;
+
+  void close() => _transport.close();
 
   Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? query}) =>
       _send('GET', path, query: query);

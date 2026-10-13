@@ -12,6 +12,9 @@ class RecordingTransport implements ApiTransport {
     requests.add(request);
     return responses.removeAt(0);
   }
+
+  @override
+  void close() {}
 }
 
 void main() {
