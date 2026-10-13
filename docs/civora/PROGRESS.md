@@ -19,7 +19,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G1: Backend | Dikerjakan: B-09 import akun | B-08 fix c01e379; test terfokus 20/79 dan barrier 1/9 assertion lulus, re-review menyetujui |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
-| G4: Integrasi | Belum mulai | Belum ada |
+| G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
 
 ## Log
@@ -89,3 +89,5 @@ Fix ddab9ef memakai AttachmentPolicy dan guard akun aktif sebelum membuka file. 
 Commit 6df3fd8 melaporkan riwayat, ringkasan, profil/metadata, keberatan, dan keputusan revisi dengan suite 217/771 assertion lulus. Reviewer menemukan perubahan bukti hanya memeriksa ID ada, sehingga lampiran pengguna lain dapat ditautkan. Test keputusan dua admin juga masih berurutan. Perbaikan dikembalikan ke implementer: validasi kepemilikan/record bukti saat usulan dan saat penerapan, serta uji paralel PostgreSQL. B-08 belum lulus; filter tahun ajaran pencarian B-06 telah diperbaiki pada perubahan metadata, tetap diverifikasi dalam review ini.
 
 Fix c9391c1 memvalidasi lampiran milik guru pencatat dan menolak penautan lintas catatan, pada usulan maupun penerapan terkunci; test 20/79 assertion lulus. Re-review menyetujui lampiran, tetapi meminta bukti kedua proses siap sebelum barrier dilepas. Fix c01e379 memenuhi barrier kesiapan; test PostgreSQL 1/9 assertion, Pint/diff check lulus, re-review kedua menyetujui tanpa breakage. B-08 Lulus. Suite 217/771 adalah bukti sebelum fix; kode terakhir diverifikasi melalui cakupan terfokus tersebut. Minor pencarian tahun ajaran B-06 selesai pada perubahan metadata; minor lain tetap untuk review akhir. Langkah berikutnya import B-09.
+
+Pengguna mengonfirmasi memiliki HP Android, tetapi belum memiliki Firebase. Pengerjaan lokal dan gateway/test notifikasi dapat dilanjutkan. Push nyata pada I-01/G4 belum dapat dinyatakan lulus sebelum project/config dan uji perangkat tersedia. Ketersediaan HP tidak menyatakan perangkat sudah tersambung atau mengizinkan publikasi/deployment.
