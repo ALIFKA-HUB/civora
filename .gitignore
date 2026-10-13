@@ -18,3 +18,4 @@
 **/*.jks
 **/*.keystore
 **/storage/*.key
+/docs/qa/mobile.*.json
