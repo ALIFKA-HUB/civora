@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11 dan A-01 sampai A-05 Lulus setelah implementasi dan review independen. 16 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11, A-01 sampai A-05, dan M-01 Lulus setelah implementasi dan review independen. 17 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -18,7 +18,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
-| G3: Mobile | Dikerjakan: M-01 | Fondasi dua aplikasi dan paket bersama; belum ada bukti APK/perangkat |
+| G3: Mobile | Dikerjakan: M-02 | M-01 lulus; dua APK debug fondasi tersedia, fitur lengkap dan uji perangkat belum selesai |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
 
@@ -152,3 +152,9 @@ Review meminta preview penolakan menampilkan catatan yang tetap sama, bukan peru
 Commit 48fa68d menyediakan laporan/unduhan privat, pengaturan sekolah, manajemen admin, dan audit. Alur browser impor → katalog → semester → catatan API → pemeriksaan → laporan lulus 1 test/10 assertion sebelum fix pengaturan pertama kali; test terfokus sebelumnya 8/53. Pemulihan setelah interupsi meluluskan suite final 309 test/1.337 assertion, Pint/build/diff check exit 0. Percobaan tertahan saat cluster PostgreSQL proyek berhenti dihentikan tanpa mengklaim hasil test; cluster milik proyek dinyalakan kembali, lalu suite tersebut lulus.
 
 Review meminta alias API key disamarkan dan zona waktu tersimpan dipakai pada tindak lanjut. Fix 3987438: AdminReportAccessTest 8/58 dan AdminPointRulesTest 7/51, Pint/diff exit 0; re-review menyetujui dua temuan tanpa masalah baru. Reviewer juga mengulang test terfokus tersebut, tidak suite penuh/browser. A-05 serta G2/R2 Lulus; 16/26 tugas lulus. Suite 309/1.337 dan browser 1/10 mendahului fix terakhir; kualitas ekspor panjang/visual tetap I-02, push nyata tetap I-01. Berikutnya M-01 fondasi dua aplikasi Flutter.
+
+#### M-01: fondasi mobile Lulus
+
+Commit 7872d45 menyediakan aplikasi Android siswa/guru terpisah, paket core/UI, DTO UTC, session dasar, client API, serta tema Noto Sans terang/gelap/sistem. Test core 6, UI 1, dan smoke test aplikasi masing-masing 1 serta analisis empat target lulus. Kedua APK debug terbuild; ID/label/izin internet diverifikasi melalui aapt. Firebase dan uji perangkat fisik belum dibuktikan.
+
+Review menemukan URL API per lingkungan belum tersambung ke client shell. Fix ba4a040 membuat client/session pada root aplikasi, menjaga instance saat rebuild, dan menutup transport saat disposal. Test aplikasi masing-masing 3, core 6, analisis kedua aplikasi, serta kedua build APK exit 0; re-review menyetujui tanpa temuan baru. APK lokal final berukuran 160.055.737 dan 160.055.731 byte. M-01 Lulus; 17/26 tugas lulus, lanjut M-02 autentikasi. Shell ini belum berarti seluruh fitur siswa/guru selesai. Respons selection memakai student_id tanpa profil; pengayaan identitas menjadi M-04. Zona waktu tersimpan belum tersedia pada metadata API; kebutuhan tampilan tanggal ditangani saat M-03.

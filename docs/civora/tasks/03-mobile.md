@@ -32,11 +32,11 @@ ApiException berisi statusCode, code, message, fields, requestId. ApiClient.get(
 
 **Interfaces:** Produces kontrak core di atas, CivoraTheme.light/dark, AsyncContent untuk loading/error/empty/data, ThemePreference(system/light/dark). Dua aplikasi mempunyai applicationId berbeda yang dicatat dalam docs/development.md; tidak mendaftarkan nama domain/package pihak lain sebagai identitas publik tanpa memeriksa pilihan sekolah.
 
-- [ ] Verifikasi Flutter/Android SDK, buat dua proyek dan dua paket lokal, catat dependency/runtime, bundel font Noto Sans dengan lisensi, dan konfigurasi base URL per lingkungan.
-- [ ] Tulis test mapping response/error, 401 mengakhiri session, authorization tidak bocor ke auth baru, serta tema mengikuti perubahan sistem.
-- [ ] Pin response DTO `expect(summary.achievement, 10); expect(summary.violation, 5);`; payload error 409 mempertahankan code/message untuk konflik, bukan dianggap sukses.
-- [ ] Jalankan `flutter test` di tiap paket sebelum implementasi core, kemudian implementasikan client/state/theme minimum sampai lulus. Hormati target sentuh 48 dan kontras dokumen 07.
-- [ ] Jalankan `flutter analyze` dan build debug kedua aplikasi. Commit fondasi; shell saja tidak ditandai sebagai fitur siswa/guru selesai.
+- [x] Verifikasi Flutter/Android SDK, buat dua proyek dan dua paket lokal, catat dependency/runtime, bundel font Noto Sans dengan lisensi, dan konfigurasi base URL per lingkungan.
+- [x] Tulis test mapping response/error, 401 mengakhiri session, authorization tidak bocor ke auth baru, serta tema mengikuti perubahan sistem.
+- [x] Pin response DTO `expect(summary.achievement, 10); expect(summary.violation, 5);`; payload error 409 mempertahankan code/message untuk konflik, bukan dianggap sukses.
+- [x] Jalankan `flutter test` di tiap paket sebelum implementasi core, kemudian implementasikan client/state/theme minimum sampai lulus. Hormati target sentuh 48 dan kontras dokumen 07.
+- [x] Jalankan `flutter analyze` dan build debug kedua aplikasi. Commit fondasi; shell saja tidak ditandai sebagai fitur siswa/guru selesai.
 
 ### M-02: Login, aktivasi, password, dan routing role
 
