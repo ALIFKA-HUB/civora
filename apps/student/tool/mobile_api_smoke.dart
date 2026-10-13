@@ -90,18 +90,15 @@ void main() {
           '/teacher/student-selections',
           {'student_id': selectedStudent['id']},
         );
-        final record = await _saveRecord(
+        final manualRecord = await _saveRecord(
           teacher.api,
           manualSelection,
           typeId,
           'M06 API smoke manual selection.',
         );
 
-        if (record['id'] == nativeFixture['id']) {
-          throw StateError('API smoke must use a separate synthetic record.');
-        }
         final correction = await teacher.api.post(
-          '/teacher/records/${record['id']}/correction-requests',
+          '/teacher/records/${manualRecord['id']}/correction-requests',
           {
             'reason': 'Mohon koreksi catatan API uji.',
             'proposed_change': {
@@ -116,6 +113,9 @@ void main() {
           );
         }
 
+        if (qrRecord['id'] == nativeFixture['id']) {
+          throw StateError('API smoke must use a separate synthetic record.');
+        }
         final objection = await student.api.post(
           '/student/records/${qrRecord['id']}/objections',
           {'reason': 'Mohon periksa kembali catatan uji ini.'},
