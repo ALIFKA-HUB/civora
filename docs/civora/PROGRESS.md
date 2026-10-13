@@ -16,7 +16,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-09 import akun | B-08 fix c01e379; test terfokus 20/79 dan barrier 1/9 assertion lulus, re-review menyetujui |
+| G1: Backend | Perlu perbaikan: B-09 expiry/referensi tanggal | Commit 3b0bbd9; 236 test/849 assertion lulus, review meminta guard expiry dan error semester yang jelas |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
@@ -91,3 +91,7 @@ Commit 6df3fd8 melaporkan riwayat, ringkasan, profil/metadata, keberatan, dan ke
 Fix c9391c1 memvalidasi lampiran milik guru pencatat dan menolak penautan lintas catatan, pada usulan maupun penerapan terkunci; test 20/79 assertion lulus. Re-review menyetujui lampiran, tetapi meminta bukti kedua proses siap sebelum barrier dilepas. Fix c01e379 memenuhi barrier kesiapan; test PostgreSQL 1/9 assertion, Pint/diff check lulus, re-review kedua menyetujui tanpa breakage. B-08 Lulus. Suite 217/771 adalah bukti sebelum fix; kode terakhir diverifikasi melalui cakupan terfokus tersebut. Minor pencarian tahun ajaran B-06 selesai pada perubahan metadata; minor lain tetap untuk review akhir. Langkah berikutnya import B-09.
 
 Pengguna mengonfirmasi memiliki HP Android, tetapi belum memiliki Firebase. Pengerjaan lokal dan gateway/test notifikasi dapat dilanjutkan. Push nyata pada I-01/G4 belum dapat dinyatakan lulus sebelum project/config dan uji perangkat tersedia. Ketersediaan HP tidak menyatakan perangkat sudah tersambung atau mengizinkan publikasi/deployment.
+
+#### B-09: perlu perbaikan setelah review
+
+Commit 3b0bbd9 menyediakan import terbatas CSV/XLSX, pratinjau privat, commit atomik, dan dependency PhpSpreadsheet 5.10. Test terfokus 12/47 assertion dan suite 236/849 assertion lulus. Review meminta penolakan preview tidak terkonfirmasi pada batas 7 hari, serta validasi ulang tanggal semester/tahun ajaran dengan error yang membantu admin. Perbaikan dikembalikan ke implementer; cleanup berkas dan parsed rows terjadwal tetap tugas B-11. B-09 belum lulus.
