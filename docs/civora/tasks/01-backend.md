@@ -74,10 +74,10 @@ EnrollStudent::execute(User $admin, Student $student, Semester $semester, string
 
 **Interfaces:** CreatePointType::execute(User $admin, array $attributes): PointType; RevisePointType::execute(User $admin, PointType $type, array $attributes): PointTypeVersion; DeactivatePointType::execute(User $admin, PointType $type): void. GET /teacher/point-types menghasilkan id, version_id, category, name, points, description untuk jenis aktif.
 
-- [ ] Tulis test guru tidak mengubah katalog, points 0/negatif ditolak, revisi membuat versi baru, jenis nonaktif tidak muncul, dan kategori jenis yang sudah digunakan tidak berubah.
-- [ ] Pin versi: `self::assertSame(2, $newVersion->version); self::assertSame(10, $oldVersion->fresh()->points);` ketika nilai baru 15.
-- [ ] Jalankan `php artisan test --filter=PointCatalogTest`; implementasikan action/admin authorization dan resource daftar aktif.
-- [ ] Jalankan kembali sampai lulus; commit katalog tanpa mengubah snapshot catatan lama.
+- [x] Tulis test guru tidak mengubah katalog, points 0/negatif ditolak, revisi membuat versi baru, jenis nonaktif tidak muncul, dan kategori jenis yang sudah digunakan tidak berubah.
+- [x] Pin versi: `self::assertSame(2, $newVersion->version); self::assertSame(10, $oldVersion->fresh()->points);` ketika nilai baru 15.
+- [x] Jalankan `php artisan test --filter=PointCatalogTest`; implementasikan action/admin authorization dan resource daftar aktif.
+- [x] Jalankan kembali sampai lulus; commit katalog tanpa mengubah snapshot catatan lama.
 
 ### B-05: Query total, kebijakan ambang, dan tindak lanjut
 

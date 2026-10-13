@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-03 Lulus setelah implementasi dan review independen. 3 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 sampai B-04 Lulus setelah implementasi dan review independen. 4 dari 26 tugas Lulus; backend keseluruhan belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-04 katalog poin berversi | B-03 commit 6d48372; 155 test/522 assertion lulus, review bersih |
+| G1: Backend | Dikerjakan: B-05 total/ambang/tindak lanjut | B-04 commit 0c1c45f; 168 test/565 assertion lulus, review bersih |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -65,3 +65,7 @@ Penempatan awal EnrollStudent melengkapi kebutuhan persiapan semester draft untu
 Database lokal proyek sempat tidak menerima koneksi. Cluster milik workspace dinyalakan kembali, lalu test terfokus dan suite final lulus; penyebab berhenti belum diketahui. Data developer dan instalasi/database di luar proyek tidak direset.
 
 Reviewer GPT-6 Luna high menyetujui B-03 tanpa temuan critical/important/minor. B-03 Lulus; pengerjaan dilanjutkan ke katalog poin berversi B-04. Total milestone backend belum dinyatakan selesai.
+
+#### B-04: katalog Lulus
+
+Commit 0c1c45f menyediakan katalog aktif guru dan mutasi katalog admin dengan versi append-only. Nilai positif wajib; kategori yang sudah direferensikan catatan tidak dapat diubah. Test terfokus 13/43 assertion dan suite backend 168/565 assertion lulus, Pint/diff check lulus. Reviewer GPT-6 Luna high menyetujui tanpa temuan. B-07 wajib mengunci jenis poin dan memeriksa ulang status aktif/versi terbaru saat menyimpan. Langkah berikutnya B-05 untuk total terpisah, ambang, serta tindak lanjut.
