@@ -1,6 +1,6 @@
 # Pengembangan backend Civora
 
-Fondasi B-01, autentikasi B-02, action akademik B-03, dan katalog berversi B-04 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun/akademik/katalog, daftar jenis poin aktif untuk guru, dan policy resource tersedia. Pencatatan poin, pemeriksaan, serta admin UI belum tersedia.
+Fondasi B-01, autentikasi B-02, action akademik B-03, dan katalog berversi B-04 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun/akademik/katalog, daftar jenis poin aktif untuk guru, dan policy resource tersedia. Shell login, aktivasi awal, dashboard read-only, dan sesi admin A-01 tersedia; pencatatan poin dan halaman pengelolaan admin berikutnya belum tersedia.
 
 ## Versi terverifikasi pada 12 Oktober 2026
 
@@ -42,6 +42,72 @@ npm --prefix backend run build
 ./ops/dev/php.ps1 artisan test --filter=DatabaseConstraintsTest
 ./ops/dev/php.ps1 artisan serve --host=127.0.0.1 --port=8000
 ```
+
+## Browser test admin (Laravel Dusk)
+
+A-01 dan A-05 menggunakan PHPUnit + Laravel Dusk untuk pengujian UI Chromium sungguhan; tes browser berada di `backend/tests/Browser`. Dusk adalah runner browser yang dipilih untuk proyek ini karena PHPUnit sudah dipakai. Ikuti [panduan resmi Laravel Dusk](https://laravel.com/framework/docs/13.x/dusk) dan [Chrome for Testing](https://github.com/GoogleChromeLabs/chrome-for-testing) untuk versi driver.
+
+Setelah setup backend dan `npm ci` di atas, siapkan file environment lokal yang diabaikan Git dari environment test milik workspace. Ini mempertahankan APP_KEY/password PostgreSQL yang dibuat setup, memastikan target disposable bernama `civora_test`, dan mengarahkan browser ke loopback:
+
+```powershell
+Copy-Item backend/.env.testing backend/.env.dusk.local -Force
+$duskEnv = Join-Path (Get-Location) 'backend/.env.dusk.local'
+$contents = Get-Content -LiteralPath $duskEnv -Raw
+$contents = [regex]::Replace($contents, '(?m)^APP_URL=.*$', 'APP_URL=http://127.0.0.1:8031')
+$contents = [regex]::Replace($contents, '(?m)^DB_DATABASE=.*$', 'DB_DATABASE=civora_test')
+$contents = [regex]::Replace($contents, '(?m)^DB_HOST=.*$', 'DB_HOST=127.0.0.1')
+[System.IO.File]::WriteAllText($duskEnv, $contents, [System.Text.UTF8Encoding]::new($false))
+```
+
+Pasang ChromeDriver yang cocok dengan Chrome terpasang memakai pendeteksi versi Dusk:
+
+```powershell
+./ops/dev/php.ps1 artisan dusk:chrome-driver --detect
+```
+
+Jika unduhan PHP cURL gagal memverifikasi sertifikat TLS di Windows, jangan mematikan verifikasi. Ambil build Chrome for Testing resmi yang sama melalui validasi sertifikat Windows oleh PowerShell. Respons `latest-patch-versions-per-build-with-downloads.json` memakai tiga bagian pertama versi Chrome sebagai key; pilih URL `chromedriver` untuk `win64`. Fallback ini hanya menulis ke `.runtime/` dan direktori vendor Composer proyek yang diabaikan Git:
+
+```powershell
+$chromeCandidates = @(
+    "$env:ProgramFiles\Google\Chrome\Application\chrome.exe",
+    "${env:ProgramFiles(x86)}\Google\Chrome\Application\chrome.exe",
+    "$env:LOCALAPPDATA\Google\Chrome\Application\chrome.exe"
+)
+$chrome = $chromeCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (!$chrome) { throw 'Install Google Chrome before running Dusk.' }
+$parts = (Get-Item -LiteralPath $chrome).VersionInfo.ProductVersion.Split('.')
+$build = $parts[0..2] -join '.'
+$metadata = Invoke-RestMethod 'https://googlechromelabs.github.io/chrome-for-testing/latest-patch-versions-per-build-with-downloads.json'
+$release = $metadata.builds.$build
+if (!$release) { throw "No official ChromeDriver build found for Chrome $build." }
+$driverUrl = ($release.downloads.chromedriver | Where-Object platform -eq 'win64' | Select-Object -First 1).url
+$runtime = Join-Path (Get-Location) '.runtime'
+$download = Join-Path $runtime 'chromedriver-win64.zip'
+$extracted = Join-Path $runtime 'chromedriver-win64'
+Invoke-WebRequest -Uri $driverUrl -OutFile $download
+Expand-Archive -LiteralPath $download -DestinationPath $runtime -Force
+$driver = Join-Path (Get-Location) 'backend/vendor/laravel/dusk/bin/chromedriver-win.exe'
+Copy-Item -LiteralPath (Join-Path $extracted 'chromedriver.exe') -Destination $driver -Force
+& $driver --version
+```
+
+Gunakan dua terminal PowerShell. Server membaca `.env.testing` secara eksplisit dan hanya bind ke loopback:
+
+```powershell
+$env:APP_ENV = 'testing'
+./ops/dev/php.ps1 artisan serve --host=127.0.0.1 --port=8031
+```
+
+Di terminal lain, jalankan Dusk dengan `APP_ENV` tidak disetel agar Dusk memuat `.env.dusk.local` untuk proses browser:
+
+```powershell
+$env:APP_ENV = $null
+./ops/dev/php.ps1 artisan dusk --filter=AdminShellTest
+# Jalankan semua test browser A-01/A-05:
+./ops/dev/php.ps1 artisan dusk
+```
+
+Dusk memakai `DatabaseMigrations` terhadap `civora_test`; guard Artisan proyek tetap memverifikasi identitas database disposable sebelum migrasi destruktif. Jangan arahkan Dusk ke `civora_dev` atau database produksi. Jangan commit file environment Dusk lokal maupun biner ChromeDriver. Tutup server loopback dengan Ctrl+C setelah browser test.
 
 Setup memverifikasi paket PHP, menyalin Composer ke `.runtime/`, dan membuat cluster baru `.runtime/pgsql`. Script menolak mengadopsi data directory tanpa marker Civora. Server hanya mendengarkan `127.0.0.1` pada port tinggi yang kosong; startup tersembunyi. Database `civora_dev` dan `civora_test` terpisah. Tidak ada perubahan pada PATH, service, PHP global, atau cluster PostgreSQL yang sudah ada.
 

@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use App\Actions\Accounts\AccountSecurity;
 use App\Database\PostgresGrammar;
+use App\Http\Middleware\EnsureActiveAdmin;
+use App\Http\Middleware\EnsureAdminRecentAuthentication;
+use App\Http\Middleware\EnsureAdminSessionIsFresh;
+use App\Http\Middleware\EnsurePendingAdminActivation;
 use App\Support\GuardDestructiveMigrations;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Events\CommandStarting;
@@ -14,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +41,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('access-admin', fn ($user): bool => $user->role === 'admin' && AccountSecurity::active($user));
+        Livewire::addPersistentMiddleware([
+            EnsureAdminSessionIsFresh::class,
+            EnsureActiveAdmin::class,
+            EnsurePendingAdminActivation::class,
+            EnsureAdminRecentAuthentication::class,
+        ]);
 
         RateLimiter::for('account-login', function (Request $request) {
             $identity = $request->input('nisn', $request->input('identifier', ''));

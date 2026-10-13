@@ -15,25 +15,35 @@
     @livewireStyles
 </head>
 <body>
-    <a class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-white focus:px-4 focus:py-3 focus:text-teal-900" href="#main-content">Lewati ke konten utama</a>
     @php
         $schoolName = \App\Models\SchoolSetting::query()->value('name') ?? 'Civora';
         $activeSemester = \App\Models\Semester::query()->where('status', 'active')->with('academicYear')->first();
         $adminUser = auth('web')->user();
         $adminReady = $adminUser?->role === 'admin' && $adminUser->account_status === 'active' && ! $adminUser->must_change_password;
     @endphp
-    <div class="admin-shell" x-data="{ navigationOpen: false }" @keydown.escape.window="navigationOpen = false">
+    <div class="admin-shell" x-data="{
+        navigationOpen: false,
+        openNavigation() {
+            this.navigationOpen = true;
+            this.$nextTick(() => this.$refs.firstNavigationLink.focus());
+        },
+        closeNavigation() {
+            this.navigationOpen = false;
+            this.$nextTick(() => this.$refs.navigationTrigger.focus());
+        }
+    }" @keydown.escape.window="if (navigationOpen) closeNavigation()">
+        <a :inert="navigationOpen" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded focus:bg-white focus:px-4 focus:py-3 focus:text-teal-900" href="#main-content">Lewati ke konten utama</a>
         @if ($adminReady)
-            <div x-cloak x-show="navigationOpen" class="admin-drawer-backdrop md:hidden" @click="navigationOpen = false"></div>
-            <aside class="admin-sidebar admin-mobile-drawer fixed bottom-0 left-0 top-0 hidden w-64 flex-col md:flex" :class="navigationOpen ? '!flex' : 'max-md:hidden'" aria-label="Navigasi utama">
+            <div x-cloak x-show="navigationOpen" class="admin-drawer-backdrop md:hidden" @click="closeNavigation()"></div>
+            <aside x-trap.inert.noscroll="navigationOpen" class="admin-sidebar admin-mobile-drawer fixed bottom-0 left-0 top-0 hidden w-64 flex-col md:flex" :class="navigationOpen ? '!flex' : 'max-md:hidden'" :role="navigationOpen ? 'dialog' : null" :aria-modal="navigationOpen ? 'true' : null" :aria-label="navigationOpen ? 'Navigasi utama' : null">
                 <div class="border-b border-[var(--border)] px-6 py-5">
-                    <a href="{{ route('admin.home') }}" class="text-xl font-semibold text-[var(--primary)] no-underline">Civora</a>
+                    <a href="{{ route('admin.home') }}" class="text-xl font-semibold text-[var(--primary)] no-underline" x-ref="firstNavigationLink">Civora</a>
                     <p class="admin-muted mt-1 text-sm">Administrasi sekolah</p>
                 </div>
                 <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-5">
                     <section aria-labelledby="nav-summary">
                         <h2 id="nav-summary" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Ringkasan</h2>
-                        <a href="{{ route('admin.home') }}" class="admin-link mt-2" aria-current="page">Dashboard</a>
+                        <a href="{{ route('admin.home') }}" class="admin-link mt-2" aria-current="page" @click="closeNavigation()">Dashboard</a>
                     </section>
                     <section aria-labelledby="nav-school-data">
                         <h2 id="nav-school-data" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Data sekolah</h2>
@@ -70,11 +80,11 @@
             </aside>
         @endif
 
-        <div class="{{ $adminReady ? 'md:pl-64' : '' }} min-h-screen">
+        <div data-admin-background :inert="navigationOpen" class="{{ $adminReady ? 'md:pl-64' : '' }} min-h-screen">
             <header class="admin-header flex min-h-16 items-center justify-between gap-3 px-4 py-3 md:px-8">
                 <div class="flex min-w-0 items-center gap-3">
                     @if ($adminReady)
-                        <button type="button" class="admin-button-secondary md:hidden" aria-label="Buka navigasi" :aria-expanded="navigationOpen.toString()" @click="navigationOpen = !navigationOpen">Menu</button>
+                        <button type="button" class="admin-button-secondary md:hidden" aria-label="Buka navigasi" :aria-expanded="navigationOpen.toString()" x-ref="navigationTrigger" @click="openNavigation()">Menu</button>
                     @endif
                     <div class="min-w-0">
                         <p class="truncate font-semibold">{{ $schoolName }}</p>

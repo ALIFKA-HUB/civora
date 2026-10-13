@@ -63,14 +63,27 @@ class AdminShellTest extends DuskTestCase
                 ->resize(320, 800)
                 ->assertPresent('button[aria-label="Buka navigasi"]')
                 ->click('button[aria-label="Buka navigasi"]')
-                ->assertVisible('aside[aria-label="Navigasi utama"]')
+                ->assertVisible('aside[role="dialog"][aria-modal="true"][aria-label="Navigasi utama"]')
+                ->assertFocused('.admin-sidebar .border-b a')
                 ->screenshot('admin-shell-mobile');
+            self::assertTrue($browser->script("return document.querySelector('[data-admin-background]').inert;")[0]);
 
             $overflow = $browser->script('return document.documentElement.scrollWidth > window.innerWidth;')[0];
             self::assertFalse($overflow, 'The dashboard must fit a 320px viewport without horizontal page overflow.');
 
-            $browser->keys('a[aria-current="page"]', WebDriverKeys::ESCAPE)
-                ->assertMissing('aside[aria-label="Navigasi utama"]');
+            $browser->keys('.admin-sidebar .border-b a', WebDriverKeys::SHIFT, WebDriverKeys::TAB)
+                ->assertFocused('button[type="submit"]')
+                ->keys('button[type="submit"]', WebDriverKeys::TAB)
+                ->assertFocused('.admin-sidebar .border-b a')
+                ->keys('.admin-sidebar .border-b a', WebDriverKeys::ESCAPE)
+                ->assertMissing('aside[role="dialog"]')
+                ->assertFocused('button[aria-label="Buka navigasi"]')
+                ->click('button[aria-label="Buka navigasi"]')
+                ->assertVisible('aside[role="dialog"][aria-modal="true"]')
+                ->clickAtPoint(300, 300)
+                ->waitUntilMissing('aside[role="dialog"]')
+                ->assertMissing('aside[role="dialog"]')
+                ->assertFocused('button[aria-label="Buka navigasi"]');
             foreach ([320, 768, 1024, 1440] as $width) {
                 $browser->resize($width, 900);
                 $overflow = $browser->script('return document.documentElement.scrollWidth > window.innerWidth;')[0];
