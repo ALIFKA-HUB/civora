@@ -87,11 +87,11 @@ ApiException berisi statusCode, code, message, fields, requestId. ApiClient.get(
 
 **Interfaces:** NotificationController.registerDevice(): Future<void>; NotificationController.openResource(NotificationDto notification): Future<void> memakai login/role dan fetch server; reveal credential mengirim current_password pada endpoint B-02 tanpa menyimpannya. Preferensi tema disimpan tanpa credential.
 
-- [ ] Tulis test push ditolak/tidak tersedia tetap memuat in-app list, klik push ketika logout meminta login, resource siswa lain ditolak, dan logout melepas device token.
-- [ ] Pin pesan push tidak memuat nama/jenis/nilai/bukti; endpoint detail hanya dipanggil sesudah session authenticated dengan role benar.
-- [ ] Tulis test credential bantuan hanya temporary valid, autentikasi ulang diperlukan, dan siswa sudah aktif menampilkan status tanpa password.
-- [ ] Jalankan `flutter test test/notification_flow_test.dart` pada dua app dan `flutter test test/credential_help_test.dart` pada teacher; implementasikan FCM lifecycle, read state, deep link yang diizinkan, tema profil, serta bantuan credential.
-- [ ] Verifikasi credential tidak bertahan setelah dialog ditutup/background/logout; jalankan test/analyze. Commit; credential Firebase nyata dan push background diperiksa I-01.
+- [x] Tulis test push ditolak/tidak tersedia tetap memuat in-app list, klik push ketika logout meminta login, resource siswa lain ditolak, dan logout melepas device token.
+- [x] Pin pesan push tidak memuat nama/jenis/nilai/bukti; endpoint detail hanya dipanggil sesudah session authenticated dengan role benar.
+- [x] Tulis test credential bantuan hanya temporary valid, autentikasi ulang diperlukan, dan siswa sudah aktif menampilkan status tanpa password.
+- [x] Jalankan `flutter test test/notification_flow_test.dart` pada dua app dan `flutter test test/credential_help_test.dart` pada teacher; implementasikan FCM lifecycle, read state, deep link yang diizinkan, tema profil, serta bantuan credential.
+- [x] Verifikasi credential tidak bertahan setelah dialog ditutup/background/logout; jalankan test/analyze. Commit; credential Firebase nyata dan push background diperiksa I-01.
 
 ### M-06: Pemeriksaan perangkat dan build dua aplikasi
 

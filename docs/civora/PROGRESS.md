@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11, A-01 sampai A-05, dan M-01/M-02/M-04 Lulus setelah implementasi dan review independen. 19 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11, A-01 sampai A-05, dan M-01/M-02/M-04/M-05 Lulus setelah implementasi dan review independen. 20 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -18,7 +18,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
-| G3: Mobile | Dikerjakan: M-05; M-03 menunggu HP | M-04 lulus; QR/kamera fisik dan integrasi lengkap masih belum diverifikasi |
+| G3: Mobile | Dikerjakan: M-06; M-03 menunggu HP | M-05 lulus lokal; QR/kamera, native cold-start, dan integrasi perangkat belum diverifikasi |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
 
@@ -176,3 +176,9 @@ M-03 belum Lulus: QR terang/gelap hanya dibuktikan pada widget, ADB tidak menemu
 Commit cc15bb5 menyediakan scan/manual, profil/riwayat, draft foto privat, ringkasan, hasil, retry dengan payload/key tetap, dan koreksi. Verifikasi awal final: core 20, guru 18, siswa 17; analisis tiga target, dua APK, serta diff check exit 0. Multipart memakai library HTTP dan snapshot autentikasi sebelum persiapan async. Kamera/QR fisik belum dibuktikan.
 
 Review meminta lock unknown tidak bisa dibatalkan dari form dan respons pencarian lama diabaikan. Fix 8a66e0b: guru 21 test, analisis/build/diff lulus. Re-review meminta respons selection terlambat juga memeriksa lock saat dipasang. Fix 40d3371: retry 7/guru penuh 22, analisis/build/diff exit 0; re-review kedua menyetujui tanpa masalah baru. Backend archive siswa lulus dan hak bukti dicocokkan pada source/test B-07/B-08 yang tidak berubah, bukan diklaim sebagai test API live baru. Minor test expiry disimpan untuk review akhir. M-04 Lulus; 19/26 tugas lulus. M-03 tetap menunggu HP; scan nyata dialokasikan M-06/I-01. Berikutnya M-05 notifikasi dan bantuan akun.
+
+#### M-05: notifikasi dan bantuan akun Lulus lokal
+
+Commit 67a9376 menyediakan notifikasi/read state, deep link terbatas dengan fetch server sesuai role, tema persisten, lifecycle push opsional, dan dialog bantuan password sementara. Field account_status/must_change_password ditambahkan secara terbatas pada profil siswa yang boleh dilihat guru. Test backend 312/1.364 assertion, siswa 21/guru 32/core 20/UI 1, analisis empat target, dua build APK tanpa konfigurasi Firebase, serta diff check exit 0. Mutasi sementara penghilangan flag profil membuktikan regresi, bukan checkout baseline.
+
+Review meminta respons daftar notifikasi lama tidak mengganti state akun baru. Fix 185f98d: core 23, notifikasi masing-masing aplikasi 4, UI 1, analisis empat target, kedua build APK/diff exit 0; re-review menyetujui tanpa masalah baru. Suite backend sebelumnya tidak diulang karena fix hanya client. M-05 Lulus sesuai cakupan lokal; 20/26 tugas lulus. Native cold-start dan push Firebase nyata belum dibuktikan, tetap M-06/I-01. M-03 masih menunggu HP. Pengguna menetapkan skala data acuan 3.000 siswa dan 200 guru untuk I-04, tanpa mengasumsikan jumlah concurrent atau jaminan server produksi.

@@ -92,3 +92,7 @@ Persentase fitur tidak diperkirakan dari jumlah baris kode. Jika dibutuhkan, lap
 ## Kriteria berhenti atau release ditunda
 
 Pekerjaan lokal yang masih bermakna tetap dilanjutkan. Release ditunda jika akses lintas role bocor, test konsistensi gagal, review blocking belum selesai, backup/restore belum terbukti, atau dependency produksi belum tersedia. Perubahan destruktif terhadap data yang sudah ada, publikasi, dan perubahan layanan eksternal memerlukan konteks serta otorisasi yang sesuai; izin membuat aplikasi tidak menggantikan tujuan deployment yang belum ditentukan.
+
+## Acuan kapasitas sekolah
+
+Pengguna menetapkan sampai 3.000 siswa dan 200 guru sebagai skala data acuan untuk I-04. Ini bukan angka pengguna concurrent maupun jaminan kapasitas server produksi. Laporan uji harus mencatat skenario concurrent, hardware/runtime, latensi/error, dan batasan; kesiapan produksi tetap menunggu infrastruktur serta penerimaan sekolah.
