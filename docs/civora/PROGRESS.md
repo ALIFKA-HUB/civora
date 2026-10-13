@@ -16,7 +16,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-07 pencatatan/bukti/idempotensi | B-06 commit cb1b0ea; 189 test/652 assertion lulus, review menyetujui; minor disimpan untuk review akhir |
+| G1: Backend | Perlu perbaikan: B-07 akses bukti | Commit 2ebd141; 199 test/702 assertion lulus, review menemukan bypass AttachmentPolicy |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -77,3 +77,7 @@ Commit 932d6bd menyediakan total efektif per siswa/semester, evaluator ambang, k
 #### B-06: QR dan pemilihan Lulus
 
 Commit cb1b0ea menyediakan QR hash-only 20 detik, selection 5 menit, scan atomik, retry aman, pencarian/profil siswa, dan pemilihan manual. Test terfokus 11/60 assertion dan suite 189/652 assertion lulus; Pint/diff check lulus. Reviewer GPT-6 Luna high menyetujui kontrak endpoint tanpa critical/important. Minor untuk review akhir: tambahkan filter tahun ajaran kelas pada pencarian agar sama dengan validasi selection/profil. Pencabutan/expiry sesi penerbit menolak redeem; retry setelah expiry/rotasi QR hanya mengembalikan selection lama jika sesi, selection, semester, dan penempatan masih sah.
+
+#### B-07: perlu perbaikan setelah review
+
+Commit 2ebd141 melaporkan pencatatan atomik, idempotensi, foto privat, dan race perpindahan/ambang; suite 199/702 assertion lulus. Reviewer menemukan download foto memakai pemeriksaan sendiri yang tidak mengikuti AttachmentPolicy: admin/guru yang berhak dapat ditolak, sementara akun pending belum dibatasi dengan benar. Temuan diverifikasi pada controller/policy dan dikembalikan ke implementer untuk regresi/perbaikan. B-07 belum lulus. Minor untuk review akhir: samakan format idempotency key POST dengan route lookup GET. Cleanup bukti staged yang belum dipakai tetap tugas B-11.
