@@ -19,3 +19,11 @@
 ## Artefak koordinasi
 
 - Report, brief, ledger, dan paket review di .superpowers adalah artefak lokal yang diabaikan Git. Jangan gunakan force-add untuk memasukkannya ke commit. Bukti publik dan status proyek disimpan di docs/.
+
+## Aktivitas GitHub per tugas
+
+- Pengguna meminta commit dan push setiap tugas/perubahan bermakna selesai, dengan pesan yang menjelaskan hasilnya. Push ke codex/civora-implementation setelah verifikasi relevan; jangan menunggu seluruh aplikasi selesai.
+- Gunakan issue/PR untuk pekerjaan nyata dan komentar ringkas untuk hasil test, review, atau milestone yang benar-benar dicapai. Pengguna mengizinkan pembaruan GitHub tersebut. Hindari aktivitas duplikat tanpa informasi baru.
+- Gate review tetap berlaku: tugas belum lulus tidak boleh dinyatakan selesai. PR pekerjaan yang belum selesai memakai status draft.
+- Commit di branch kerja baru memenuhi kriteria kontribusi commit setelah terintegrasi ke default branch main. Tahap merge tetap mengikuti alur integrasi yang disetujui; pertahankan commit bermakna melalui merge commit ketika integrasi dilakukan.
+- Author Git proyek saat ini sudah dipetakan GitHub ke ALIFKA-HUB. Jangan mengubah tanggal commit untuk aktivitas profil.
