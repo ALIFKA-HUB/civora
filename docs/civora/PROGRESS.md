@@ -107,3 +107,5 @@ Fix f4340ee menambahkan claim/lease, berkas per percobaan, publikasi terkunci, d
 #### B-11: menunggu review
 
 Commit c07adbc menyediakan outbox, notifikasi milik sendiri, token perangkat terikat sesi, gateway FCM yang dapat dikonfigurasi, dan cleanup privat. Test terfokus 5/58 assertion dan suite backend 254/1.007 assertion lulus; Pint/diff check lulus. Reviewer terpisah memeriksa retry, akses/sesi perangkat, serta retensi lampiran dan ekspor. Firebase belum tersedia sehingga push nyata belum terbukti. Crash setelah FCM menerima pesan sebelum outbox ditandai dapat menyebabkan push ulang; notifikasi in-app dideduplikasi. B-11 belum lulus.
+
+Review B-11 meminta perbaikan keputusan koreksi guru yang ditolak agar siswa pemilik catatan ikut diberi tahu, serta pembedaan token UNREGISTERED dari 404 kesalahan konfigurasi Firebase. Implementer menambahkan regresi untuk dua kasus tersebut. Minor cakupan batas retry dan retensi lampiran revisi dicatat untuk review akhir. Cleanup berkas ekspor tanpa referensi telah diperiksa dan menangani minor B-10; push nyata tetap dependensi I-01.
