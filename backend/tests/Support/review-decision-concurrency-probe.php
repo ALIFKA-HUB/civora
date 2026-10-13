@@ -15,9 +15,22 @@ CarbonImmutable::setTestNow((string) getenv('CIVORA_TEST_NOW'));
 if (! $app->environment('testing') || DB::getDatabaseName() !== 'civora_test') {
     throw new RuntimeException('Review concurrency probe requires civora_test.');
 }
+$admin = User::findOrFail($argv[1]);
+$review = ReviewRequest::findOrFail($argv[2]);
 $releaseFile = getenv('CIVORA_TEST_RELEASE_FILE');
+$readyFile = getenv('CIVORA_TEST_READY_FILE');
+if (! $readyFile || ! $releaseFile) {
+    throw new RuntimeException('Review concurrency probe requires readiness and release barriers.');
+}
+$readyDirectory = dirname($readyFile);
+if (dirname($releaseFile) !== $readyDirectory) {
+    throw new RuntimeException('Review concurrency barriers must share the test directory.');
+}
+if (file_put_contents($readyFile, 'ready', LOCK_EX) === false) {
+    throw new RuntimeException('Unable to signal review decision readiness.');
+}
 $deadline = microtime(true) + 10;
-while (! $releaseFile || ! file_exists($releaseFile)) {
+while (! file_exists($releaseFile)) {
     if (microtime(true) > $deadline) {
         throw new RuntimeException('Review concurrency barrier timed out.');
     }
@@ -26,8 +39,8 @@ while (! $releaseFile || ! file_exists($releaseFile)) {
 
 try {
     app(DecideReviewRequest::class)->execute(
-        User::findOrFail($argv[1]),
-        ReviewRequest::findOrFail($argv[2]),
+        $admin,
+        $review,
         'approve',
         'Parallel admin decision.',
         1,

@@ -48,8 +48,8 @@ class ReviewDecisionConcurrencyTest extends TestCase
         $configFile = $directory.'/config.php';
         file_put_contents($configFile, '<?php return '.var_export(config()->all(), true).';');
         $common = ['APP_CONFIG_CACHE' => $configFile, 'CIVORA_TEST_RELEASE_FILE' => $directory.'/release', 'CIVORA_TEST_NOW' => CarbonImmutable::now()->toIso8601String()];
-        $first = new Process([PHP_BINARY, base_path('tests/Support/review-decision-concurrency-probe.php'), ...$actors[0]], base_path(), $common);
-        $second = new Process([PHP_BINARY, base_path('tests/Support/review-decision-concurrency-probe.php'), ...$actors[1]], base_path(), $common);
+        $first = new Process([PHP_BINARY, base_path('tests/Support/review-decision-concurrency-probe.php'), ...$actors[0]], base_path(), [...$common, 'CIVORA_TEST_READY_FILE' => $directory.'/ready-1']);
+        $second = new Process([PHP_BINARY, base_path('tests/Support/review-decision-concurrency-probe.php'), ...$actors[1]], base_path(), [...$common, 'CIVORA_TEST_READY_FILE' => $directory.'/ready-2']);
         $first->setTimeout(20);
         $second->setTimeout(20);
         $first->start();
@@ -60,11 +60,30 @@ class ReviewDecisionConcurrencyTest extends TestCase
 
     private function releaseAndWait(Process $first, Process $second, string $directory): void
     {
+        $this->waitUntilReady($first, $second, $directory);
+        self::assertTrue($first->isRunning(), 'First decision process exited before barrier release. '.$first->getErrorOutput());
+        self::assertTrue($second->isRunning(), 'Second decision process exited before barrier release. '.$second->getErrorOutput());
         file_put_contents($directory.'/release', 'go');
         $first->wait();
         $second->wait();
         self::assertSame(0, $first->getExitCode(), $first->getErrorOutput());
         self::assertSame(0, $second->getExitCode(), $second->getErrorOutput());
+    }
+
+    private function waitUntilReady(Process $first, Process $second, string $directory): void
+    {
+        $deadline = microtime(true) + 15;
+        while (! is_file($directory.'/ready-1') || ! is_file($directory.'/ready-2')) {
+            foreach ([$first, $second] as $index => $process) {
+                if (! $process->isRunning()) {
+                    self::fail('Decision process '.($index + 1).' exited before reaching the shared barrier. Exit '.$process->getExitCode().'; stderr: '.$process->getErrorOutput().'; stdout: '.$process->getOutput());
+                }
+            }
+            if (microtime(true) >= $deadline) {
+                self::fail('Timed out waiting for both decision processes to reach the shared barrier.');
+            }
+            usleep(10000);
+        }
     }
 
     private function cleanupPair(Process $first, Process $second, string $directory): void
