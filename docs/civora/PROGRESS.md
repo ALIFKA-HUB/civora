@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-10 Lulus setelah implementasi dan review independen. 10 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 sampai B-11 Lulus setelah implementasi dan review independen. 11 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-11 notifikasi/cleanup | B-10 fix f4340ee; test 9/74 assertion lulus, re-review menyetujui |
+| G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
@@ -109,3 +109,5 @@ Fix f4340ee menambahkan claim/lease, berkas per percobaan, publikasi terkunci, d
 Commit c07adbc menyediakan outbox, notifikasi milik sendiri, token perangkat terikat sesi, gateway FCM yang dapat dikonfigurasi, dan cleanup privat. Test terfokus 5/58 assertion dan suite backend 254/1.007 assertion lulus; Pint/diff check lulus. Reviewer terpisah memeriksa retry, akses/sesi perangkat, serta retensi lampiran dan ekspor. Firebase belum tersedia sehingga push nyata belum terbukti. Crash setelah FCM menerima pesan sebelum outbox ditandai dapat menyebabkan push ulang; notifikasi in-app dideduplikasi. B-11 belum lulus.
 
 Review B-11 meminta perbaikan keputusan koreksi guru yang ditolak agar siswa pemilik catatan ikut diberi tahu, serta pembedaan token UNREGISTERED dari 404 kesalahan konfigurasi Firebase. Implementer menambahkan regresi untuk dua kasus tersebut. Minor cakupan batas retry dan retensi lampiran revisi dicatat untuk review akhir. Cleanup berkas ekspor tanpa referensi telah diperiksa dan menangani minor B-10; push nyata tetap dependensi I-01.
+
+Fix 823fbd9 menambahkan penerima siswa pada keputusan koreksi guru dan hanya mencabut perangkat untuk detail FCM UNREGISTERED bertipe resmi. Test terfokus 6/43 assertion, Pint/diff check lulus; re-review menyetujui tanpa breakage. B-11 dan G1/R1 Lulus. Suite 254/1.007 adalah bukti sebelum fix; kode terakhir diverifikasi dengan test terfokus. Firebase/OAuth/perangkat nyata tetap I-01/G4, minor test tetap review akhir. Pengerjaan berlanjut ke A-01 untuk session, layout, tema, dan dashboard admin.

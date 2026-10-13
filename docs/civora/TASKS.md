@@ -61,7 +61,7 @@ Admin dan mobile baru diintegrasikan setelah kontrak backend yang dikonsumsi tug
 
 ## Status milestone
 
-- [ ] R1: Backend/API dan kontrol domain lulus.
+- [x] R1: Backend/API dan kontrol domain lulus.
 - [ ] R2: Website admin terhubung ke action backend dan lulus alur browser.
 - [ ] R3: Dua aplikasi Android terhubung dan lulus alur perangkat.
 - [ ] R4: Integrasi, laporan, backup/restore, dan operasi diverifikasi.

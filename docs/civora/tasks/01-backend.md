@@ -176,8 +176,8 @@ decision adalah approve/reject. changes/proposedChange memakai operation cancel/
 
 **Interfaces:** OutboxDispatcher::dispatch(OutboxEvent $event): void; FcmGateway::send(string $deviceToken, array $publicPayload): void; CleanupTemporaryResources::handle(): int. GET/mark read/device endpoints mengikuti dokumen 06. Gateway dimock dalam test otomatis; FCM nyata diperiksa pada I-01.
 
-- [ ] Tulis test outbox retry tidak menggandakan in-app notification, kegagalan push tidak rollback record, token logout/invalid tidak dipakai, serta inactive user tidak menerima push.
-- [ ] Pin deduplikasi `self::assertSame(1, Notification::query()->where('event_key', $eventKey)->count());`; simulated FCM failure tidak mengubah jumlah PointRecord.
-- [ ] Tulis test cleanup: selection yang direferensikan record tetap ada; file staged yatim 24 jam dan export 7 hari dibersihkan; file path bukan input pengguna.
-- [ ] Jalankan `php artisan test --filter='NotificationDeliveryTest|TemporaryCleanupTest'`; implementasikan worker, retry terbatas/backoff, session device binding, safe public message, dan scheduler cleanup.
-- [ ] Jalankan seluruh `php artisan test` dan dokumentasikan queue/scheduler pada docs/development.md. Commit; tidak menandai push produksi siap tanpa I-01.
+- [x] Tulis test outbox retry tidak menggandakan in-app notification, kegagalan push tidak rollback record, token logout/invalid tidak dipakai, serta inactive user tidak menerima push.
+- [x] Pin deduplikasi `self::assertSame(1, Notification::query()->where('event_key', $eventKey)->count());`; simulated FCM failure tidak mengubah jumlah PointRecord.
+- [x] Tulis test cleanup: selection yang direferensikan record tetap ada; file staged yatim 24 jam dan export 7 hari dibersihkan; file path bukan input pengguna.
+- [x] Jalankan `php artisan test --filter='NotificationDeliveryTest|TemporaryCleanupTest'`; implementasikan worker, retry terbatas/backoff, session device binding, safe public message, dan scheduler cleanup.
+- [x] Jalankan seluruh `php artisan test` dan dokumentasikan queue/scheduler pada docs/development.md. Commit; tidak menandai push produksi siap tanpa I-01.
