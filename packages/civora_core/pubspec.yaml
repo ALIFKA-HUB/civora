@@ -1,0 +1,13 @@
+name: civora_core
+description: Shared Civora mobile API contracts and session state.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: ^3.11.0
+  flutter: '>=3.41.0'
+dependencies:
+  flutter:
+    sdk: flutter
+dev_dependencies:
+  flutter_test:
+    sdk: flutter

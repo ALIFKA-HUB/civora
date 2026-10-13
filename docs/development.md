@@ -172,3 +172,51 @@ Rollback hanya pada database test kosong:
 ```
 
 Rollback constraint menghapus hanya nama constraint/index migrasi tersebut. Extension btree_gist sengaja dipertahankan agar tidak menghapus extension yang dipakai objek lain.
+
+## Pengembangan aplikasi mobile
+
+Fondasi M-01 menggunakan Flutter 3.41.9 (Dart 3.11.5), Android SDK 36.0.0 (`C:\Android\sdk`), dan Eclipse Temurin JDK 21.0.4 (`C:\Program Files\Eclipse Adoptium\jdk-21.0.4.7-hotspot`). Flutter Doctor memperingatkan beberapa Android SDK licenses belum diterima; saya tidak mengubah status lisensi atau konfigurasi global. Dua debug APK berhasil dibangun.
+
+Package ID lokal untuk build debug adalah `dev.civora.debug.student` (Civora Siswa) dan `dev.civora.debug.teacher` (Civora Guru). Keduanya bukan registrasi distribusi sekolah. Firebase tidak dibutuhkan untuk build fondasi.
+
+Jalankan backend melalui wrapper `ops/dev` sebagaimana diterangkan di atas. Untuk Android emulator, host loopback backend memakai `10.0.2.2`. `CIVORA_API_BASE_URL` dibaca melalui `--dart-define`; URL `api.example.invalid` hanya contoh sintaks, ganti dengan URL yang benar. Untuk perangkat fisik, berikan alamat LAN server yang dapat dijangkau HP. Gunakan HTTPS di luar loopback development; HTTP cleartext hanya diaktifkan untuk varian debug. Shell M-01 belum mengirim request API.
+
+Dari root repositori, jalankan test/analyzer masing-masing package dan app:
+
+```powershell
+Push-Location packages/civora_core
+flutter pub get
+flutter test
+flutter analyze
+Pop-Location
+
+Push-Location packages/civora_ui
+flutter pub get
+flutter test
+flutter analyze
+Pop-Location
+
+Push-Location apps/student
+flutter pub get
+flutter test
+flutter analyze
+flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=https://api.example.invalid/api/v1
+Pop-Location
+
+Push-Location apps/teacher
+flutter pub get
+flutter test
+flutter analyze
+flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=https://api.example.invalid/api/v1
+Pop-Location
+```
+
+DTO menyimpan ID sebagai string dan mengubah timestamp ke `DateTime` UTC. Timezone sekolah default `Asia/Jakarta`, tetapi API sekarang belum mengirim nilai timezone konfigurasi sekolah ke mobile. Layar bertanggal harus menunggu metadata timezone sekolah sebelum menampilkan waktu lokal, dan tidak memakai timezone HP sebagai pengganti.
+
+Kontrak API aktual yang perlu diingat oleh tugas mobile berikutnya:
+
+- GET `/me` akun pending hanya memberi identitas dasar; DTO tidak mengarang profil atau semester.
+- GET `/student/summary` tanpa semester aktif memberi `semester`, `totals`, dan `latest_threshold_status` bernilai `null`, bukan total nol.
+- POST selection/redeem guru mengembalikan model selection mentah dengan `student_id` dan `expires_at`, tanpa profil siswa nested. `SelectionDto` mempertahankan ID tersebut dan menerima detail student opsional. Sebelum menampilkan identitas untuk konfirmasi, alur guru perlu membaca profil melalui endpoint terlindungi.
+
+Font Noto Sans variable dan lisensi OFL dibundel di `packages/civora_ui/assets/fonts/`. M-01 hanya menyediakan shell, API transport/client, sesi, DTO, state konten asinkron, dan tema. Login, navigasi/fitur siswa dan guru, QR, riwayat, pencatatan, serta FCM menjadi tugas berikutnya. Test transport lokal tidak membuktikan API production atau push nyata.
