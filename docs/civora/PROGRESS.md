@@ -16,7 +16,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-08 riwayat/keberatan/koreksi | B-07 fix ddab9ef; test regresi 5/17 assertion lulus, re-review menyetujui |
+| G1: Backend | Perlu perbaikan: B-08 lampiran/uji paralel | Commit 6df3fd8; 217 test/771 assertion lulus, review menemukan validasi lampiran dan bukti concurrency kurang |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -83,3 +83,7 @@ Commit cb1b0ea menyediakan QR hash-only 20 detik, selection 5 menit, scan atomik
 Commit 2ebd141 melaporkan pencatatan atomik, idempotensi, foto privat, dan race perpindahan/ambang; suite 199/702 assertion lulus. Reviewer menemukan download foto memakai pemeriksaan sendiri yang tidak mengikuti AttachmentPolicy: admin/guru yang berhak dapat ditolak, sementara akun pending belum dibatasi dengan benar. Temuan diverifikasi pada controller/policy dan dikembalikan ke implementer untuk regresi/perbaikan. B-07 belum lulus. Minor untuk review akhir: samakan format idempotency key POST dengan route lookup GET. Cleanup bukti staged yang belum dipakai tetap tugas B-11.
 
 Fix ddab9ef memakai AttachmentPolicy dan guard akun aktif sebelum membuka file. Regresi awal gagal pada akses admin/guru serta akun pending; setelah fix PrivateEvidenceTest 5/17 assertion, Pint, dan diff check lulus. Re-review GPT-6 Luna high menyatakan temuan terselesaikan tanpa breakage baru. B-07 Lulus; suite 199/702 adalah bukti sebelum fix, verifikasi kode fix memakai test terfokus tersebut. Langkah berikutnya B-08; minor format key tetap disimpan untuk review akhir.
+
+#### B-08: perlu perbaikan setelah review
+
+Commit 6df3fd8 melaporkan riwayat, ringkasan, profil/metadata, keberatan, dan keputusan revisi dengan suite 217/771 assertion lulus. Reviewer menemukan perubahan bukti hanya memeriksa ID ada, sehingga lampiran pengguna lain dapat ditautkan. Test keputusan dua admin juga masih berurutan. Perbaikan dikembalikan ke implementer: validasi kepemilikan/record bukti saat usulan dan saat penerapan, serta uji paralel PostgreSQL. B-08 belum lulus; filter tahun ajaran pencarian B-06 telah diperbaiki pada perubahan metadata, tetap diverifikasi dalam review ini.
