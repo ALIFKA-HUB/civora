@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 
 import 'app_config.dart';
 import 'features/auth/auth_screen.dart';
+import 'features/home/home_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/qr/qr_screen.dart';
+import 'features/records/record_detail_screen.dart';
+import 'features/records/records_screen.dart';
 
 class CivoraApp extends StatefulWidget {
   const CivoraApp({
@@ -110,49 +114,98 @@ class _CivoraFoundationScreenState extends State<CivoraFoundationScreen> {
         );
       }
       if (session.state == SessionState.authenticated) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Civora ${widget.roleLabel}'),
-            actions: [
-              IconButton(
-                tooltip: 'Profil',
-                icon: const Icon(Icons.account_circle_outlined),
-                onPressed: _openProfile,
-              ),
-            ],
-          ),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.school_outlined,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Halo, ${session.profile?.account.name ?? 'Siswa'}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('Sesi siswa aktif.'),
-                ],
-              ),
-            ),
-          ),
-        );
+        return StudentTabs(api: widget.apiClient, session: session);
       }
       return StudentAuthScreen(session: session, api: widget.apiClient);
     },
   );
+}
 
-  void _openProfile() => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => StudentProfileScreen(session: widget.sessionController),
+class StudentTabs extends StatefulWidget {
+  const StudentTabs({super.key, required this.api, required this.session});
+  final ApiClient api;
+  final SessionController session;
+
+  @override
+  State<StudentTabs> createState() => _StudentTabsState();
+}
+
+class _StudentTabsState extends State<StudentTabs> {
+  int _index = 0;
+
+  String get _title =>
+      const ['Beranda', 'Riwayat', 'Notifikasi', 'Profil'][_index];
+
+  void _openQr() => Navigator.of(context).push<void>(
+    MaterialPageRoute(builder: (_) => StudentQrScreen(api: widget.api)),
+  );
+
+  void _openRecord(String id) => Navigator.of(context).push<void>(
+    MaterialPageRoute(
+      builder: (_) => StudentRecordDetailScreen(
+        api: widget.api,
+        recordId: id,
+        schoolTimezone: widget.session.profile?.schoolTimezone,
+      ),
+    ),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = widget.session.profile!;
+    return Scaffold(
+      appBar: AppBar(title: Text(_title)),
+      body: IndexedStack(
+        index: _index,
+        children: [
+          StudentHomeScreen(
+            api: widget.api,
+            profile: profile,
+            onOpenQr: _openQr,
+            onOpenRecord: _openRecord,
+            onOpenHistory: () => setState(() => _index = 1),
+          ),
+          StudentRecordsScreen(
+            api: widget.api,
+            schoolTimezone: profile.schoolTimezone,
+            onOpenRecord: _openRecord,
+          ),
+          const _NotificationsUnavailable(),
+          StudentProfileScreen(session: widget.session, showAppBar: false),
+        ],
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        onDestinationSelected: (index) => setState(() => _index = index),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Beranda',
+          ),
+          NavigationDestination(icon: Icon(Icons.history), label: 'Riwayat'),
+          NavigationDestination(
+            icon: Icon(Icons.notifications_outlined),
+            label: 'Notifikasi',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profil',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NotificationsUnavailable extends StatelessWidget {
+  const _NotificationsUnavailable();
+  @override
+  Widget build(BuildContext context) => const Center(
+    child: Padding(
+      padding: EdgeInsets.all(24),
+      child: Text('Notifikasi belum tersedia.'),
     ),
   );
 }

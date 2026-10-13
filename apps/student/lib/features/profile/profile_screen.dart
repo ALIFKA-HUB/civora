@@ -3,8 +3,13 @@ import 'package:civora_ui/civora_ui.dart';
 import 'package:flutter/material.dart';
 
 class StudentProfileScreen extends StatefulWidget {
-  const StudentProfileScreen({super.key, required this.session});
+  const StudentProfileScreen({
+    super.key,
+    required this.session,
+    this.showAppBar = true,
+  });
   final SessionController session;
+  final bool showAppBar;
 
   @override
   State<StudentProfileScreen> createState() => _StudentProfileScreenState();
@@ -41,7 +46,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   Widget build(BuildContext context) {
     final profile = widget.session.profile;
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil siswa')),
+      appBar: widget.showAppBar
+          ? AppBar(title: const Text('Profil siswa'))
+          : null,
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

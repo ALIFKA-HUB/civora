@@ -31,7 +31,10 @@ class RecordHistoryAccessTest extends TestCase
     public function test_student_history_is_limited_to_their_own_records_and_objection_submission(): void
     {
         $other = $this->otherRecord();
-        $this->withToken($this->student->createToken('student')->plainTextToken)
+        DB::table('review_requests')->where('point_record_id', $this->rows['point_records']['id'])->delete();
+        $token = $this->student->createToken('student')->plainTextToken;
+        $before = $this->withToken($token)->getJson('/api/v1/student/summary')->assertOk()->json('data.totals');
+        $this->withToken($token)
             ->getJson('/api/v1/student/records')
             ->assertOk()
             ->assertJsonFragment(['id' => $this->rows['point_records']['id']])
@@ -41,10 +44,11 @@ class RecordHistoryAccessTest extends TestCase
             ->getJson('/api/v1/student/records/'.$other)
             ->assertNotFound();
 
-        $objection = $this->withToken($this->student->createToken('student')->plainTextToken)
+        $objection = $this->withToken($token)
             ->postJson('/api/v1/student/records/'.$this->rows['point_records']['id'].'/objections', ['reason' => 'Mohon periksa kembali catatan ini.']);
         self::assertSame(201, $objection->getStatusCode(), $objection->getContent());
         $objection->assertJsonPath('data.status', 'pending');
+        self::assertSame($before, $this->withToken($token)->getJson('/api/v1/student/summary')->assertOk()->json('data.totals'));
     }
 
     public function test_teacher_history_includes_owned_archive_and_student_history_requires_active_student(): void
@@ -104,10 +108,12 @@ class RecordHistoryAccessTest extends TestCase
 
     public function test_me_exposes_current_profile_placement_and_minimal_pending_identity(): void
     {
+        DB::table('school_settings')->update(['timezone' => 'Asia/Makassar']);
         $me = $this->withToken($this->student->createToken('student')->plainTextToken)->getJson('/api/v1/me');
         self::assertSame(200, $me->getStatusCode(), $me->getContent());
         $me->assertJsonPath('data.current_semester.id', $this->rows['semesters']['id'])
-            ->assertJsonPath('data.own_enrollment.major.code', 'RPL');
+            ->assertJsonPath('data.own_enrollment.major.code', 'RPL')
+            ->assertJsonPath('data.school_timezone', 'Asia/Makassar');
 
         $pendingUser = User::findOrFail($this->student->id);
         $pendingUser->update(['account_status' => 'pending_activation', 'must_change_password' => true]);
@@ -121,7 +127,8 @@ class RecordHistoryAccessTest extends TestCase
         $this->app['auth']->forgetGuards();
         $teacherMe = $this->withToken($this->teacher->createToken('teacher-me')->plainTextToken)->getJson('/api/v1/me');
         $teacherMe->assertOk()->assertJsonPath('data.current_semester.id', $this->rows['semesters']['id'])
-            ->assertJsonPath('data.teacher.teacher_code', 'G001');
+            ->assertJsonPath('data.teacher.teacher_code', 'G001')
+            ->assertJsonPath('data.school_timezone', 'Asia/Makassar');
     }
 
     private function otherRecord(): string

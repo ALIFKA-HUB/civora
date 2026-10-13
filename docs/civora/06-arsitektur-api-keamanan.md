@@ -92,7 +92,7 @@ Status umum: 401 sesi tidak sah, 403 akses ditolak, 404 resource tidak ada/tidak
 
 ### Bentuk respons profil, ringkasan, dan riwayat
 
-GET `/me` mengembalikan `data` identitas dasar. Untuk akun aktif, siswa juga menerima `student`, `enrollments`, `current_semester`, dan `own_enrollment`; `own_enrollment` berisi ID penempatan serta kelas dan jurusan saat ini, atau `null` bila belum ada penempatan yang berlaku. Guru aktif menerima `teacher` dan `current_semester`. Akun yang masih menunggu aktivasi menerima identitas dasar saja.
+GET `/me` mengembalikan `data` identitas dasar. Untuk akun aktif, siswa juga menerima `student`, `enrollments`, `current_semester`, `own_enrollment`, dan `school_timezone`; `own_enrollment` berisi ID penempatan serta kelas dan jurusan saat ini, atau `null` bila belum ada penempatan yang berlaku. Guru aktif menerima `teacher`, `current_semester`, dan `school_timezone`. `school_timezone` adalah nama zona waktu IANA dari pengaturan sekolah tersimpan (fallback konfigurasi server Asia/Jakarta). Akun yang masih menunggu aktivasi menerima identitas dasar saja.
 
 GET `/student/summary` mengembalikan `data.semester`, `data.totals` (`achievement` dan `violation`), serta `data.latest_threshold_status` untuk kebijakan ambang terbaru. Jika semester aktif tidak tersedia, ketiganya bernilai `null`; klien tidak menampilkan angka nol seolah-olah tersedia.
 

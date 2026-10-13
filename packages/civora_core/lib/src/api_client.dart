@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'api_exception.dart';
 import 'session_controller.dart';
@@ -19,10 +20,11 @@ class ApiRequest {
 }
 
 class ApiResponse {
-  const ApiResponse(this.statusCode, this.body);
+  const ApiResponse(this.statusCode, this.body, {this.bytes});
 
   final int statusCode;
   final String body;
+  final Uint8List? bytes;
 }
 
 abstract interface class ApiTransport {
@@ -41,9 +43,14 @@ class IoApiTransport implements ApiTransport {
     request.headers.forEach(outbound.headers.set);
     if (request.body != null) outbound.add(utf8.encode(request.body!));
     final response = await outbound.close();
+    final bytes = await response.fold<List<int>>(
+      <int>[],
+      (all, chunk) => all..addAll(chunk),
+    );
     return ApiResponse(
       response.statusCode,
-      await utf8.decoder.bind(response).join(),
+      utf8.decode(bytes, allowMalformed: true),
+      bytes: Uint8List.fromList(bytes),
     );
   }
 
@@ -75,7 +82,42 @@ class ApiClient {
     String? idempotencyKey,
   }) => _send('POST', path, body: body, idempotencyKey: idempotencyKey);
 
+  Future<Uint8List> getBytes(String path) async {
+    final requestToken = sessionController?.bearerToken;
+    final requestGeneration = sessionController?.generation ?? -1;
+    final response = await _request('GET', path);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      await _throwResponse(response, path, requestToken, requestGeneration);
+    }
+    return response.bytes ?? Uint8List.fromList(utf8.encode(response.body));
+  }
+
   Future<Map<String, dynamic>> _send(
+    String method,
+    String path, {
+    Map<String, dynamic>? query,
+    Map<String, dynamic>? body,
+    String? idempotencyKey,
+  }) async {
+    final requestToken = sessionController?.bearerToken;
+    final requestGeneration = sessionController?.generation ?? -1;
+    final response = await _request(
+      method,
+      path,
+      query: query,
+      body: body,
+      idempotencyKey: idempotencyKey,
+    );
+    final payload = _decode(response.body);
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      await _throwResponse(response, path, requestToken, requestGeneration);
+    }
+    final data = payload['data'];
+    if (data is Map<String, dynamic>) return data;
+    return payload;
+  }
+
+  Future<ApiResponse> _request(
     String method,
     String path, {
     Map<String, dynamic>? query,
@@ -95,14 +137,11 @@ class ApiClient {
         path == 'auth/student/login' ||
         path == 'auth/teacher/login';
     final token = isLogin ? null : sessionController?.bearerToken;
-    final sessionGeneration = sessionController?.generation;
     if (token != null) headers['Authorization'] = 'Bearer $token';
-    if (body != null) {
+    if (body != null)
       headers['Content-Type'] = 'application/json; charset=utf-8';
-    }
     if (idempotencyKey != null) headers['Idempotency-Key'] = idempotencyKey;
-
-    final response = await _transport.send(
+    return _transport.send(
       ApiRequest(
         method: method,
         uri: uri,
@@ -110,30 +149,35 @@ class ApiClient {
         body: body == null ? null : jsonEncode(body),
       ),
     );
-    final payload = _decode(response.body);
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      if (response.statusCode == 401 && !isLogin) {
-        await sessionController?.expireIfCurrent(
-          token,
-          sessionGeneration ?? -1,
-        );
-      }
-      final error = payload['error'] is Map<String, dynamic>
-          ? payload['error'] as Map<String, dynamic>
-          : const <String, dynamic>{};
-      throw ApiException(
-        statusCode: response.statusCode,
-        code: error['code'] as String? ?? 'HTTP_ERROR',
-        message: error['message'] as String? ?? 'Permintaan gagal. Coba lagi.',
-        fields: error['fields'] is Map<String, dynamic>
-            ? error['fields'] as Map<String, dynamic>
-            : const {},
-        requestId: payload['request_id'] as String?,
-      );
+  }
+
+  Future<void> _throwResponse(
+    ApiResponse response,
+    String path,
+    String? requestToken,
+    int requestGeneration,
+  ) async {
+    final isLogin =
+        path == '/auth/student/login' ||
+        path == '/auth/teacher/login' ||
+        path == 'auth/student/login' ||
+        path == 'auth/teacher/login';
+    if (response.statusCode == 401 && !isLogin) {
+      await sessionController?.expireIfCurrent(requestToken, requestGeneration);
     }
-    final data = payload['data'];
-    if (data is Map<String, dynamic>) return data;
-    return payload;
+    final payload = _decode(response.body);
+    final error = payload['error'] is Map<String, dynamic>
+        ? payload['error'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    throw ApiException(
+      statusCode: response.statusCode,
+      code: error['code'] as String? ?? 'HTTP_ERROR',
+      message: error['message'] as String? ?? 'Permintaan gagal. Coba lagi.',
+      fields: error['fields'] is Map<String, dynamic>
+          ? error['fields'] as Map<String, dynamic>
+          : const {},
+      requestId: payload['request_id'] as String?,
+    );
   }
 
   Map<String, dynamic> _decode(String body) {

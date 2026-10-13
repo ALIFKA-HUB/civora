@@ -12,6 +12,7 @@ dependencies:
     path: ../../packages/civora_core
   civora_ui:
     path: ../../packages/civora_ui
+  qr_flutter: 4.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

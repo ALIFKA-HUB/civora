@@ -75,6 +75,23 @@ class PrivateEvidenceTest extends TestCase
         $this->actingAs($teacher, 'sanctum')->get('/api/v1/attachments/'.$this->rows['attachments']['id'])->assertOk();
     }
 
+    public function test_student_can_view_only_evidence_attached_to_their_own_record(): void
+    {
+        $attachmentId = $this->rows['attachments']['id'];
+        Storage::disk('local')->put($this->rows['attachments']['private_path'], 'synthetic private image');
+        $student = User::findOrFail(DB::table('students')->value('user_id'));
+        $student->update(['account_status' => 'active', 'must_change_password' => false]);
+        $this->actingAs($student, 'sanctum')->get('/api/v1/attachments/'.$attachmentId)->assertOk();
+
+        $other = User::create([
+            'role' => 'student', 'name' => 'Different synthetic student',
+            'password_hash' => 'Synthetic password', 'account_status' => 'active',
+            'must_change_password' => false,
+        ]);
+        DB::table('students')->insert(['id' => (string) Str::uuid(), 'user_id' => $other->id, 'nisn' => '0088776655']);
+        $this->actingAs($other, 'sanctum')->get('/api/v1/attachments/'.$attachmentId)->assertForbidden();
+    }
+
     public function test_pending_and_inactive_accounts_cannot_stream_staged_or_linked_evidence(): void
     {
         $staged = Attachment::create([

@@ -31,6 +31,21 @@ class _Transport implements ApiTransport {
 ApiResponse _response(Map<String, dynamic> body) =>
     ApiResponse(200, jsonEncode(body));
 
+ApiResponse _homeSummary() => _response({
+  'data': {'semester': null, 'totals': null, 'latest_threshold_status': null},
+});
+
+ApiResponse _homeRecords() => _response({
+  'data': [],
+  'meta': {
+    'current_page': 1,
+    'last_page': 1,
+    'per_page': 20,
+    'total': 0,
+    'available_semesters': [],
+  },
+});
+
 void main() {
   testWidgets(
     'temporary student login routes to activation and successful change returns to login',
@@ -232,6 +247,9 @@ void main() {
       };
       final transport = _Transport()
         ..responses.add(_response(activeMe))
+        ..responses.add(_homeSummary())
+        ..responses.add(_homeRecords())
+        ..responses.add(_homeRecords())
         ..responses.add(
           _response({
             'data': {'message': 'Logout berhasil.'},
@@ -241,7 +259,7 @@ void main() {
         CivoraApp(roleLabel: 'Siswa', transport: transport, tokenStore: store),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Profil'));
+      await tester.tap(find.byIcon(Icons.person_outline));
       await tester.pumpAndSettle();
       expect(find.text('Siswa Rahasia'), findsOneWidget);
       await tester.drag(find.byType(ListView).last, const Offset(0, -700));
@@ -256,6 +274,9 @@ void main() {
         ..values['civora.student.token'] = 'active-token-2';
       final secondTransport = _Transport()
         ..responses.add(_response(activeMe))
+        ..responses.add(_homeSummary())
+        ..responses.add(_homeRecords())
+        ..responses.add(_homeRecords())
         ..responses.add(
           _response({
             'data': {'message': 'Password berhasil diganti.'},
@@ -270,7 +291,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Profil'));
+      await tester.tap(find.byIcon(Icons.person_outline));
       await tester.pumpAndSettle();
       await tester.drag(find.byType(ListView).last, const Offset(0, -500));
       await tester.pumpAndSettle();
@@ -316,6 +337,9 @@ void main() {
             },
           }),
         )
+        ..responses.add(_homeSummary())
+        ..responses.add(_homeRecords())
+        ..responses.add(_homeRecords())
         ..responses.add(
           ApiResponse(
             401,
@@ -328,7 +352,7 @@ void main() {
         CivoraApp(roleLabel: 'Siswa', transport: transport, tokenStore: store),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Profil'));
+      await tester.tap(find.byIcon(Icons.person_outline));
       await tester.pumpAndSettle();
       final root = tester.widget<CivoraFoundationScreen>(
         find.byType(CivoraFoundationScreen, skipOffstage: false),

@@ -72,6 +72,7 @@ class AuthController extends Controller
             $data['enrollments'] = $student?->enrollments()->with('semester', 'classroom.major')->get();
             $semester = $this->currentSemester();
             $data['current_semester'] = $semester ? ['id' => $semester->id, 'name' => $semester->name] : null;
+            $data['school_timezone'] = (new SchoolCalendar)->timezone();
             $enrollment = $student && $semester ? (new CurrentEnrollment)->forStudent($student, $semester, CarbonImmutable::now()->toIso8601String()) : null;
             $data['own_enrollment'] = $enrollment ? [
                 'id' => $enrollment->id,
@@ -82,6 +83,7 @@ class AuthController extends Controller
             $data['teacher'] = $user->teacher?->only(['id', 'nip', 'teacher_code']);
             $semester = $this->currentSemester();
             $data['current_semester'] = $semester ? ['id' => $semester->id, 'name' => $semester->name] : null;
+            $data['school_timezone'] = (new SchoolCalendar)->timezone();
         }
 
         return response()->json(['data' => $data])->header('Cache-Control', 'no-store, private');

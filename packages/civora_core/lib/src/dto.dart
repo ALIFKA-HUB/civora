@@ -72,13 +72,14 @@ class EnrollmentDto {
   }
 }
 class MeDto {
-  const MeDto({required this.account, this.student, this.teacher, this.enrollments = const [], this.currentSemester, this.ownEnrollment});
+  const MeDto({required this.account, this.student, this.teacher, this.enrollments = const [], this.currentSemester, this.ownEnrollment, this.schoolTimezone});
   final AccountDto account;
   final StudentDto? student;
   final TeacherDto? teacher;
   final List<EnrollmentDto> enrollments;
   final SemesterDto? currentSemester;
   final EnrollmentDto? ownEnrollment;
+  final String? schoolTimezone;
 
   factory MeDto.fromJson(Map<String, dynamic> json) => MeDto(
     account: AccountDto.fromJson(json),
@@ -87,6 +88,7 @@ class MeDto {
     enrollments: (json['enrollments'] as List<dynamic>? ?? const []).map((item) => EnrollmentDto.fromJson(_map(item))).toList(),
     currentSemester: json['current_semester'] == null ? null : SemesterDto.fromJson(_map(json['current_semester'])),
     ownEnrollment: json['own_enrollment'] == null ? null : _ownEnrollment(_map(json['own_enrollment'])),
+      schoolTimezone: json['school_timezone'] as String?,
   );
 
   static EnrollmentDto _ownEnrollment(Map<String, dynamic> json) => EnrollmentDto(
