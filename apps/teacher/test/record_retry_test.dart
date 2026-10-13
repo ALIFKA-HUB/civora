@@ -126,6 +126,11 @@ void main() {
       await expectLater(controller.submit(), throwsA(isA<FormatException>()));
       expect(controller.hasUnknownAttempt, isTrue);
       expect(await controller.resolveUnknownAttempt(), isNull);
+      expect(
+        () => controller.selectPointType('version-1'),
+        throwsA(isA<StateError>()),
+      );
+      expect(controller.hasUnknownAttempt, isTrue);
       await expectLater(
         controller.selectManual('student-2'),
         throwsA(isA<StateError>()),

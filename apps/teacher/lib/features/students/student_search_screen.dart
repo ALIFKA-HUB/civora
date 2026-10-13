@@ -20,6 +20,7 @@ class _TeacherStudentSearchScreenState
     extends State<TeacherStudentSearchScreen> {
   final _query = TextEditingController();
   Timer? _debounce;
+  int _searchGeneration = 0;
   List<TeacherStudent> _students = const [];
   List<Map<String, dynamic>> _classrooms = const [];
   List<Map<String, dynamic>> _majors = const [];
@@ -51,10 +52,7 @@ class _TeacherStudentSearchScreenState
             controller: _query,
             autofocus: true,
             textInputAction: TextInputAction.search,
-            onChanged: (_) {
-              _debounce?.cancel();
-              _debounce = Timer(const Duration(milliseconds: 300), _search);
-            },
+            onChanged: (_) => _queryChanged(),
             onSubmitted: (_) => _search(),
             decoration: InputDecoration(
               labelText: 'Nama atau NISN',
@@ -169,25 +167,46 @@ class _TeacherStudentSearchScreenState
     ),
   );
 
-  Future<void> _search() async {
+  void _queryChanged() {
+    _debounce?.cancel();
+    final generation = ++_searchGeneration;
     setState(() {
       _loading = true;
       _error = null;
+      _students = const [];
+    });
+    _debounce = Timer(
+      const Duration(milliseconds: 300),
+      () => _search(generation: generation),
+    );
+  }
+
+  Future<void> _search({int? generation}) async {
+    _debounce?.cancel();
+    final requestGeneration = generation ?? ++_searchGeneration;
+    if (requestGeneration != _searchGeneration) return;
+    final query = _query.text.trim();
+    final classroomId = _classroomId;
+    final majorId = _majorId;
+    setState(() {
+      _loading = true;
+      _error = null;
+      _students = const [];
     });
     try {
       final response = await widget.api.get(
         '/teacher/students',
         query: {
-          'q': _query.text.trim(),
-          'classroom_id': _classroomId,
-          'major_id': _majorId,
+          'q': query,
+          'classroom_id': classroomId,
+          'major_id': majorId,
           'per_page': 50,
         },
       );
       final results = response['data'] as List<dynamic>? ?? const [];
       final meta = response['meta'] as Map<String, dynamic>? ?? const {};
       final filters = meta['filters'] as Map<String, dynamic>? ?? const {};
-      if (mounted) {
+      if (mounted && requestGeneration == _searchGeneration) {
         setState(() {
           _students = results
               .map(
@@ -201,16 +220,20 @@ class _TeacherStudentSearchScreenState
         });
       }
     } on ApiException catch (error) {
-      if (mounted) setState(() => _error = error.message);
+      if (mounted && requestGeneration == _searchGeneration) {
+        setState(() => _error = error.message);
+      }
     } catch (_) {
-      if (mounted) {
+      if (mounted && requestGeneration == _searchGeneration) {
         setState(
           () => _error =
               'Tidak dapat memuat siswa. Periksa koneksi lalu coba lagi.',
         );
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted && requestGeneration == _searchGeneration) {
+        setState(() => _loading = false);
+      }
     }
   }
 }

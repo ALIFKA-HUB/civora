@@ -55,6 +55,18 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
+                if (c.hasUnknownAttempt)
+                  MaterialBanner(
+                    content: const Text(
+                      'Hasil simpan belum diketahui. Detail ini dikunci sampai status terjawab.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: _reviewAttempt,
+                        child: const Text('Periksa upaya'),
+                      ),
+                    ],
+                  ),
                 if (c.requiresStudentReselection)
                   _Notice(
                     text: c.selectionExpired
@@ -81,13 +93,15 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
                         ),
                       )
                       .toList(),
-                  onChanged: (id) {
-                    if (id != null) {
-                      setState(() {
-                        c.selectPointType(id);
-                      });
-                    }
-                  },
+                  onChanged: c.isAttemptLocked
+                      ? null
+                      : (id) {
+                          if (id != null) {
+                            setState(() {
+                              c.selectPointType(id);
+                            });
+                          }
+                        },
                 ),
                 if (c.pointTypes.isEmpty)
                   const Padding(
@@ -99,6 +113,7 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _description,
+                  readOnly: c.isAttemptLocked,
                   minLines: 3,
                   maxLines: 7,
                   maxLength: 1000,
@@ -112,7 +127,9 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
                 Text('Bukti foto opsional (JPG/PNG, maksimal 5 MB).'),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: _uploading ? null : _choosePhoto,
+                  onPressed: _uploading || c.isAttemptLocked
+                      ? null
+                      : _choosePhoto,
                   icon: const Icon(Icons.add_a_photo_outlined),
                   label: Text(
                     _uploading
@@ -124,11 +141,10 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
                 ),
                 if (c.photoName != null)
                   TextButton.icon(
-                    onPressed: _uploading
+                    onPressed: _uploading || c.isAttemptLocked
                         ? null
                         : () => setState(() {
-                            c.photoId = null;
-                            c.photoName = null;
+                            c.removePhoto();
                           }),
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('Hapus foto'),
@@ -152,14 +168,17 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
                   ),
                 const SizedBox(height: 20),
                 FilledButton(
-                  onPressed: c.selectionExpired || c.pointTypes.isEmpty
+                  onPressed:
+                      c.isAttemptLocked ||
+                          c.selectionExpired ||
+                          c.pointTypes.isEmpty
                       ? null
                       : _continue,
                   child: const Text('Lanjut ke ringkasan'),
                 ),
                 if (c.requiresStudentReselection)
                   TextButton(
-                    onPressed: widget.onReselect,
+                    onPressed: c.isAttemptLocked ? null : widget.onReselect,
                     child: const Text('Pilih siswa kembali'),
                   ),
               ],
@@ -265,6 +284,17 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
       setState(() => _description.text = widget.controller.description);
     }
   }
+
+  Future<void> _reviewAttempt() => Navigator.push<void>(
+    context,
+    MaterialPageRoute<void>(
+      builder: (_) => RecordSummaryScreen(
+        controller: widget.controller,
+        api: widget.api,
+        schoolTimezone: widget.schoolTimezone,
+      ),
+    ),
+  );
 }
 
 class _Notice extends StatelessWidget {

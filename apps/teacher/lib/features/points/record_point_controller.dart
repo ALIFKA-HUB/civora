@@ -42,35 +42,61 @@ class RecordPointController {
   final ApiClient api;
   final DateTime Function() _clock;
   final Map<String, Future<SelectionDto>> _qrRequests = {};
-  SelectionDto? selection;
-  Map<String, dynamic>? studentProfile;
-  List<PointTypeDto> pointTypes = const [];
-  PointTypeDto? selectedPointType;
-  String description = '';
-  String? photoId;
-  String? photoName;
-  int? currentTotalAchievement;
-  int? currentTotalViolation;
-  String? currentSemesterName;
+  SelectionDto? _selection;
+  SelectionDto? get selection => _selection;
+  Map<String, dynamic>? _studentProfile;
+  Map<String, dynamic>? get studentProfile => _studentProfile;
+  List<PointTypeDto> _pointTypes = const [];
+  List<PointTypeDto> get pointTypes => List.unmodifiable(_pointTypes);
+  PointTypeDto? _selectedPointType;
+  PointTypeDto? get selectedPointType => _selectedPointType;
+  String _description = '';
+  String get description => _description;
+  set description(String value) {
+    _ensureDraftMutable();
+    _description = value;
+  }
+
+  String? _photoId;
+  String? get photoId => _photoId;
+  String? _photoName;
+  String? get photoName => _photoName;
+  int? _currentTotalAchievement;
+  int? get currentTotalAchievement => _currentTotalAchievement;
+  int? _currentTotalViolation;
+  int? get currentTotalViolation => _currentTotalViolation;
+  String? _currentSemesterName;
+  String? get currentSemesterName => _currentSemesterName;
   Map<String, dynamic>? _submittedPayload;
   String? _idempotencyKey;
-  PointRecordDto? savedRecord;
-  bool hasUnknownAttempt = false;
-  bool requiresReconfirmation = false;
+  PointRecordDto? _savedRecord;
+  PointRecordDto? get savedRecord => _savedRecord;
+  bool _hasUnknownAttempt = false;
+  bool get hasUnknownAttempt => _hasUnknownAttempt;
+  bool _requiresReconfirmation = false;
+  bool get requiresReconfirmation => _requiresReconfirmation;
   bool _selectionInvalidated = false;
   bool _retryingUnknown = false;
+  bool _resolvingUnknown = false;
+  bool _submitting = false;
+  bool get isAttemptLocked =>
+      _hasUnknownAttempt ||
+      _retryingUnknown ||
+      _resolvingUnknown ||
+      _submitting;
 
   bool get selectionExpired =>
-      selection != null && !_clock().toUtc().isBefore(selection!.expiresAt);
+      _selection != null && !_clock().toUtc().isBefore(_selection!.expiresAt);
   bool get requiresStudentReselection =>
       selectionExpired || _selectionInvalidated;
   bool get canSubmit =>
-      selection != null &&
+      _selection != null &&
       !selectionExpired &&
       selectedPointType != null &&
       description.trim().runes.length >= 5 &&
       description.trim().runes.length <= 1000 &&
-      (!hasUnknownAttempt || _retryingUnknown);
+      (!_hasUnknownAttempt || _retryingUnknown) &&
+      !_submitting;
 
   Future<SelectionDto> selectQr(String token, String requestKey) {
     _ensureNoUnknownAttempt();
@@ -98,34 +124,34 @@ class RecordPointController {
   }
 
   Future<SelectionDto> _installSelection(SelectionDto next) async {
-    selection = next;
-    studentProfile = null;
-    savedRecord = null;
+    _selection = next;
+    _studentProfile = null;
+    _savedRecord = null;
     _submittedPayload = null;
     _idempotencyKey = null;
-    hasUnknownAttempt = false;
-    requiresReconfirmation = false;
+    _hasUnknownAttempt = false;
+    _requiresReconfirmation = false;
     _selectionInvalidated = false;
-    photoId = null;
-    photoName = null;
+    _photoId = null;
+    _photoName = null;
     await retryStudentProfile();
     return next;
   }
 
   Future<Map<String, dynamic>> retryStudentProfile() async {
-    final current = selection;
+    final current = _selection;
     if (current == null) throw StateError('Belum ada pemilihan siswa.');
     try {
       // Keep the selection ID exactly as returned by scan/manual selection. The
       // existing authorized profile endpoint supplies the display identity.
-      studentProfile = await api.get('/teacher/students/${current.studentId}');
-      currentSemesterName =
-          (studentProfile?['semester'] as Map<String, dynamic>?)?['name']
+      _studentProfile = await api.get('/teacher/students/${current.studentId}');
+      _currentSemesterName =
+          (_studentProfile?['semester'] as Map<String, dynamic>?)?['name']
               as String?;
-      final totals = studentProfile?['totals'] as Map<String, dynamic>?;
-      currentTotalAchievement = totals?['achievement'] as int?;
-      currentTotalViolation = totals?['violation'] as int?;
-      return studentProfile!;
+      final totals = _studentProfile?['totals'] as Map<String, dynamic>?;
+      _currentTotalAchievement = totals?['achievement'] as int?;
+      _currentTotalViolation = totals?['violation'] as int?;
+      return _studentProfile!;
     } catch (error) {
       throw StudentProfileLoadException(error);
     }
@@ -133,7 +159,7 @@ class RecordPointController {
 
   Future<void> loadPointTypes() async {
     final response = await api.get('/teacher/point-types');
-    pointTypes =
+    _pointTypes =
         (response['items'] as List<dynamic>? ??
                 response['data'] as List<dynamic>? ??
                 const [])
@@ -142,10 +168,11 @@ class RecordPointController {
   }
 
   void selectPointType(String versionId) {
-    selectedPointType = pointTypes
+    _ensureDraftMutable();
+    _selectedPointType = _pointTypes
         .where((type) => type.versionId == versionId)
         .firstOrNull;
-    if (selectedPointType != null) requiresReconfirmation = false;
+    if (selectedPointType != null) _requiresReconfirmation = false;
     if (_submittedPayload != null) _resetAttempt();
   }
 
@@ -180,6 +207,7 @@ class RecordPointController {
     required String filename,
     required String mimeType,
   }) async {
+    _ensureDraftMutable();
     validatePhoto(bytes: bytes, filename: filename, mimeType: mimeType);
     final response = await api.uploadFile(
       '/teacher/attachments',
@@ -187,13 +215,20 @@ class RecordPointController {
       filename: filename,
       mimeType: mimeType,
     );
-    photoId = response['id'] as String;
-    photoName = filename;
-    return photoId!;
+    _ensureDraftMutable();
+    _photoId = response['id'] as String;
+    _photoName = filename;
+    return _photoId!;
+  }
+
+  void removePhoto() {
+    _ensureDraftMutable();
+    _photoId = null;
+    _photoName = null;
   }
 
   Future<PointRecordDto> submit() async {
-    if (hasUnknownAttempt && !_retryingUnknown) {
+    if ((_hasUnknownAttempt && !_retryingUnknown) || _submitting) {
       throw StateError('Periksa hasil upaya sebelumnya terlebih dahulu.');
     }
     if (!canSubmit) {
@@ -211,34 +246,35 @@ class RecordPointController {
         if (photoId != null) 'attachment_id': photoId,
       };
     }
+    _submitting = true;
     try {
       final response = await api.post(
         '/teacher/records',
         _submittedPayload!,
         idempotencyKey: _idempotencyKey,
       );
-      savedRecord = PointRecordDto.fromJson(response);
-      hasUnknownAttempt = false;
+      _savedRecord = PointRecordDto.fromJson(response);
+      _hasUnknownAttempt = false;
       try {
         final refreshed = await api.get(
-          '/teacher/students/${selection!.studentId}',
+          '/teacher/students/${_selection!.studentId}',
         );
         final totals = refreshed['totals'] as Map<String, dynamic>?;
-        currentTotalAchievement = totals?['achievement'] as int?;
-        currentTotalViolation = totals?['violation'] as int?;
+        _currentTotalAchievement = totals?['achievement'] as int?;
+        _currentTotalViolation = totals?['violation'] as int?;
       } catch (_) {
         // The record response is authoritative for success; summary can reload later.
       }
-      return savedRecord!;
+      return _savedRecord!;
     } on ApiException catch (error) {
       if (error.statusCode == 409 ||
           error.statusCode == 410 ||
           error.statusCode == 422) {
-        requiresReconfirmation = true;
+        _requiresReconfirmation = true;
         _resetAttempt();
         if (error.code.contains('POINT_TYPE') ||
             error.code.contains('CATALOG')) {
-          selectedPointType = null;
+          _selectedPointType = null;
           await loadPointTypes();
         }
         if (error.code.contains('SEMESTER') ||
@@ -246,7 +282,7 @@ class RecordPointController {
           _selectionInvalidated = true;
           try {
             final profile = await api.get('/me');
-            currentSemesterName =
+            _currentSemesterName =
                 (profile['current_semester'] as Map<String, dynamic>?)?['name']
                     as String?;
           } on ApiException {
@@ -256,23 +292,31 @@ class RecordPointController {
       }
       rethrow;
     } catch (_) {
-      hasUnknownAttempt = true;
+      _hasUnknownAttempt = true;
       rethrow;
+    } finally {
+      _submitting = false;
     }
   }
 
   Future<PointRecordDto?> resolveUnknownAttempt() async {
-    if (!hasUnknownAttempt || _idempotencyKey == null) return savedRecord;
+    if (!hasUnknownAttempt || _idempotencyKey == null) return _savedRecord;
+    if (_resolvingUnknown) {
+      throw StateError('Pemeriksaan upaya sebelumnya masih berlangsung.');
+    }
+    _resolvingUnknown = true;
     try {
       final response = await api.get(
         '/teacher/record-attempts/$_idempotencyKey',
       );
-      savedRecord = PointRecordDto.fromJson(response);
-      hasUnknownAttempt = false;
-      return savedRecord;
+      _savedRecord = PointRecordDto.fromJson(response);
+      _hasUnknownAttempt = false;
+      return _savedRecord;
     } on ApiException catch (error) {
       if (error.statusCode == 404) return null;
       rethrow;
+    } finally {
+      _resolvingUnknown = false;
     }
   }
 
@@ -287,16 +331,23 @@ class RecordPointController {
     return submit().whenComplete(() => _retryingUnknown = false);
   }
 
-  void _ensureNoUnknownAttempt() {
-    if (hasUnknownAttempt || _retryingUnknown) {
-      throw StateError('Periksa upaya sebelumnya sebelum memilih siswa baru.');
+  void _ensureNoUnknownAttempt() => _ensureDraftMutable();
+
+  void _ensureDraftMutable() {
+    if (_hasUnknownAttempt ||
+        _retryingUnknown ||
+        _resolvingUnknown ||
+        _submitting) {
+      throw StateError(
+        'Simpan atau selesaikan upaya sebelumnya terlebih dahulu.',
+      );
     }
   }
 
   void _resetAttempt() {
     _submittedPayload = null;
     _idempotencyKey = null;
-    hasUnknownAttempt = false;
+    _hasUnknownAttempt = false;
   }
 
   String _newRequestKey() {
