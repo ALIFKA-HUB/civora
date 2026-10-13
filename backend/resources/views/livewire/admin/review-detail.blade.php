@@ -29,12 +29,18 @@
                         @if ($before)<dl class="mt-3 space-y-2 text-sm"><div><dt class="admin-muted">Jenis poin</dt><dd>{{ $before->name_snapshot }} · {{ $before->points_snapshot }} poin</dd></div><div><dt class="admin-muted">Keterangan</dt><dd class="whitespace-pre-wrap">{{ $before->description }}</dd></div><div><dt class="admin-muted">Status catatan</dt><dd>{{ $before->status === 'active' ? 'Berlaku' : 'Dibatalkan' }}</dd></div></dl>@endif
                     </div>
                     <div class="rounded-md border border-[var(--border)] p-4"><h3 class="font-semibold">Sesudah keputusan</h3>
-                        @if ($review->proposed_change)<p class="admin-muted mt-1 text-sm">Usulan: {{ $review->proposed_change['operation'] === 'cancel' ? 'pembatalan' : 'koreksi' }}</p>@endif
-                        @if ($proposalVersion)<p class="mt-2 text-sm">Jenis poin yang diusulkan: {{ $proposalVersion->name }} · {{ $proposalVersion->points }} poin · versi {{ $proposalVersion->version }}@unless ($proposalVersion->pointType->active)<span class="admin-status">Nonaktif</span>@endunless</p>@endif
-                        @if ($operation === 'cancel')<p class="mt-3">Status catatan menjadi dibatalkan. Pembatalan tidak memindahkan siswa.</p>@else
-                            <p class="mt-3">{{ $versions->firstWhere('id', $pointTypeVersionId)?->name ?? $current?->name_snapshot }} · {{ $versions->firstWhere('id', $pointTypeVersionId)?->points ?? $current?->points_snapshot }} poin</p>
-                            <p class="mt-2 whitespace-pre-wrap">{{ $description }}</p>
-                            <p class="admin-muted mt-2 text-sm">Status catatan tetap berlaku sampai keputusan disimpan.</p>
+                        @if ($decision === 'reject')
+                            @if ($review->proposed_change)<p class="admin-muted mt-1 text-sm">Usulan pemohon tidak diterapkan.</p>@endif
+                            <p class="mt-3">Catatan tetap seperti saat ini karena permintaan ditolak.</p>
+                            @if ($current)<dl class="mt-3 space-y-2 text-sm"><div><dt class="admin-muted">Jenis poin</dt><dd>{{ $current->name_snapshot }} · {{ $current->points_snapshot }} poin</dd></div><div><dt class="admin-muted">Keterangan</dt><dd class="whitespace-pre-wrap">{{ $current->description }}</dd></div><div><dt class="admin-muted">Status catatan</dt><dd>Status catatan: {{ $current->status === 'active' ? 'Berlaku' : 'Dibatalkan' }}</dd></div></dl>@endif
+                        @else
+                            @if ($review->proposed_change)<p class="admin-muted mt-1 text-sm">Usulan: {{ $review->proposed_change['operation'] === 'cancel' ? 'pembatalan' : 'koreksi' }}</p>@endif
+                            @if ($proposalVersion)<p class="mt-2 text-sm">Jenis poin yang diusulkan: {{ $proposalVersion->name }} · {{ $proposalVersion->points }} poin · versi {{ $proposalVersion->version }}@unless ($proposalVersion->pointType->active)<span class="admin-status">Nonaktif</span>@endunless</p>@endif
+                            @if ($operation === 'cancel')<p class="mt-3">Status catatan menjadi dibatalkan. Pembatalan tidak memindahkan siswa.</p>@else
+                                <p class="mt-3">{{ $versions->firstWhere('id', $pointTypeVersionId)?->name ?? $current?->name_snapshot }} · {{ $versions->firstWhere('id', $pointTypeVersionId)?->points ?? $current?->points_snapshot }} poin</p>
+                                <p class="mt-2 whitespace-pre-wrap">{{ $description }}</p>
+                                <p class="admin-muted mt-2 text-sm">Status catatan tetap berlaku sampai keputusan disimpan.</p>
+                            @endif
                         @endif
                     </div>
                 </div>

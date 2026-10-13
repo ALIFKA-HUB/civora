@@ -112,6 +112,26 @@ class AdminReviewWorkflowTest extends TestCase
         self::assertSame(1, $this->record->revisions()->count());
     }
 
+    public function test_rejection_preview_shows_unchanged_record_instead_of_cancellation_proposal(): void
+    {
+        $review = $this->review($this->teacher, 'teacher_correction', 'Catatan ini perlu dibatalkan.', ['operation' => 'cancel']);
+        $page = Livewire::test(ReviewDetail::class, ['reviewId' => $review->id])
+            ->set('decision', 'reject')
+            ->assertSee('Catatan tetap seperti saat ini karena permintaan ditolak.')
+            ->assertSee('Status catatan: Berlaku')
+            ->assertSee('Synthetic description')
+            ->assertDontSee('Status catatan menjadi dibatalkan');
+
+        $page->set('decisionReason', 'Catatan tetap didukung oleh bukti.')
+            ->call('decide')
+            ->assertHasNoErrors();
+
+        self::assertSame('rejected', $review->fresh()->status);
+        self::assertSame('active', $this->record->fresh()->latestRevision->status);
+        self::assertSame('Synthetic description', $this->record->fresh()->latestRevision->description);
+        self::assertSame(1, $this->record->revisions()->count());
+    }
+
     public function test_approved_cancellation_preserves_student_teacher_and_enrollment_identity(): void
     {
         $review = $this->review($this->teacher, 'teacher_correction', 'Catatan ini perlu dibatalkan.', ['operation' => 'cancel']);
@@ -119,6 +139,7 @@ class AdminReviewWorkflowTest extends TestCase
 
         Livewire::test(ReviewDetail::class, ['reviewId' => $review->id])
             ->assertSee('Pembatalan tidak memindahkan siswa')
+            ->assertSee('Status catatan menjadi dibatalkan')
             ->set('decision', 'approve')
             ->set('decisionReason', 'Catatan dibatalkan setelah pemeriksaan.')
             ->call('decide')

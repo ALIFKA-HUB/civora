@@ -48,6 +48,7 @@ class ReviewDetail extends Component
         abort_unless($revision, 404);
         $this->expectedRevision = $revision->revision_number;
         $proposal = $review->proposed_change ?? [];
+        $this->decision = $review->status === 'rejected' ? 'reject' : 'approve';
         $this->operation = $proposal['operation'] ?? 'revise';
         $this->description = $proposal['description'] ?? $revision->description;
         $this->attachmentId = $proposal['attachment_id'] ?? (string) ($revision->attachment_id ?? '');
