@@ -8,8 +8,12 @@ use App\Actions\Accounts\RevealTemporaryCredential;
 use App\Http\Controllers\Controller;
 use App\Models\LoginIdentifier;
 use App\Models\QrToken;
+use App\Models\Semester;
 use App\Models\Student;
 use App\Models\User;
+use App\Services\Academic\CurrentEnrollment;
+use App\Services\Academic\SchoolCalendar;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -63,10 +67,21 @@ class AuthController extends Controller
         $user = $request->user();
         $data = $this->identity($user);
         if (! $user->must_change_password && $user->account_status === 'active' && $user->role === 'student') {
-            $data['student'] = $user->student?->only(['id', 'nisn', 'education_status']);
-            $data['enrollments'] = $user->student?->enrollments()->with('semester', 'classroom.major')->get();
+            $student = $user->student;
+            $data['student'] = $student?->only(['id', 'nisn', 'education_status']);
+            $data['enrollments'] = $student?->enrollments()->with('semester', 'classroom.major')->get();
+            $semester = $this->currentSemester();
+            $data['current_semester'] = $semester ? ['id' => $semester->id, 'name' => $semester->name] : null;
+            $enrollment = $student && $semester ? (new CurrentEnrollment)->forStudent($student, $semester, CarbonImmutable::now()->toIso8601String()) : null;
+            $data['own_enrollment'] = $enrollment ? [
+                'id' => $enrollment->id,
+                'classroom' => ['id' => $enrollment->classroom->id, 'name' => $enrollment->classroom->name],
+                'major' => ['id' => $enrollment->classroom->major->id, 'name' => $enrollment->classroom->major->name, 'code' => $enrollment->classroom->major->code],
+            ] : null;
         } elseif (! $user->must_change_password && $user->account_status === 'active' && $user->role === 'teacher') {
             $data['teacher'] = $user->teacher?->only(['id', 'nip', 'teacher_code']);
+            $semester = $this->currentSemester();
+            $data['current_semester'] = $semester ? ['id' => $semester->id, 'name' => $semester->name] : null;
         }
 
         return response()->json(['data' => $data])->header('Cache-Control', 'no-store, private');
@@ -124,5 +139,12 @@ class AuthController extends Controller
     private function identity(User $user): array
     {
         return $user->only(['id', 'name', 'role', 'account_status', 'must_change_password']);
+    }
+
+    private function currentSemester(): ?Semester
+    {
+        $semester = Semester::where('status', 'active')->first();
+
+        return $semester && (new SchoolCalendar)->contains($semester, CarbonImmutable::now()) ? $semester : null;
     }
 }

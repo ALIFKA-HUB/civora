@@ -4,8 +4,12 @@ use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PointRecordController;
 use App\Http\Controllers\Api\PointTypeController;
+use App\Http\Controllers\Api\ReviewRequestController;
 use App\Http\Controllers\Api\StudentQrController;
+use App\Http\Controllers\Api\StudentRecordController;
 use App\Http\Controllers\Api\StudentSelectionController;
+use App\Http\Controllers\Api\StudentSummaryController;
+use App\Http\Controllers\Api\TeacherRecordController;
 use App\Http\Controllers\Api\TeacherStudentController;
 use App\Http\Middleware\EnsureActiveAccount;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +24,14 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', EnsureActiveAccount::class.':activation'])->group(function (): void {
         Route::get('/me', [AuthController::class, 'me']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::get('/student/summary', [StudentSummaryController::class, 'show'])
+            ->middleware(EnsureActiveAccount::class.':active,student');
+        Route::get('/student/records', [StudentRecordController::class, 'index'])
+            ->middleware(EnsureActiveAccount::class.':active,student');
+        Route::get('/student/records/{record}', [StudentRecordController::class, 'show'])
+            ->whereUuid('record')->middleware(EnsureActiveAccount::class.':active,student');
+        Route::post('/student/records/{record}/objections', [ReviewRequestController::class, 'object'])
+            ->whereUuid('record')->middleware(EnsureActiveAccount::class.':active,student');
         Route::get('/teacher/point-types', [PointTypeController::class, 'index'])
             ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::post('/student/qr', [StudentQrController::class, 'store'])
@@ -28,12 +40,20 @@ Route::prefix('v1')->group(function (): void {
             ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::get('/teacher/students/{id}', [TeacherStudentController::class, 'show'])
             ->whereUuid('id')->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::get('/teacher/students/{id}/records', [TeacherRecordController::class, 'studentRecords'])
+            ->whereUuid('id')->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::post('/teacher/qr/redeem', [StudentSelectionController::class, 'redeem'])
             ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::post('/teacher/student-selections', [StudentSelectionController::class, 'store'])
             ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::post('/teacher/records', [PointRecordController::class, 'store'])
             ->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::get('/teacher/records', [TeacherRecordController::class, 'index'])
+            ->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::get('/teacher/records/{record}', [TeacherRecordController::class, 'show'])
+            ->whereUuid('record')->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::post('/teacher/records/{record}/correction-requests', [ReviewRequestController::class, 'requestCorrection'])
+            ->whereUuid('record')->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::get('/teacher/record-attempts/{key}', [PointRecordController::class, 'attempt'])
             ->where('key', '[A-Za-z0-9._:-]{1,100}')
             ->middleware(EnsureActiveAccount::class.':active,teacher');

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Actions\Points\StudentSelectionRules;
 use App\Http\Controllers\Controller;
+use App\Models\Classroom;
+use App\Models\Major;
 use App\Models\Semester;
 use App\Models\Student;
 use App\Services\Academic\SchoolCalendar;
@@ -39,6 +41,7 @@ class TeacherStudentController extends Controller
             ->where('students.education_status', 'active')
             ->whereIn('users.account_status', ['active', 'pending_activation'])
             ->where('users.role', 'student')
+            ->where('classrooms.academic_year_id', $semester->academic_year_id)
             ->where('classrooms.active', true)->where('majors.active', true);
         if (! empty($filters['q'])) {
             $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], $filters['q']).'%';
@@ -54,6 +57,12 @@ class TeacherStudentController extends Controller
             'students.id', 'users.name', 'students.nisn', 'classrooms.id as classroom_id', 'classrooms.name as classroom_name',
             'majors.id as major_id', 'majors.name as major_name',
         ])->orderBy('users.name')->orderBy('students.id')->paginate($filters['per_page'] ?? 20);
+        $classrooms = Classroom::where('academic_year_id', $semester->academic_year_id)->where('active', true)
+            ->whereHas('major', fn ($query) => $query->where('active', true))
+            ->orderBy('grade')->orderBy('code')->get(['id', 'name']);
+        $majors = Major::where('active', true)
+            ->whereHas('classrooms', fn ($query) => $query->where('academic_year_id', $semester->academic_year_id)->where('active', true))
+            ->orderBy('name')->get(['id', 'name', 'code']);
 
         return response()->json([
             'data' => $page->getCollection()->map(fn ($student) => [
@@ -61,7 +70,13 @@ class TeacherStudentController extends Controller
                 'classroom' => ['id' => $student->classroom_id, 'name' => $student->classroom_name],
                 'major' => ['id' => $student->major_id, 'name' => $student->major_name],
             ]),
-            'meta' => ['current_page' => $page->currentPage(), 'last_page' => $page->lastPage(), 'per_page' => $page->perPage(), 'total' => $page->total()],
+            'meta' => [
+                'current_page' => $page->currentPage(), 'last_page' => $page->lastPage(), 'per_page' => $page->perPage(), 'total' => $page->total(),
+                'filters' => [
+                    'classrooms' => $classrooms->map(fn ($classroom) => ['id' => $classroom->id, 'name' => $classroom->name])->all(),
+                    'majors' => $majors->map(fn ($major) => ['id' => $major->id, 'name' => $major->name, 'code' => $major->code])->all(),
+                ],
+            ],
         ]);
     }
 

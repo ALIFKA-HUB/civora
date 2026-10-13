@@ -90,6 +90,18 @@ Status umum: 401 sesi tidak sah, 403 akses ditolak, 404 resource tidak ada/tidak
 | DELETE /device-tokens/{id} | Siswa/guru | Cabut token perangkat milik sendiri |
 | GET /attachments/{id} | Login | Streaming privat setelah policy atas catatan/revisi atau staged owner |
 
+### Bentuk respons profil, ringkasan, dan riwayat
+
+GET `/me` mengembalikan `data` identitas dasar. Untuk akun aktif, siswa juga menerima `student`, `enrollments`, `current_semester`, dan `own_enrollment`; `own_enrollment` berisi ID penempatan serta kelas dan jurusan saat ini, atau `null` bila belum ada penempatan yang berlaku. Guru aktif menerima `teacher` dan `current_semester`. Akun yang masih menunggu aktivasi menerima identitas dasar saja.
+
+GET `/student/summary` mengembalikan `data.semester`, `data.totals` (`achievement` dan `violation`), serta `data.latest_threshold_status` untuk kebijakan ambang terbaru. Jika semester aktif tidak tersedia, ketiganya bernilai `null`; klien tidak menampilkan angka nol seolah-olah tersedia.
+
+Riwayat siswa dan guru memakai `PointRecordResource` di setiap elemen `data`, dengan `meta.current_page`, `meta.last_page`, `meta.per_page`, `meta.total`, dan `meta.available_semesters`. Tiap pilihan semester berisi `id`, `name`, `start_date`, `end_date`, dan `is_current`. Filter yang didukung ialah `semester_id`, `category` (`achievement` atau `violation`), `status` (`active` atau `cancelled`), `page`, dan `per_page`. Pilihan semester mencakup riwayat yang boleh dibaca pemanggil serta semester aktif.
+
+GET `/teacher/students` menambahkan `meta.filters.classrooms` (ID dan nama) dan `meta.filters.majors` (ID, nama, dan kode). Pilihan hanya berasal dari kelas dan jurusan aktif pada tahun ajaran semester aktif, termasuk saat halaman hasil pencarian kosong.
+
+POST keberatan siswa menerima hanya `reason`; respons `data` berisi ID permintaan, ID catatan, `kind`, `reason`, `proposed_change` kosong, `status`, `reviewed_revision`, dan `created_at`. Permintaan koreksi guru memiliki bentuk yang sama dengan usulan eksplisit pada `proposed_change`: `operation` (`cancel` atau `revise`), dan untuk koreksi dapat menyertakan `point_type_version_id`, `description`, atau `attachment_id`. Respons keduanya berstatus pending; usulan tidak mengubah total sampai admin menyetujuinya.
+
 Endpoint admin tidak diwajibkan sebagai API publik terpisah. Livewire memakai session dan action server untuk pengelolaan data, import, pemeriksaan, ambang, tindakan, laporan, serta akun.
 
 Body POST /teacher/records tidak menerima teacher_id, student_id, points, semester_id, atau status dari klien sebagai sumber kebenaran. Informasi tersebut diambil dari user, selection, katalog, dan semester server.
