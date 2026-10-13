@@ -10,6 +10,7 @@ use App\Models\PointTypeVersion;
 use App\Models\Semester;
 use App\Models\Student;
 use App\Models\Teacher;
+use App\Models\TemporaryCredential;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
@@ -68,6 +69,39 @@ class AdminSchoolWorkflowTest extends DuskTestCase
                 $teacher = Teacher::where('nip', '0000000902')->firstOrFail();
                 $version = PointTypeVersion::whereHas('pointType', fn ($query) => $query->where('code', 'WF01'))->firstOrFail();
 
+                $browser->visit('/admin/students/'.$student->id)->press('Tampilkan password sementara')
+                    ->waitFor('[data-credential-display]', 10);
+                $studentTemporaryPassword = $browser->script('return document.querySelector("[data-credential-display]").textContent.trim();')[0];
+                self::assertIsString($studentTemporaryPassword);
+                self::assertNotSame('', $studentTemporaryPassword);
+                $studentPassword = 'Synthetic workflow student phrase';
+                $studentActivation = <<<'JS'
+                    const temporaryPassword = __TEMPORARY_PASSWORD__;
+                    window.__civoraStudentActivation = {done: false};
+                    (async () => {
+                        const request = async (path, body, token = null) => fetch(path, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json', 'Accept': 'application/json', ...(token ? {Authorization: `Bearer ${token}`} : {})},
+                            body: JSON.stringify(body),
+                        });
+                        const login = await request('/api/v1/auth/student/login', {nisn: '0000000901', password: temporaryPassword});
+                        const initial = await login.json();
+                        const activation = await request('/api/v1/auth/change-password', {
+                            current_password: temporaryPassword,
+                            password: 'Synthetic workflow student phrase',
+                            password_confirmation: 'Synthetic workflow student phrase',
+                        }, initial.data?.token);
+                        window.__civoraStudentActivation = {done: true, statuses: [login.status, activation.status]};
+                    })().catch(error => window.__civoraStudentActivation = {done: true, error: String(error)});
+                    JS;
+                $temporaryPasswordJson = json_encode($studentTemporaryPassword, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT);
+                $browser->script(str_replace('__TEMPORARY_PASSWORD__', $temporaryPasswordJson, $studentActivation));
+                $browser->waitUsing(15, 100, fn () => $browser->script('return window.__civoraStudentActivation?.done === true;')[0] === true);
+                $studentActivationResult = $browser->script('return window.__civoraStudentActivation;')[0];
+                self::assertSame([200, 200], $studentActivationResult['statuses'] ?? [], json_encode($studentActivationResult));
+                self::assertSame('active', $student->user->fresh()->account_status);
+                self::assertSame(0, TemporaryCredential::where('user_id', $student->user_id)->count());
+
                 $browser->visit('/admin/teachers');
                 $browser->script("Array.from(document.querySelectorAll('tbody tr')).find(row => row.textContent.includes('Guru Workflow'))?.querySelector('button:nth-of-type(2)')?.click();");
                 $browser->waitForText('Target pembukaan password sementara: '.$teacher->id, 10)->press('Tampilkan password sementara')->waitForText('Password sementara guru', 10);
@@ -79,6 +113,8 @@ class AdminSchoolWorkflowTest extends DuskTestCase
                     'temporaryPassword' => $temporaryPassword,
                     'teacherNip' => '0000000902',
                     'newPassword' => 'Synthetic workflow teacher phrase',
+                    'studentNisn' => '0000000901',
+                    'studentPassword' => $studentPassword,
                     'studentId' => $student->id,
                     'pointTypeVersionId' => $version->id,
                 ];
@@ -102,9 +138,11 @@ class AdminSchoolWorkflowTest extends DuskTestCase
                             const selection = await selectionResponse.json();
                             const recordResponse = await request('/api/v1/teacher/records', {method: 'POST', token: active.data?.token, headers: {'Idempotency-Key': 'workflow-record-0001'}, body: {selection_id: selection.data?.id, point_type_version_id: input.pointTypeVersionId, description: 'Catatan sintetis dari API browser workflow.'}});
                             const record = await recordResponse.json();
-                            const reviewResponse = await request(`/api/v1/teacher/records/${record.data?.id}/correction-requests`, {method: 'POST', token: active.data?.token, body: {reason: 'Mohon periksa keterangan catatan ini.', proposed_change: {operation: 'revise', description: 'Keterangan hasil pemeriksaan workflow.'}}});
+                            const studentLoginResponse = await request('/api/v1/auth/student/login', {method: 'POST', body: {nisn: input.studentNisn, password: input.studentPassword}});
+                            const studentLogin = await studentLoginResponse.json();
+                            const reviewResponse = await request(`/api/v1/student/records/${record.data?.id}/objections`, {method: 'POST', token: studentLogin.data?.token, body: {reason: 'Mohon periksa catatan poin ini.'}});
                             const review = await reviewResponse.json();
-                            window.__civoraWorkflow = {done: true, statuses: [login.status, activation.status, activeLogin.status, selectionResponse.status, recordResponse.status, reviewResponse.status], error: initial.error ?? activated.error ?? active.error ?? selection.error ?? record.error ?? review.error, recordId: record.data?.id, reviewId: review.data?.id};
+                            window.__civoraWorkflow = {done: true, statuses: [login.status, activation.status, activeLogin.status, selectionResponse.status, recordResponse.status, studentLoginResponse.status, reviewResponse.status], error: initial.error ?? activated.error ?? active.error ?? selection.error ?? record.error ?? studentLogin.error ?? review.error, recordId: record.data?.id, reviewId: review.data?.id};
                         } catch (error) {
                             window.__civoraWorkflow = {done: true, error: String(error)};
                         }
@@ -113,12 +151,14 @@ class AdminSchoolWorkflowTest extends DuskTestCase
                 $browser->script(str_replace('__PAYLOAD__', $json, $workflowScript));
                 $browser->waitUsing(30, 100, fn () => $browser->script('return window.__civoraWorkflow?.done === true;')[0] === true);
                 $workflow = $browser->script('return window.__civoraWorkflow;')[0];
-                self::assertSame([200, 200, 200, 201, 201, 201], $workflow['statuses'] ?? [], json_encode($workflow));
+                self::assertSame([200, 200, 200, 201, 201, 200, 201], $workflow['statuses'] ?? [], json_encode($workflow));
                 self::assertNotEmpty($workflow['recordId'] ?? null);
                 self::assertNotEmpty($workflow['reviewId'] ?? null);
 
-                $browser->visit('/admin/reviews')->assertSee('Koreksi guru')->clickLink('Periksa catatan')
-                    ->waitForText('Alasan dan pemohon', 10)->type('#review-decision-reason', 'Keterangan sudah diperiksa melalui alur browser.')
+                $browser->visit('/admin/reviews')->assertSee('Keberatan siswa')->clickLink('Periksa catatan')
+                    ->waitForText('Alasan dan pemohon', 10)->assertSee('Keberatan siswa')->select('#review-point-type', $version->id)
+                    ->clear('#review-description')->type('#review-description', 'Keterangan hasil pemeriksaan workflow.')
+                    ->type('#review-decision-reason', 'Catatan diperbaiki melalui pemeriksaan browser.')
                     ->press('Simpan keputusan')->waitForText('Pemeriksaan disetujui.', 10);
                 $browser->visit('/admin/reports')->select('#report-semester', $semester->id)->press('Tampilkan laporan')
                     ->waitForText('Total pelanggaran berlaku', 10)->assertSee('5')->assertSee('Catatan Workflow');
