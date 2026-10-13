@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11 dan A-01 sampai A-04 Lulus setelah implementasi dan review independen. 15 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11 dan A-01 sampai A-05 Lulus setelah implementasi dan review independen. 16 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -17,8 +17,8 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
-| G2: Admin | Dikerjakan: A-05 | A-01 sampai A-04 lulus; laporan, pengaturan, audit, dan alur terpadu masih dikerjakan |
-| G3: Mobile | Belum mulai | Belum ada |
+| G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
+| G3: Mobile | Dikerjakan: M-01 | Fondasi dua aplikasi dan paket bersama; belum ada bukti APK/perangkat |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
 
@@ -146,3 +146,9 @@ Setelah fix: AdminPointRulesTest 6 test/46 assertion, PointTotalsAndThresholdTes
 Implementasi b9ce479 menyediakan catatan, antrean/detail pemeriksaan, keputusan dengan revisi terkunci, koreksi langsung, serta route foto privat yang memakai AttachmentPolicy dan session admin. Test terfokus 10/63 assertion, suite 300/1.274, browser 1/15 (foto berhasil dimuat pada dua tema), Pint/build/diff check lulus. Suite/browser mendahului tambahan tautan muat ulang konflik; test terfokus lulus setelahnya.
 
 Review meminta preview penolakan menampilkan catatan yang tetap sama, bukan perubahan usulan. Fix aa23881 mereproduksi masalah lalu meluluskan 11 test/73 assertion, Pint/build/diff check (exit 0). Re-review menyetujui tanpa masalah baru. A-04 Lulus; 15/26 tugas lulus. Suite dan browser tersebut tidak diulang setelah fix preview; langkah berikutnya A-05 laporan, pengaturan, dan audit.
+
+#### A-05 dan G2/R2 Lulus
+
+Commit 48fa68d menyediakan laporan/unduhan privat, pengaturan sekolah, manajemen admin, dan audit. Alur browser impor → katalog → semester → catatan API → pemeriksaan → laporan lulus 1 test/10 assertion sebelum fix pengaturan pertama kali; test terfokus sebelumnya 8/53. Pemulihan setelah interupsi meluluskan suite final 309 test/1.337 assertion, Pint/build/diff check exit 0. Percobaan tertahan saat cluster PostgreSQL proyek berhenti dihentikan tanpa mengklaim hasil test; cluster milik proyek dinyalakan kembali, lalu suite tersebut lulus.
+
+Review meminta alias API key disamarkan dan zona waktu tersimpan dipakai pada tindak lanjut. Fix 3987438: AdminReportAccessTest 8/58 dan AdminPointRulesTest 7/51, Pint/diff exit 0; re-review menyetujui dua temuan tanpa masalah baru. Reviewer juga mengulang test terfokus tersebut, tidak suite penuh/browser. A-05 serta G2/R2 Lulus; 16/26 tugas lulus. Suite 309/1.337 dan browser 1/10 mendahului fix terakhir; kualitas ekspor panjang/visual tetap I-02, push nyata tetap I-01. Berikutnya M-01 fondasi dua aplikasi Flutter.

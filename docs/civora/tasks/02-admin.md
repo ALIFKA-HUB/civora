@@ -84,8 +84,8 @@ B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahk
 
 **Interfaces:** Reports memakai PointReportQuery/RequestReportExport B-10; status export queued/processing/completed/failed ditampilkan. Settings mengubah singleton school settings dan akun admin dengan audit; AuditLogViewer read-only, tidak menampilkan secret.
 
-- [ ] Tulis test filter kelas/semester historis, status export, download admin lain/guru ditolak, timezone sekolah, settings invalid, dan audit yang disanitasi.
-- [ ] Pin laporan kelas lama tetap 10 dan kelas baru 5 pada fixture B-10; export expired tidak dapat diunduh meskipun URL tersimpan.
-- [ ] Jalankan `php artisan test --filter=AdminReportAccessTest`; implementasikan rekap/filter, permintaan download privat, pengaturan sekolah/logo opsional, manajemen admin, dan audit berpagination.
-- [ ] Buat satu browser test alur import → katalog → membuka semester → menerima catatan API → pemeriksaan → laporan. Jalankan melalui runner browser yang dipilih/didokumentasikan pada B-01, tanpa database produksi.
-- [ ] Jalankan semua test admin sampai lulus; periksa keyboard, tabel panjang, focus dialog, dan tema. Commit; kualitas PDF/Excel akhir diperiksa pada I-02.
+- [x] Tulis test filter kelas/semester historis, status export, download admin lain/guru ditolak, timezone sekolah, settings invalid, dan audit yang disanitasi.
+- [x] Pin laporan kelas lama tetap 10 dan kelas baru 5 pada fixture B-10; export expired tidak dapat diunduh meskipun URL tersimpan.
+- [x] Jalankan `php artisan test --filter=AdminReportAccessTest`; implementasikan rekap/filter, permintaan download privat, pengaturan sekolah/logo opsional, manajemen admin, dan audit berpagination.
+- [x] Buat satu browser test alur import → katalog → membuka semester → menerima catatan API → pemeriksaan → laporan. Jalankan melalui runner browser yang dipilih/didokumentasikan pada B-01, tanpa database produksi.
+- [x] Jalankan semua test admin sampai lulus; periksa keyboard, tabel panjang, focus dialog, dan tema. Commit; kualitas PDF/Excel akhir diperiksa pada I-02.
