@@ -46,10 +46,10 @@ ApiException berisi statusCode, code, message, fields, requestId. ApiClient.get(
 
 **Interfaces:** SessionController.login(String identifier, String password, {required String role}): Future<void>; SessionController.changePassword(String currentPassword, String newPassword): Future<void>; SessionController.logout(): Future<void>. role selalu dikunci entry point app sebagai student/teacher, bukan input siswa/guru.
 
-- [ ] Tulis test password sementara mengarahkan aktivasi, login role salah ditolak, secure token dipulihkan hanya untuk app yang sesuai, logout membersihkan session/device binding, dan expired session kembali login.
-- [ ] Pin `expect(session.state, SessionState.activationRequired);` untuk must_change_password=true; tombol QR/catat tidak tersedia sebelum aktivasi.
-- [ ] Jalankan `flutter test test/auth_flow_test.dart` di masing-masing app; implementasikan layar login/aktivasi/profile, secure storage, field password, pesan bantuan akun, dan validasi 12 karakter.
-- [ ] Jalankan test dan analyze sampai lulus; jangan menyimpan password awal/pribadi sebagai preferensi biasa. Commit autentikasi dua app.
+- [x] Tulis test password sementara mengarahkan aktivasi, login role salah ditolak, secure token dipulihkan hanya untuk app yang sesuai, logout membersihkan session/device binding, dan expired session kembali login.
+- [x] Pin `expect(session.state, SessionState.activationRequired);` untuk must_change_password=true; tombol QR/catat tidak tersedia sebelum aktivasi.
+- [x] Jalankan `flutter test test/auth_flow_test.dart` di masing-masing app; implementasikan layar login/aktivasi/profile, secure storage, field password, pesan bantuan akun, dan validasi 12 karakter.
+- [x] Jalankan test dan analyze sampai lulus; jangan menyimpan password awal/pribadi sebagai preferensi biasa. Commit autentikasi dua app.
 
 ### M-03: Siswa: ringkasan, QR, riwayat, dan keberatan
 
