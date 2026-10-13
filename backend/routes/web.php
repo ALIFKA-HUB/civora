@@ -8,13 +8,19 @@ use App\Livewire\Admin\ConfirmPassword;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\FollowUps;
 use App\Livewire\Admin\Login;
+use App\Livewire\Admin\PointRecords;
 use App\Livewire\Admin\PointTypes;
+use App\Livewire\Admin\ReviewDetail;
+use App\Livewire\Admin\ReviewQueue;
 use App\Livewire\Admin\StudentDetail;
 use App\Livewire\Admin\Students;
 use App\Livewire\Admin\Teachers;
 use App\Livewire\Admin\Thresholds;
+use App\Models\Attachment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,6 +52,25 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             Route::get('/point-types', PointTypes::class)->name('point-types');
             Route::get('/thresholds', Thresholds::class)->name('thresholds');
             Route::get('/follow-ups', FollowUps::class)->name('follow-ups');
+            Route::get('/point-records', PointRecords::class)->name('point-records');
+            Route::get('/reviews', ReviewQueue::class)->name('reviews');
+            Route::get('/reviews/{reviewId}', ReviewDetail::class)->whereUuid('reviewId')->name('reviews.show');
+            Route::get('/attachments/{attachment}', function (Attachment $attachment) {
+                Gate::authorize('view', $attachment);
+                abort_unless(Storage::disk('local')->exists($attachment->private_path), 404, 'Data tidak ditemukan.');
+                $stream = Storage::disk('local')->readStream($attachment->private_path);
+                abort_unless(is_resource($stream), 404, 'Data tidak ditemukan.');
+
+                return response()->stream(function () use ($stream): void {
+                    fpassthru($stream);
+                    fclose($stream);
+                }, 200, [
+                    'Content-Type' => $attachment->mime_type,
+                    'Content-Length' => (string) Storage::disk('local')->size($attachment->private_path),
+                    'Cache-Control' => 'private, no-store',
+                    'X-Content-Type-Options' => 'nosniff',
+                ]);
+            })->name('attachments.show');
         });
     });
 });
