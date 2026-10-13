@@ -17,7 +17,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
-| G2: Admin | Belum mulai | Belum ada |
+| G2: Admin | Dikerjakan: A-01 | Session, layout, tema, dashboard; UI/browser belum terbukti |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
