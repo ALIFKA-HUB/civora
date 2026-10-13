@@ -23,7 +23,7 @@ Use the project-owned PostgreSQL cluster and Laravel wrapper described in [devel
 ./ops/dev/php.ps1 artisan civora:prepare-mobile-qa-fixtures --env=testing
 ```
 
-The command creates two active synthetic accounts, one semester, one point type, and one record for the student objection flow. It generates random passwords directly into ignored `docs/qa/mobile.*.json` files. Those files are local secrets; do not commit or share them. The teacher test creates a separate record and correction request. The API smoke uses those same credentials and exercises actual Laravel endpoints with the shared `ApiClient`/`SessionController`; it performs QR redemption through HTTP without printing the raw QR token.
+The command creates two active synthetic accounts, one semester, one point type, and a seeded record reserved for the native student UI objection flow. It generates random passwords directly into ignored `docs/qa/mobile.*.json` files. Those files are local secrets; do not commit or share them. The teacher UI test creates a separate record and correction request. The API smoke uses those same credentials and exercises actual Laravel endpoints with the shared `ApiClient`/`SessionController`; it creates its own record through QR redemption and submits the smoke objection to that record, leaving the seeded native UI fixture without a pending review. It verifies that invariant after the smoke and never prints the raw QR token.
 
 Start the API server in one terminal:
 

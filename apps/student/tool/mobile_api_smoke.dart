@@ -32,21 +32,16 @@ void main() {
         final studentRecords = await student.api.get('/student/records');
         final recordName =
             studentConfig['CIVORA_QA_STUDENT_RECORD_NAME'] as String;
-        final seedRecord = _items(studentRecords, 'data')
+        final nativeFixture = _items(studentRecords, 'data')
             .cast<Map<String, dynamic>>()
             .firstWhere(
               (row) => row['latest_revision']?['name'] == recordName,
               orElse: () =>
                   throw StateError('Synthetic objection record was not found.'),
             );
-        final objection = await student.api.post(
-          '/student/records/${seedRecord['id']}/objections',
-          {'reason': 'Mohon periksa kembali catatan uji ini.'},
-        );
-        if (objection['status'] != 'pending') {
-          throw StateError('Student objection did not remain pending.');
+        if (nativeFixture['review_status'] == 'pending') {
+          throw StateError('Native UI fixture already has a pending review.');
         }
-        _step('student login, history, and objection');
 
         await _login(
           teacher,
@@ -84,7 +79,7 @@ void main() {
           throw StateError('No active synthetic point type was returned.');
         }
         final typeId = pointTypes.first['version_id'] as String;
-        await _saveRecord(
+        final qrRecord = await _saveRecord(
           teacher.api,
           qrSelection,
           typeId,
@@ -101,6 +96,10 @@ void main() {
           typeId,
           'M06 API smoke manual selection.',
         );
+
+        if (record['id'] == nativeFixture['id']) {
+          throw StateError('API smoke must use a separate synthetic record.');
+        }
         final correction = await teacher.api.post(
           '/teacher/records/${record['id']}/correction-requests',
           {
@@ -116,6 +115,26 @@ void main() {
             'Teacher correction request did not remain pending.',
           );
         }
+
+        final objection = await student.api.post(
+          '/student/records/${qrRecord['id']}/objections',
+          {'reason': 'Mohon periksa kembali catatan uji ini.'},
+        );
+        if (objection['status'] != 'pending') {
+          throw StateError('Student objection did not remain pending.');
+        }
+        final recordsAfterSmoke = await student.api.get('/student/records');
+        final nativeFixtureAfterSmoke = _items(recordsAfterSmoke, 'data')
+            .cast<Map<String, dynamic>>()
+            .firstWhere((row) => row['id'] == nativeFixture['id']);
+        if (nativeFixtureAfterSmoke['review_status'] == 'pending') {
+          throw StateError(
+            'API smoke left a pending review on the native UI fixture.',
+          );
+        }
+        _step(
+          'student login, history, objection, and native fixture isolation',
+        );
         _step(
           'teacher QR redeem, manual selection, save, and correction request',
         );
