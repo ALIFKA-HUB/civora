@@ -40,7 +40,8 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/teacher/attachments', [AttachmentController::class, 'store'])
             ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::get('/attachments/{id}', [AttachmentController::class, 'show'])
-            ->whereUuid('id');
+            ->whereUuid('id')
+            ->middleware(EnsureActiveAccount::class.':active');
         Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:account-sensitive');
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/teacher/students/{student}/temporary-credential/reveal', [AuthController::class, 'reveal'])
