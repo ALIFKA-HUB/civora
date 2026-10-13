@@ -73,11 +73,11 @@ ApiException berisi statusCode, code, message, fields, requestId. ApiClient.get(
 
 **Interfaces:** RecordPointController.selectQr(String token, String requestKey): Future<SelectionDto>; selectManual(String studentId): Future<SelectionDto>; submit(): Future<PointRecordDto>; resolveUnknownAttempt(): Future<PointRecordDto?>. Controller menyimpan selection, draft, frozen submitted payload, dan idempotencyKey per upaya; retry tidak membuat key baru. Nilai hanya dari PointTypeDto, bukan field bebas.
 
-- [ ] Tulis test kamera ditolak tetap bisa manual; dua callback kamera memakai satu requestKey; retry scan mengembalikan selection sama; hasil nama sama dibedakan NISN/kelas.
-- [ ] Pin respons simpan hilang: `expect(createdRecordCount, 1); expect(sentIdempotencyKeys.toSet().length, 1);`; status unknown tidak membuka upaya baru sebelum resolusi.
-- [ ] Tulis test katalog/semester berubah memerlukan ringkasan ulang tanpa kehilangan keterangan, selection habis setelah 5 menit meminta pilih ulang, foto >5 MB ditolak, dan koreksi tidak mengubah total sebelum keputusan.
-- [ ] Jalankan `flutter test test/teacher_selection_test.dart test/record_retry_test.dart test/teacher_correction_test.dart`; implementasikan empat tab, scan/manual, profil/riwayat siswa, draft/keterangan/bukti, ringkasan, sukses, serta permintaan koreksi.
-- [ ] Verifikasi record buatan guru untuk siswa lulus tetap terbaca tetapi tombol pencatatan baru ditolak server; jalankan test/analyze dan commit.
+- [x] Tulis test kamera ditolak tetap bisa manual; dua callback kamera memakai satu requestKey; retry scan mengembalikan selection sama; hasil nama sama dibedakan NISN/kelas.
+- [x] Pin respons simpan hilang: `expect(createdRecordCount, 1); expect(sentIdempotencyKeys.toSet().length, 1);`; status unknown tidak membuka upaya baru sebelum resolusi.
+- [x] Tulis test katalog/semester berubah memerlukan ringkasan ulang tanpa kehilangan keterangan, selection habis setelah 5 menit meminta pilih ulang, foto >5 MB ditolak, dan koreksi tidak mengubah total sebelum keputusan.
+- [x] Jalankan `flutter test test/teacher_selection_test.dart test/record_retry_test.dart test/teacher_correction_test.dart`; implementasikan empat tab, scan/manual, profil/riwayat siswa, draft/keterangan/bukti, ringkasan, sukses, serta permintaan koreksi.
+- [x] Verifikasi record buatan guru untuk siswa lulus tetap terbaca tetapi tombol pencatatan baru ditolak server; jalankan test/analyze dan commit.
 
 ### M-05: Notifikasi, deep link aman, tema profil, dan bantuan akun
 
