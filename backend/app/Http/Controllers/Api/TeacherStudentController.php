@@ -97,6 +97,8 @@ class TeacherStudentController extends Controller
             'id' => $student->id,
             'name' => $student->user->name,
             'nisn' => $student->nisn,
+            'account_status' => $student->user->account_status,
+            'must_change_password' => $student->user->must_change_password,
             'semester' => ['id' => $semester->id, 'name' => $semester->name],
             'enrollment' => ['id' => $enrollment->id, 'classroom' => ['id' => $classroom->id, 'name' => $classroom->name], 'major' => ['id' => $major->id, 'name' => $major->name]],
             'totals' => $totals->forStudent($student, $semester),

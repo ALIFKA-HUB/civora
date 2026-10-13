@@ -1,15 +1,18 @@
 import 'package:civora_core/civora_core.dart';
 import 'package:flutter/material.dart';
 import '../points/record_point_controller.dart';
+import 'temporary_credential_dialog.dart';
 
 class TeacherStudentDetailScreen extends StatefulWidget {
   const TeacherStudentDetailScreen({
     super.key,
     required this.api,
+    required this.session,
     required this.student,
     required this.onRecord,
   });
   final ApiClient api;
+  final SessionController session;
   final TeacherStudent student;
   final ValueChanged<TeacherStudent> onRecord;
   @override
@@ -88,6 +91,8 @@ class _TeacherStudentDetailScreenState
                 ],
               ),
               const SizedBox(height: 20),
+              _credentialHelp(context),
+              const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: () => widget.onRecord(widget.student),
                 icon: const Icon(Icons.add),
@@ -147,6 +152,40 @@ class _TeacherStudentDetailScreenState
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Widget _credentialHelp(BuildContext context) {
+    final status = _profile?['account_status'] as String? ?? 'unknown';
+    final mustChange = _profile?['must_change_password'] as bool? ?? false;
+    final help = TeacherCredentialHelpController(
+      api: widget.api,
+      studentId: widget.student.id,
+      accountStatus: status,
+      mustChangePassword: mustChange,
+    );
+    if (help.canReveal) {
+      return OutlinedButton.icon(
+        onPressed: () => showDialog<void>(
+          context: context,
+          builder: (_) => TemporaryCredentialDialog(
+            controller: help,
+            session: widget.session,
+          ),
+        ),
+        icon: const Icon(Icons.help_outline),
+        label: const Text('Bantuan akun siswa'),
+      );
+    }
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.verified_user_outlined),
+      title: Text(
+        status == 'active' && !mustChange
+            ? 'Akun siswa aktif'
+            : 'Status akun siswa',
+      ),
+      subtitle: Text(help.statusMessage),
+    );
   }
 }
 

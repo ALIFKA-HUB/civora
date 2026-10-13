@@ -3,8 +3,13 @@ import 'package:civora_ui/civora_ui.dart';
 import 'package:flutter/material.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
-  const TeacherProfileScreen({super.key, required this.session});
+  const TeacherProfileScreen({
+    super.key,
+    required this.session,
+    required this.themePreference,
+  });
   final SessionController session;
+  final ThemePreferenceController themePreference;
 
   @override
   State<TeacherProfileScreen> createState() => _TeacherProfileScreenState();
@@ -53,6 +58,30 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           _ProfileValue(
             label: 'Semester aktif',
             value: profile?.currentSemester?.name ?? 'Belum tersedia',
+          ),
+          const SizedBox(height: 24),
+          Text('Tampilan', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<ThemePreference>(
+            initialValue: widget.themePreference.preference,
+            decoration: const InputDecoration(labelText: 'Tema aplikasi'),
+            items: const [
+              DropdownMenuItem(
+                value: ThemePreference.system,
+                child: Text('Ikuti perangkat'),
+              ),
+              DropdownMenuItem(
+                value: ThemePreference.light,
+                child: Text('Terang'),
+              ),
+              DropdownMenuItem(
+                value: ThemePreference.dark,
+                child: Text('Gelap'),
+              ),
+            ],
+            onChanged: (value) {
+              if (value != null) widget.themePreference.set(value);
+            },
           ),
           const SizedBox(height: 24),
           Text('Ganti password', style: Theme.of(context).textTheme.titleLarge),

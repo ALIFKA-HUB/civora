@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'app_config.dart';
 import 'features/auth/auth_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/notifications/notifications_screen.dart';
 import 'features/profile/profile_screen.dart';
 import 'features/qr/qr_screen.dart';
 import 'features/records/record_detail_screen.dart';
@@ -32,6 +33,8 @@ class CivoraApp extends StatefulWidget {
 class _CivoraAppState extends State<CivoraApp> {
   late final ApiClient _apiClient;
   late final SessionController _sessionController;
+  late final NotificationController _notifications;
+  late final ThemePreferenceController _themePreference;
 
   @override
   void initState() {
@@ -47,27 +50,42 @@ class _CivoraAppState extends State<CivoraApp> {
       sessionController: _sessionController,
     );
     _sessionController.bindApi(_apiClient);
+    _notifications = NotificationController(
+      api: _apiClient,
+      session: _sessionController,
+      push: FirebaseNotificationPushClient(),
+    );
+    _sessionController.beforeLogout = _notifications.unregisterDevice;
+    _themePreference = ThemePreferenceController();
+    unawaited(_notifications.initializePush());
   }
 
   @override
   void dispose() {
     _apiClient.close();
     _sessionController.dispose();
+    _notifications.dispose();
+    _themePreference.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Civora ${widget.roleLabel}',
-    debugShowCheckedModeBanner: false,
-    locale: const Locale('id', 'ID'),
-    theme: CivoraTheme.light,
-    darkTheme: CivoraTheme.dark,
-    themeMode: ThemePreference.system.themeMode,
-    home: CivoraFoundationScreen(
-      roleLabel: widget.roleLabel,
-      apiClient: _apiClient,
-      sessionController: _sessionController,
+  Widget build(BuildContext context) => AnimatedBuilder(
+    animation: _themePreference,
+    builder: (context, _) => MaterialApp(
+      title: 'Civora ${widget.roleLabel}',
+      debugShowCheckedModeBanner: false,
+      locale: const Locale('id', 'ID'),
+      theme: CivoraTheme.light,
+      darkTheme: CivoraTheme.dark,
+      themeMode: _themePreference.preference.themeMode,
+      home: CivoraFoundationScreen(
+        roleLabel: widget.roleLabel,
+        apiClient: _apiClient,
+        sessionController: _sessionController,
+        notifications: _notifications,
+        themePreference: _themePreference,
+      ),
     ),
   );
 }
@@ -78,10 +96,14 @@ class CivoraFoundationScreen extends StatefulWidget {
     required this.roleLabel,
     required this.apiClient,
     required this.sessionController,
+    required this.notifications,
+    required this.themePreference,
   });
   final String roleLabel;
   final ApiClient apiClient;
   final SessionController sessionController;
+  final NotificationController notifications;
+  final ThemePreferenceController themePreference;
 
   @override
   State<CivoraFoundationScreen> createState() => _CivoraFoundationScreenState();
@@ -92,6 +114,21 @@ class _CivoraFoundationScreenState extends State<CivoraFoundationScreen> {
   void initState() {
     super.initState();
     unawaited(widget.sessionController.restore());
+    widget.notifications.onPushedResource = (type, id) async {
+      if (!mounted ||
+          widget.sessionController.state != SessionState.authenticated) {
+        return;
+      }
+      Navigator.of(context).push<void>(
+        MaterialPageRoute(
+          builder: (_) => StudentRecordDetailScreen(
+            api: widget.apiClient,
+            recordId: id,
+            schoolTimezone: widget.sessionController.profile?.schoolTimezone,
+          ),
+        ),
+      );
+    };
   }
 
   @override
@@ -114,17 +151,46 @@ class _CivoraFoundationScreenState extends State<CivoraFoundationScreen> {
         );
       }
       if (session.state == SessionState.authenticated) {
-        return StudentTabs(api: widget.apiClient, session: session);
+        return StudentTabs(
+          api: widget.apiClient,
+          session: session,
+          notifications: widget.notifications,
+          themePreference: widget.themePreference,
+        );
       }
-      return StudentAuthScreen(session: session, api: widget.apiClient);
+      return AnimatedBuilder(
+        animation: widget.notifications,
+        builder: (context, _) => Column(
+          children: [
+            if (widget.notifications.loginRequested)
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: Text(
+                  'Masuk kembali untuk memeriksa notifikasi pada akun ini.',
+                ),
+              ),
+            Expanded(
+              child: StudentAuthScreen(session: session, api: widget.apiClient),
+            ),
+          ],
+        ),
+      );
     },
   );
 }
 
 class StudentTabs extends StatefulWidget {
-  const StudentTabs({super.key, required this.api, required this.session});
+  const StudentTabs({
+    super.key,
+    required this.api,
+    required this.session,
+    required this.notifications,
+    required this.themePreference,
+  });
   final ApiClient api;
   final SessionController session;
+  final NotificationController notifications;
+  final ThemePreferenceController themePreference;
 
   @override
   State<StudentTabs> createState() => _StudentTabsState();
@@ -170,8 +236,16 @@ class _StudentTabsState extends State<StudentTabs> {
             schoolTimezone: profile.schoolTimezone,
             onOpenRecord: _openRecord,
           ),
-          const _NotificationsUnavailable(),
-          StudentProfileScreen(session: widget.session, showAppBar: false),
+          StudentNotificationsScreen(
+            controller: widget.notifications,
+            onOpenRecord: _openRecord,
+            active: _index == 2,
+          ),
+          StudentProfileScreen(
+            session: widget.session,
+            showAppBar: false,
+            themePreference: widget.themePreference,
+          ),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -197,15 +271,4 @@ class _StudentTabsState extends State<StudentTabs> {
       ),
     );
   }
-}
-
-class _NotificationsUnavailable extends StatelessWidget {
-  const _NotificationsUnavailable();
-  @override
-  Widget build(BuildContext context) => const Center(
-    child: Padding(
-      padding: EdgeInsets.all(24),
-      child: Text('Notifikasi belum tersedia.'),
-    ),
-  );
 }

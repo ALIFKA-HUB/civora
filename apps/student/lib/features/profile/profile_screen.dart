@@ -6,9 +6,11 @@ class StudentProfileScreen extends StatefulWidget {
   const StudentProfileScreen({
     super.key,
     required this.session,
+    required this.themePreference,
     this.showAppBar = true,
   });
   final SessionController session;
+  final ThemePreferenceController themePreference;
   final bool showAppBar;
 
   @override
@@ -63,6 +65,30 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             value:
                 profile?.ownEnrollment?.classroom.name ??
                 'Belum ada penempatan aktif',
+          ),
+          const SizedBox(height: 24),
+          Text('Tampilan', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<ThemePreference>(
+            initialValue: widget.themePreference.preference,
+            decoration: const InputDecoration(labelText: 'Tema aplikasi'),
+            items: const [
+              DropdownMenuItem(
+                value: ThemePreference.system,
+                child: Text('Ikuti perangkat'),
+              ),
+              DropdownMenuItem(
+                value: ThemePreference.light,
+                child: Text('Terang'),
+              ),
+              DropdownMenuItem(
+                value: ThemePreference.dark,
+                child: Text('Gelap'),
+              ),
+            ],
+            onChanged: (value) {
+              if (value != null) widget.themePreference.set(value);
+            },
           ),
           const SizedBox(height: 24),
           Text('Ganti password', style: Theme.of(context).textTheme.titleLarge),

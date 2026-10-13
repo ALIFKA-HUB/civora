@@ -191,6 +191,27 @@ class QrSelectionTest extends TestCase
             ->assertCreated()->assertJsonPath('data.source', 'manual');
     }
 
+    public function test_teacher_student_profile_exposes_only_nonsecret_activation_status_to_teachers(): void
+    {
+        $teacherToken = $this->teacherUser->createToken('teacher-profile')->plainTextToken;
+        $url = '/api/v1/teacher/students/'.$this->student->id;
+        $this->withToken($teacherToken)->getJson($url)->assertOk()
+            ->assertJsonPath('data.account_status', 'active')
+            ->assertJsonPath('data.must_change_password', false)
+            ->assertJsonMissingPath('data.password')
+            ->assertJsonMissingPath('data.temporary_credential');
+
+        $this->studentUser->update(['account_status' => 'pending_activation', 'must_change_password' => true]);
+        $this->withToken($teacherToken)->getJson($url)->assertOk()
+            ->assertJsonPath('data.account_status', 'pending_activation')
+            ->assertJsonPath('data.must_change_password', true)
+            ->assertJsonMissingPath('data.password');
+
+        $studentToken = $this->studentUser->createToken('student-profile')->plainTextToken;
+        $this->app['auth']->forgetGuards();
+        $this->withToken($studentToken)->getJson($url)->assertForbidden();
+    }
+
     public function test_retry_is_idempotent_only_for_same_teacher_request_key_and_token(): void
     {
         $raw = $this->withToken($this->issuingToken())->postJson('/api/v1/student/qr')->assertOk()->json('data.token');

@@ -29,6 +29,7 @@ class SessionController extends ChangeNotifier {
   bool isRestoring = false;
   int _generation = 0;
   Future<void> _storageQueue = Future<void>.value();
+  Future<void> Function()? beforeLogout;
 
   int get generation => _generation;
 
@@ -155,6 +156,7 @@ class SessionController extends ChangeNotifier {
     isRestoring = false;
     notifyListeners();
     try {
+      await beforeLogout?.call();
       if (token != null) await _requiredApi.post('/auth/logout', const {});
     } finally {
       if (generation == _generation) await _clearLocalSession(generation);

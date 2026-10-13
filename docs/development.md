@@ -179,6 +179,12 @@ Fondasi M-01 menggunakan Flutter 3.41.9 (Dart 3.11.5), Android SDK 36.0.0 (`C:\A
 
 Package ID lokal untuk build debug adalah `dev.civora.debug.student` (Civora Siswa) dan `dev.civora.debug.teacher` (Civora Guru). Keduanya bukan registrasi distribusi sekolah. Firebase tidak dibutuhkan untuk build fondasi.
 
+### Notifikasi Firebase opsional
+
+Daftar notifikasi dalam aplikasi dan tema tetap berfungsi tanpa Firebase. Push hanya aktif setelah kedua package ID Android di atas didaftarkan pada proyek Firebase yang disediakan pemilik sekolah. Unduh konfigurasi Android yang cocok untuk setiap package ID ke `apps/student/android/app/google-services.json` dan `apps/teacher/android/app/google-services.json`; jangan memakai file yang sama bila Firebase mendaftarkannya sebagai aplikasi berbeda. Simpan konfigurasi secara lokal dan jangan commit file tersebut. App Gradle hanya menerapkan Google Services bila file memang tersedia. Tanpa file tersebut build tetap berjalan dan adapter menandai push tidak tersedia.
+
+Di Android 13+, aplikasi meminta izin notifikasi saat mendaftarkan push. Pengguna dapat menolak izin tanpa memengaruhi daftar dalam aplikasi. Payload push hanya membawa tipe event dan ID resource; aplikasi mengambil detail dari API setelah sesi aktif dan otorisasi server memvalidasi akses. Tidak ada data siswa yang dimasukkan ke notifikasi push.
+
 Jalankan backend melalui wrapper `ops/dev` sebagaimana diterangkan di atas. Untuk Android emulator, host loopback backend memakai `10.0.2.2`. `CIVORA_API_BASE_URL` dibaca melalui `--dart-define`; URL `api.example.invalid` hanya contoh sintaks, ganti dengan URL yang benar. Untuk perangkat fisik, berikan alamat LAN server yang dapat dijangkau HP. Gunakan HTTPS di luar loopback development; HTTP cleartext hanya diaktifkan untuk varian debug. Shell M-01 belum mengirim request API.
 
 Dari root repositori, jalankan test/analyzer masing-masing package dan app:

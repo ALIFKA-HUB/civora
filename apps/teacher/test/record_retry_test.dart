@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:civora_core/civora_core.dart';
+import 'package:civora_ui/civora_ui.dart';
 import 'package:civora_teacher/features/home/home_screen.dart';
 import 'package:civora_teacher/features/points/record_point_controller.dart';
 import 'package:flutter/material.dart';
@@ -328,6 +329,8 @@ void main() {
           home: TeacherHomeScreen(
             api: api,
             session: session,
+            notifications: NotificationController(api: api, session: session),
+            themePreference: ThemePreferenceController(),
             recordController: controller,
           ),
         ),

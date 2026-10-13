@@ -90,6 +90,8 @@ class ApiClient {
     String? idempotencyKey,
   }) => _send('POST', path, body: body, idempotencyKey: idempotencyKey);
 
+  Future<Map<String, dynamic>> delete(String path) => _send('DELETE', path);
+
   Future<Map<String, dynamic>> uploadFile(
     String path, {
     required Uint8List bytes,

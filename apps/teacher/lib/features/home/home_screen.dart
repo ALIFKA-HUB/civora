@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:civora_core/civora_core.dart';
+import 'package:civora_ui/civora_ui.dart';
 import 'package:flutter/material.dart';
 import '../points/record_point_controller.dart';
 import '../points/record_point_screen.dart';
 import '../points/record_summary_screen.dart';
 import '../profile/profile_screen.dart';
+import '../notifications/notifications_screen.dart';
 import '../records/teacher_records_screen.dart';
 import '../scanner/scanner_screen.dart';
 import '../students/student_detail_screen.dart';
@@ -15,10 +17,14 @@ class TeacherHomeScreen extends StatefulWidget {
     super.key,
     required this.api,
     required this.session,
+    required this.notifications,
+    required this.themePreference,
     this.recordController,
   });
   final ApiClient api;
   final SessionController session;
+  final NotificationController notifications;
+  final ThemePreferenceController themePreference;
   final RecordPointController? recordController;
   @override
   State<TeacherHomeScreen> createState() => _TeacherHomeScreenState();
@@ -46,7 +52,30 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Civora Guru')),
+    appBar: AppBar(
+      title: const Text('Civora Guru'),
+      actions: [
+        IconButton(
+          tooltip: 'Notifikasi',
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => TeacherNotificationsScreen(
+                controller: widget.notifications,
+                onOpenRecord: (id) => Navigator.of(context).push<void>(
+                  MaterialPageRoute(
+                    builder: (_) => TeacherRecordDetailScreen(
+                      api: widget.api,
+                      recordId: id,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
     body: Column(
       children: [
         if (_recordController.hasUnknownAttempt)
@@ -71,7 +100,10 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                 onSelected: _openStudent,
               ),
               TeacherRecordsScreen(api: widget.api),
-              TeacherProfileScreen(session: widget.session),
+              TeacherProfileScreen(
+                session: widget.session,
+                themePreference: widget.themePreference,
+              ),
             ],
           ),
         ),
@@ -212,6 +244,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       MaterialPageRoute<void>(
         builder: (_) => TeacherStudentDetailScreen(
           api: widget.api,
+          session: widget.session,
           student: student,
           onRecord: (selected) async {
             Navigator.pop(context);
