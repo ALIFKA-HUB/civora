@@ -35,7 +35,7 @@ final class CommitAccountsImport
         if ($batch->status !== 'preview') {
             throw ValidationException::withMessages(['batch' => 'Batch tidak dapat dikonfirmasi.']);
         }
-        if ($batch->error_summary !== []) {
+        if (($batch->error_summary ?? []) !== []) {
             throw ValidationException::withMessages(['batch' => 'Perbaiki kesalahan pratinjau sebelum mengonfirmasi.']);
         }
         try {
@@ -58,7 +58,7 @@ final class CommitAccountsImport
 
                     return $batch;
                 }
-                if ($batch->error_summary !== []) {
+                if (($batch->error_summary ?? []) !== []) {
                     throw ValidationException::withMessages(['batch' => 'Perbaiki kesalahan pratinjau sebelum mengonfirmasi.']);
                 }
 

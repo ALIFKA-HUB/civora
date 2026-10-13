@@ -43,14 +43,14 @@
                 <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-5">
                     <section aria-labelledby="nav-summary">
                         <h2 id="nav-summary" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Ringkasan</h2>
-                        <a href="{{ route('admin.home') }}" class="admin-link mt-2" aria-current="page" @click="closeNavigation()">Dashboard</a>
+                        <a href="{{ route('admin.home') }}" class="admin-link mt-2" @if (request()->routeIs('admin.home')) aria-current="page" @endif @click="closeNavigation()">Dashboard</a>
                     </section>
                     <section aria-labelledby="nav-school-data">
                         <h2 id="nav-school-data" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Data sekolah</h2>
                         <div class="mt-2 space-y-1">
-                            <span class="admin-link admin-muted" aria-disabled="true">Siswa <span class="ml-auto text-xs">Belum tersedia</span></span>
-                            <span class="admin-link admin-muted" aria-disabled="true">Guru <span class="ml-auto text-xs">Belum tersedia</span></span>
-                            <span class="admin-link admin-muted" aria-disabled="true">Akademik <span class="ml-auto text-xs">Belum tersedia</span></span>
+                            <a href="{{ route('admin.students') }}" class="admin-link" @if (request()->routeIs('admin.students*')) aria-current="page" @endif @click="closeNavigation()">Siswa</a>
+                            <a href="{{ route('admin.teachers') }}" class="admin-link" @if (request()->routeIs('admin.teachers')) aria-current="page" @endif @click="closeNavigation()">Guru</a>
+                            <a href="{{ route('admin.academic') }}" class="admin-link" @if (request()->routeIs('admin.academic')) aria-current="page" @endif @click="closeNavigation()">Akademik</a>
                         </div>
                     </section>
                     <section aria-labelledby="nav-points">
@@ -65,6 +65,7 @@
                     <section aria-labelledby="nav-administration">
                         <h2 id="nav-administration" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Administrasi</h2>
                         <div class="mt-2 space-y-1">
+                            <a href="{{ route('admin.import') }}" class="admin-link" @if (request()->routeIs('admin.import*')) aria-current="page" @endif @click="closeNavigation()">Import akun</a>
                             <span class="admin-link admin-muted" aria-disabled="true">Laporan <span class="ml-auto text-xs">Belum tersedia</span></span>
                             <span class="admin-link admin-muted" aria-disabled="true">Pengaturan <span class="ml-auto text-xs">Belum tersedia</span></span>
                             <span class="admin-link admin-muted" aria-disabled="true">Audit <span class="ml-auto text-xs">Belum tersedia</span></span>

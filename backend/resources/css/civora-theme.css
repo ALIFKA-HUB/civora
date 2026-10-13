@@ -68,6 +68,17 @@ a { color: var(--primary); }
 .admin-button { min-height: 44px; border: 0; border-radius: 12px; background: var(--primary); color: var(--on-primary); font-weight: 600; padding: 10px 16px; cursor: pointer; }
 .admin-button:disabled { opacity: .7; cursor: wait; }
 .admin-button-secondary { min-height: 44px; border: 1px solid var(--control-border); border-radius: 12px; background: transparent; color: var(--text-main); padding: 10px 14px; cursor: pointer; }
+.admin-button-primary { min-height: 44px; border: 0; border-radius: 12px; background: var(--primary); color: var(--on-primary); font-weight: 600; padding: 10px 16px; cursor: pointer; }
+.admin-button-danger { min-height: 44px; border: 1px solid var(--danger); border-radius: 12px; background: transparent; color: var(--danger); font-weight: 600; padding: 10px 14px; cursor: pointer; }
+.admin-button-primary:disabled, .admin-button-secondary:disabled, .admin-button-danger:disabled { opacity: .65; cursor: wait; }
+.admin-label { display: block; margin-bottom: .375rem; font-size: .875rem; font-weight: 600; }
+.admin-error { margin-top: .375rem; color: var(--danger); font-size: .875rem; }
+.admin-table { border-collapse: collapse; text-align: left; font-size: .875rem; }
+.admin-table th { background: color-mix(in srgb, var(--primary) 8%, var(--surface)); font-weight: 600; white-space: nowrap; }
+.admin-table th, .admin-table td { border-bottom: 1px solid var(--border); padding: .75rem; vertical-align: top; }
+.admin-link-inline { min-height: 40px; display: inline-flex; align-items: center; color: var(--primary); font-weight: 600; text-underline-offset: 3px; }
+button.admin-link-inline { border: 0; background: none; padding: 0; cursor: pointer; }
+.admin-status { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 999px; padding: .2rem .55rem; font-size: .8rem; white-space: nowrap; }
 .admin-link { display: flex; min-height: 44px; align-items: center; border-radius: 8px; padding: 8px 12px; color: var(--text-main); text-decoration: none; }
 .admin-link[aria-current='page'] { background: color-mix(in srgb, var(--primary) 12%, var(--surface)); color: var(--primary); font-weight: 600; }
 .admin-muted { color: var(--text-secondary); }
