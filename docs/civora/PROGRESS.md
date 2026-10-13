@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-06 Lulus setelah implementasi dan review independen. 6 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 sampai B-07 Lulus setelah implementasi dan review independen. 7 dari 26 tugas Lulus; backend keseluruhan belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Perlu perbaikan: B-07 akses bukti | Commit 2ebd141; 199 test/702 assertion lulus, review menemukan bypass AttachmentPolicy |
+| G1: Backend | Dikerjakan: B-08 riwayat/keberatan/koreksi | B-07 fix ddab9ef; test regresi 5/17 assertion lulus, re-review menyetujui |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -81,3 +81,5 @@ Commit cb1b0ea menyediakan QR hash-only 20 detik, selection 5 menit, scan atomik
 #### B-07: perlu perbaikan setelah review
 
 Commit 2ebd141 melaporkan pencatatan atomik, idempotensi, foto privat, dan race perpindahan/ambang; suite 199/702 assertion lulus. Reviewer menemukan download foto memakai pemeriksaan sendiri yang tidak mengikuti AttachmentPolicy: admin/guru yang berhak dapat ditolak, sementara akun pending belum dibatasi dengan benar. Temuan diverifikasi pada controller/policy dan dikembalikan ke implementer untuk regresi/perbaikan. B-07 belum lulus. Minor untuk review akhir: samakan format idempotency key POST dengan route lookup GET. Cleanup bukti staged yang belum dipakai tetap tugas B-11.
+
+Fix ddab9ef memakai AttachmentPolicy dan guard akun aktif sebelum membuka file. Regresi awal gagal pada akses admin/guru serta akun pending; setelah fix PrivateEvidenceTest 5/17 assertion, Pint, dan diff check lulus. Re-review GPT-6 Luna high menyatakan temuan terselesaikan tanpa breakage baru. B-07 Lulus; suite 199/702 adalah bukti sebelum fix, verifikasi kode fix memakai test terfokus tersebut. Langkah berikutnya B-08; minor format key tetap disimpan untuk review akhir.

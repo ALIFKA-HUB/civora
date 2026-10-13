@@ -114,12 +114,12 @@ EnrollStudent::execute(User $admin, Student $student, Semester $semester, string
 
 **Interfaces:** RecordPoint::execute(User $teacherUser, array $input, string $idempotencyKey): PointRecord; StageEvidence::execute(User $teacherUser, UploadedFile $file): Attachment. input hanya selection_id, point_type_version_id, description, attachment_id nullable. PointRecordResource memuat id, latest_revision, source, occurred_at, student, teacher, semester, review_status. API menyertakan summary dari PointTotals.
 
-- [ ] Tulis test validasi keterangan 5-1.000, JPG/PNG 5 MB, owner lampiran, tamper student/points, selection expired/used, katalog berubah, dan penempatan berubah.
-- [ ] Pin retry: `self::assertSame($firstRecord->id, $retryRecord->id); self::assertSame(1, PointRecord::query()->where('idempotency_key', $key)->count());`; payload berbeda `assertStatus(409)`.
-- [ ] Jalankan `php artisan test --filter='RecordPointTest|RecordPointConcurrencyTest|PrivateEvidenceTest'` dan lihat kegagalan.
-- [ ] Implementasikan transaction, urutan lock B-03, snapshot/revision pertama, konsumsi selection, ThresholdEvaluator, audit, serta outbox event unik. Idempotensi diperiksa sebelum penolakan consumed selection.
-- [ ] Implementasikan lookup /teacher/record-attempts/{key} dan streaming bukti lewat policy. Bersihkan metadata gambar, jangan buat URL storage publik.
-- [ ] Verifikasi dua record paralel memicu threshold gabungan, retry setelah commit aman, dan file siswa lain ditolak; commit pencatatan.
+- [x] Tulis test validasi keterangan 5-1.000, JPG/PNG 5 MB, owner lampiran, tamper student/points, selection expired/used, katalog berubah, dan penempatan berubah.
+- [x] Pin retry: `self::assertSame($firstRecord->id, $retryRecord->id); self::assertSame(1, PointRecord::query()->where('idempotency_key', $key)->count());`; payload berbeda `assertStatus(409)`.
+- [x] Jalankan `php artisan test --filter='RecordPointTest|RecordPointConcurrencyTest|PrivateEvidenceTest'` dan lihat kegagalan.
+- [x] Implementasikan transaction, urutan lock B-03, snapshot/revision pertama, konsumsi selection, ThresholdEvaluator, audit, serta outbox event unik. Idempotensi diperiksa sebelum penolakan consumed selection.
+- [x] Implementasikan lookup /teacher/record-attempts/{key} dan streaming bukti lewat policy. Bersihkan metadata gambar, jangan buat URL storage publik.
+- [x] Verifikasi dua record paralel memicu threshold gabungan, retry setelah commit aman, dan file siswa lain ditolak; commit pencatatan.
 
 ### B-08: Riwayat, keberatan, dan koreksi
 
