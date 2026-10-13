@@ -111,3 +111,9 @@ Commit c07adbc menyediakan outbox, notifikasi milik sendiri, token perangkat ter
 Review B-11 meminta perbaikan keputusan koreksi guru yang ditolak agar siswa pemilik catatan ikut diberi tahu, serta pembedaan token UNREGISTERED dari 404 kesalahan konfigurasi Firebase. Implementer menambahkan regresi untuk dua kasus tersebut. Minor cakupan batas retry dan retensi lampiran revisi dicatat untuk review akhir. Cleanup berkas ekspor tanpa referensi telah diperiksa dan menangani minor B-10; push nyata tetap dependensi I-01.
 
 Fix 823fbd9 menambahkan penerima siswa pada keputusan koreksi guru dan hanya mencabut perangkat untuk detail FCM UNREGISTERED bertipe resmi. Test terfokus 6/43 assertion, Pint/diff check lulus; re-review menyetujui tanpa breakage. B-11 dan G1/R1 Lulus. Suite 254/1.007 adalah bukti sebelum fix; kode terakhir diverifikasi dengan test terfokus. Firebase/OAuth/perangkat nyata tetap I-01/G4, minor test tetap review akhir. Pengerjaan berlanjut ke A-01 untuk session, layout, tema, dan dashboard admin.
+
+#### Repository GitHub dan checkpoint admin
+
+Repository public tersedia di [ALIFKA-HUB/civora](https://github.com/ALIFKA-HUB/civora). Main berisi dasar proyek; pengerjaan dan commit saat ini berada pada branch codex/civora-implementation yang terhubung ke origin. Pemeriksaan historis sebelum push tidak menemukan pola private key/credential umum atau berkas .env/runtime privat yang terlacak.
+
+A-01 diimplementasikan pada 6b535b0 dan menunggu review independen: AdminSessionTest 7/34 assertion, suite backend 264/1.052 assertion, browser Dusk 1/36 assertion, build web, Pint/diff check lulus. Browser memeriksa tema terang/gelap/sistem, kontras, keyboard dan viewport 320/768/1024/1440. Belum mencentang A-01/G2. Kelanjutan implementasi ditahan sesuai permintaan pengguna untuk menyiapkan GitHub terlebih dahulu.
