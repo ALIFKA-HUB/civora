@@ -18,8 +18,8 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
-| G3: Mobile | Dikerjakan: M-06; M-03 menunggu HP | M-05 lulus lokal; QR/kamera, native cold-start, dan integrasi perangkat belum diverifikasi |
-| G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
+| G3: Mobile | Menunggu Android: M-03/M-06 | Review kode lokal bersih; QR/kamera, native cold-start, dan UI integration belum diverifikasi |
+| G4: Integrasi | Dikerjakan lokal: I-01; Firebase/perangkat belum tersedia | API/outbox dapat diuji lokal; scan dua target dan push nyata masih pending |
 | G5: Produksi | Belum mulai | Belum ada |
 
 ## Log
@@ -182,3 +182,9 @@ Review meminta lock unknown tidak bisa dibatalkan dari form dan respons pencaria
 Commit 67a9376 menyediakan notifikasi/read state, deep link terbatas dengan fetch server sesuai role, tema persisten, lifecycle push opsional, dan dialog bantuan password sementara. Field account_status/must_change_password ditambahkan secara terbatas pada profil siswa yang boleh dilihat guru. Test backend 312/1.364 assertion, siswa 21/guru 32/core 20/UI 1, analisis empat target, dua build APK tanpa konfigurasi Firebase, serta diff check exit 0. Mutasi sementara penghilangan flag profil membuktikan regresi, bukan checkout baseline.
 
 Review meminta respons daftar notifikasi lama tidak mengganti state akun baru. Fix 185f98d: core 23, notifikasi masing-masing aplikasi 4, UI 1, analisis empat target, kedua build APK/diff exit 0; re-review menyetujui tanpa masalah baru. Suite backend sebelumnya tidak diulang karena fix hanya client. M-05 Lulus sesuai cakupan lokal; 20/26 tugas lulus. Native cold-start dan push Firebase nyata belum dibuktikan, tetap M-06/I-01. M-03 masih menunggu HP. Pengguna menetapkan skala data acuan 3.000 siswa dan 200 guru untuk I-04, tanpa mengasumsikan jumlah concurrent atau jaminan server produksi.
+
+#### M-06: kode/HTTP lokal disetujui, Android pending
+
+Commit 0c84646 menambahkan integration test UI, command fixture sintetis berpengaman, smoke HTTP nyata melalui ApiClient/SessionController, dan runbook mobile. Command integration Android dicoba tetapi exit 1 karena tidak ada perangkat/AVD; smoke HTTP lulus, kedua APK terbuild, minimum aktual API 24/target API 36 diverifikasi dengan aapt. Guard test 1/5, Pint/diff lulus. Test guard awal sempat mereset database disposable lewat RefreshDatabase; guard sekarang read-only, fixture baru dan smoke ulang diverifikasi, salinan credential sintetis lama dibersihkan dari path yang tepat. JSON credential lokal tetap diabaikan Git.
+
+Review memperbaiki interaksi fixture: smoke tidak lagi membuat keberatan pada catatan yang akan dipakai test UI. Fix 9e301a1 memakai record QR buatan smoke; fix a28cf60 memeriksa ID target itu sebelum POST dan memastikan fixture UI tetap tanpa pending review. Smoke aktual/analyze/diff exit 0; re-review terakhir menyetujui tanpa temuan baru. Artefak review awal yang belum tersimpan diarsipkan dari verdict reviewer secara transparan. M-06 belum Lulus tanpa UI integration/perangkat; M-03 juga menunggu HP. Jumlah Lulus tetap 20/26. Pekerjaan lokal independen I-01 dilanjutkan, Firebase/staging/produksi belum diklaim tersedia.

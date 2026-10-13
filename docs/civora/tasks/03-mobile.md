@@ -101,8 +101,8 @@ ApiException berisi statusCode, code, message, fields, requestId. ApiClient.get(
 
 **Interfaces:** Produces dua APK debug/staging terpisah dan catatan perangkat/OS yang diuji. Signing release tidak dibuat dengan credential contoh. Workflow integration mengonsumsi API staging/data sintetis, bukan mock sebagai bukti akhir.
 
-- [ ] Tulis integration test siswa login → QR → melihat catatan/keberatan dan guru login → scan/manual → simpan → meminta koreksi.
+- [x] Tulis integration test siswa login → QR → melihat catatan/keberatan dan guru login → scan/manual → simpan → meminta koreksi.
 - [ ] Jalankan `flutter analyze`, `flutter test`, dan `flutter test integration_test` di kedua app pada perangkat/emulator yang didokumentasikan.
 - [ ] Periksa perangkat fisik: kamera, orientasi, keyboard, jaringan buruk, background/foreground, tema sistem, pembesaran teks, izin push, dan perangkat tanpa push yang didukung.
-- [ ] Jalankan `flutter build apk --debug` di dua app; dokumentasikan identitas aplikasi, versi minimum Android berdasarkan dependency aktual, hasil, serta batasan yang ditemukan.
-- [ ] Commit setelah masalah inti terselesaikan. Dua build sukses saja tidak menggantikan alur end-to-end I-01.
+- [x] Jalankan `flutter build apk --debug` di dua app; dokumentasikan identitas aplikasi, versi minimum Android berdasarkan dependency aktual, hasil, serta batasan yang ditemukan.
+- [x] Commit setelah masalah inti terselesaikan. Dua build sukses saja tidak menggantikan alur end-to-end I-01.
