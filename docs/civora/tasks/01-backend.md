@@ -125,9 +125,11 @@ EnrollStudent::execute(User $admin, Student $student, Semester $semester, string
 
 **Depends:** B-07.
 
-**Files:** Create backend/app/Actions/Reviews/{SubmitReviewRequest,DecideReviewRequest,ReviseRecord}.php; backend/app/Http/Controllers/Api/{StudentRecordController,TeacherRecordController,ReviewRequestController}.php; Test backend/tests/Feature/{RecordHistoryAccessTest,ReviewDecisionTest}.php; Modify backend/routes/api.php.
+**Files:** Create backend/app/Actions/Reviews/{SubmitReviewRequest,DecideReviewRequest,ReviseRecord}.php; backend/app/Http/Controllers/Api/{StudentSummaryController,StudentRecordController,TeacherRecordController,ReviewRequestController}.php; Test backend/tests/Feature/{StudentSummaryAccessTest,RecordHistoryAccessTest,ReviewDecisionTest}.php; Modify backend/routes/api.php.
 
 **Interfaces:** SubmitReviewRequest::execute(User $requester, PointRecord $record, string $kind, string $reason, array $proposedChange): ReviewRequest; DecideReviewRequest::execute(User $admin, ReviewRequest $request, string $decision, string $reason, int $expectedRevision, array $changes): ReviewRequest; ReviseRecord::execute(User $admin, PointRecord $record, string $reason, int $expectedRevision, array $changes): PointRecord. History endpoints memakai resource B-07.
+
+StudentSummaryController menyediakan GET /student/summary sesuai dokumen 06: dua total dari PointTotals B-05, semester, dan status ambang terbaru milik siswa login. Siswa lain tidak dapat dipilih melalui input klien. Uji akses role/aktivasi, total efektif setelah koreksi, dan kondisi belum ada semester aktif; jangan menampilkan nol palsu sebagai data yang belum tersedia. Ini melengkapi endpoint rancangan yang belum dialokasikan pada tugas layanan total B-05.
 
 decision adalah approve/reject. changes/proposedChange memakai operation cancel/revise, point_type_version_id opsional, description opsional, dan attachment_id opsional; setidaknya satu perubahan sah diperlukan untuk revise. Pengajuan siswa hanya reason dan proposedChange kosong. Reject memakai changes kosong; approve harus menentukan cancel/revise secara eksplisit. Field identitas siswa/guru/semester tidak diizinkan.
 
