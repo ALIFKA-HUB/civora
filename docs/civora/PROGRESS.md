@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11 Lulus setelah implementasi dan review independen. 11 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11 dan A-01 Lulus setelah implementasi dan review independen. 12 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -17,7 +17,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
-| G2: Admin | Dikerjakan: A-01 | Session, layout, tema, dashboard; UI/browser belum terbukti |
+| G2: Admin | Dikerjakan: A-02 | A-01 lulus; session/layout/dashboard diuji melalui HTTP dan browser |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
@@ -123,3 +123,5 @@ Pengguna meminta commit/push setiap tugas atau perubahan bermakna dan pembaruan 
 #### A-01: perlu perbaikan setelah review
 
 Review independen menemukan guard idle/role admin belum dipersistenkan pada update Livewire, serta drawer mobile belum memiliki fokus modal dan pemulihan fokus. Implementer memperbaiki kedua kasus dengan regresi HTTP update dan browser. Panduan Dusk dari checkout baru juga perlu tersedia pada dokumentasi publik. Suite 264/1.052 dan Dusk 1/36 adalah bukti sebelum fix; A-01 belum lulus.
+
+Fix a9cfc7d menegakkan empat guard admin pada update Livewire dan membuat drawer modal dengan pembatasan serta pemulihan fokus. AdminSessionTest 11/64 assertion, Dusk 1/44 assertion, build/Pint/diff check lulus; re-review menyetujui tiga temuan tanpa critical/important baru. A-01 Lulus. Suite 264/1.052 adalah bukti sebelum fix; verifikasi kode fix memakai test terfokus dan browser. Minor nama landmark desktop dan cakupan kontras tambahan dicatat untuk review akhir. Pengerjaan berikutnya A-02 pengelolaan siswa, guru, akademik, import, dan bantuan akun.

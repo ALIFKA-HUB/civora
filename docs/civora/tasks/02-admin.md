@@ -28,11 +28,11 @@ File import berubah referensinya setelah preview (A-02), password temporary suda
 
 Admin pending setelah reset memiliki jalur aktivasi terbatas untuk identitas, ganti password, dan logout. Konfirmasi password terbaru untuk mutasi akun administratif diterapkan pada caller web; action B-02 tetap memakai interface yang disetujui.
 
-- [ ] Tulis test guru/siswa ditolak dari /admin, session idle 30 menit habis, CSRF gagal ditolak, dan admin last-account protection dari B-02 tetap berlaku.
-- [ ] Pin akses `self::assertFalse(Gate::forUser($teacher)->allows('access-admin'));`; login admin valid diarahkan ke /admin tanpa menampilkan password.
-- [ ] Jalankan `php artisan test --filter=AdminSessionTest` dan lihat gagal.
-- [ ] Implementasikan layout sidebar kelompok pada dokumen 07, header sekolah/semester, terang/gelap, font self-host, fokus keyboard, dan dashboard antrean. Verifikasi dependency Livewire/Tailwind sebelum import.
-- [ ] Jalankan test lulus dan QA keyboard/layout pada desktop serta layar sempit; commit shell admin.
+- [x] Tulis test guru/siswa ditolak dari /admin, session idle 30 menit habis, CSRF gagal ditolak, dan admin last-account protection dari B-02 tetap berlaku.
+- [x] Pin akses `self::assertFalse(Gate::forUser($teacher)->allows('access-admin'));`; login admin valid diarahkan ke /admin tanpa menampilkan password.
+- [x] Jalankan `php artisan test --filter=AdminSessionTest` dan lihat gagal.
+- [x] Implementasikan layout sidebar kelompok pada dokumen 07, header sekolah/semester, terang/gelap, font self-host, fokus keyboard, dan dashboard antrean. Verifikasi dependency Livewire/Tailwind sebelum import.
+- [x] Jalankan test lulus dan QA keyboard/layout pada desktop serta layar sempit; commit shell admin.
 
 ### A-02: Siswa, guru, akademik, import, dan bantuan akun
 
