@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DeviceTokenController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PointRecordController;
 use App\Http\Controllers\Api\PointTypeController;
 use App\Http\Controllers\Api\ReviewRequestController;
@@ -64,6 +66,14 @@ Route::prefix('v1')->group(function (): void {
             ->middleware(EnsureActiveAccount::class.':active');
         Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:account-sensitive');
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+        Route::get('/notifications', [NotificationController::class, 'index'])
+            ->middleware(EnsureActiveAccount::class.':active,student,teacher');
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])
+            ->whereUuid('notification')->middleware(EnsureActiveAccount::class.':active,student,teacher');
+        Route::post('/device-tokens', [DeviceTokenController::class, 'store'])
+            ->middleware(EnsureActiveAccount::class.':active,student,teacher');
+        Route::delete('/device-tokens/{deviceToken}', [DeviceTokenController::class, 'destroy'])
+            ->whereUuid('deviceToken')->middleware(EnsureActiveAccount::class.':active,student,teacher');
         Route::post('/teacher/students/{student}/temporary-credential/reveal', [AuthController::class, 'reveal'])
             ->middleware([EnsureActiveAccount::class.':active,teacher', 'throttle:account-sensitive']);
     });

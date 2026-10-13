@@ -49,6 +49,12 @@ Password acak dan APP_KEY hanya ditulis ke berkas lokal yang diabaikan Git: `.ru
 
 Wrapper PHP selalu berjalan dari `backend`. Setup manual pada sistem lain: sediakan PHP dengan ekstensi di atas dan cluster PostgreSQL baru milik workspace di `.runtime/pgsql`, dengan btree_gist dan database `civora_test`. Buat `.runtime/civora-cluster.json` berisi `data` (path absolut cluster) dan `port` (port tinggi loopback yang dipilih), jalankan `composer install`, salin `.env.example` dan `.env.testing.example`, isi credential/APP_KEY, lalu jalankan migrasi. Database test sekali pakai dibangun ulang.
 
+## Worker notifikasi dan cleanup
+
+Outbox notifikasi dipindai scheduler setiap menit. Jalankan `php artisan schedule:work` dan `php artisan queue:work --tries=1` pada proses backend; job mengunci event, membuat notifikasi in-app secara idempoten, lalu mengirim push. Kegagalan gateway dijadwalkan ulang dengan jeda 15, 30, 60, dan 120 detik; setelah lima percobaan, event berhenti dicoba sementara notifikasi in-app tetap tersedia. Cleanup terjadwal setiap hari pukul 03:15 UTC: selection kedaluwarsa tanpa record, bukti staged berumur 24 jam yang tidak direferensikan, import berumur tujuh hari, dan ekspor yang kedaluwarsa dihapus sesuai jalur privat yang dihasilkan server.
+
+Untuk FCM HTTP v1, `CIVORA_FCM_SERVICE_ACCOUNT_PATH` menunjuk ke service-account JSON privat dan `CIVORA_FCM_PROJECT_ID` opsional menimpa project ID dalam credential. Credential dibaca worker saja; jangan commit atau log isinya. Test memakai mock otomatis dan tidak membuktikan pengiriman perangkat nyata. Verifikasi integrasi nyata tetap menunggu kredensial dan perangkat pada I-01.
+
 ## Skema dan batas fondasi
 
 Domain memakai UUID, NISN/NIP teks, dan timestamp PostgreSQL bertimezone. Timezone server/aplikasi dan sesi database adalah UTC. Timezone tampilan sekolah terpisah: `app.school_timezone`/`SCHOOL_TIMEZONE` default Asia/Jakarta, sama dengan default `school_settings.timezone`. Grammar PostgreSQL mengikat DateTime dengan mikrodetik dan offset (`Y-m-d H:i:s.uP`), termasuk timestamp otomatis model domain dan Sanctum. Instant `09:00+07:00` disimpan sebagai `02:00 UTC` dan diserialisasi sebagai JSON UTC. Kolom date-only akademik mempertahankan tanggal kalender; konversi tampilan dilakukan memakai timezone sekolah. Foreign key riwayat memakai RESTRICT. Seluruh entitas dokumen data, relasi Eloquent, constraint unik/check, partial unique semester aktif/review pending, exclusion rentang enrollment `[valid_from, valid_until)`, dan indeks riwayat tersedia.
