@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AttachmentController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PointRecordController;
 use App\Http\Controllers\Api\PointTypeController;
 use App\Http\Controllers\Api\StudentQrController;
 use App\Http\Controllers\Api\StudentSelectionController;
@@ -30,6 +32,15 @@ Route::prefix('v1')->group(function (): void {
             ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::post('/teacher/student-selections', [StudentSelectionController::class, 'store'])
             ->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::post('/teacher/records', [PointRecordController::class, 'store'])
+            ->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::get('/teacher/record-attempts/{key}', [PointRecordController::class, 'attempt'])
+            ->where('key', '[A-Za-z0-9._:-]{1,100}')
+            ->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::post('/teacher/attachments', [AttachmentController::class, 'store'])
+            ->middleware(EnsureActiveAccount::class.':active,teacher');
+        Route::get('/attachments/{id}', [AttachmentController::class, 'show'])
+            ->whereUuid('id');
         Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:account-sensitive');
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/teacher/students/{student}/temporary-credential/reveal', [AuthController::class, 'reveal'])
