@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-09 Lulus setelah implementasi dan review independen. 9 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 sampai B-10 Lulus setelah implementasi dan review independen. 10 dari 26 tugas Lulus; backend keseluruhan belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-10 laporan/ekspor | B-09 fix d65fcc8; test 16/73 assertion lulus, re-review menyetujui |
+| G1: Backend | Dikerjakan: B-11 notifikasi/cleanup | B-10 fix f4340ee; test 9/74 assertion lulus, re-review menyetujui |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
@@ -101,3 +101,5 @@ Fix d65fcc8 menolak preview pada batas tepat 7 hari dan memeriksa ulang semester
 #### B-10: perlu perbaikan setelah review
 
 Commit 3fce9d9 menyediakan laporan historis dan ekspor privat XLSX/PDF. Test terfokus 5/50 assertion dan suite 245/925 assertion lulus; Pint/diff check lulus. Review menemukan job ekspor dapat tertinggal pada processing setelah worker terputus, serta persiapan filesystem berada di luar penanganan kegagalan. Implementer memperbaiki pemulihan dengan kepemilikan setiap percobaan agar worker lama tidak menimpa hasil baru. B-10 belum lulus. Pemeriksaan visual PDF panjang tetap I-02.
+
+Fix f4340ee menambahkan claim/lease, berkas per percobaan, publikasi terkunci, dan penanganan kegagalan yang tidak membatalkan hasil worker baru. PointReportTest 9/74 assertion, Pint/diff check lulus; re-review menyetujui tanpa critical/important. B-10 Lulus. Minor tersimpan untuk review akhir: crash setelah pemindahan berkas sebelum commit dapat meninggalkan berkas tanpa referensi. Suite 245/925 adalah bukti sebelum fix; pemeriksaan visual PDF panjang tetap I-02. Langkah berikutnya B-11 notifikasi dan cleanup.

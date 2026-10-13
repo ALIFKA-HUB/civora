@@ -163,10 +163,10 @@ decision adalah approve/reject. changes/proposedChange memakai operation cancel/
 
 **Interfaces:** PointReportQuery::build(array $filters): array{summary:array,rows:array,generated_at:string}; RequestReportExport::execute(User $admin, array $filters, string $format): ReportExport; GeneratePointReport::handle(): void. format adalah xlsx/pdf; hanya admin pemilik export dapat mengunduh file privat.
 
-- [ ] Tulis fixture siswa pindah kelas dengan catatan kedua kelas, cancelled record, revision nilai, identifier nol awal, dan teks berawalan =/+/-/@.
-- [ ] Pin rekap kelas memakai enrollment historis: `self::assertSame(10, $oldClassReport['summary']['violation']);` ketika kelas baru memiliki 5 poin terpisah. Uji filter identik menghasilkan nilai sama pada layar/data XLSX/PDF.
-- [ ] Jalankan `php artisan test --filter=PointReportTest`; implementasikan snapshot konsisten saat generation, escape text, metadata filter/timezone, queue status, dan expiry 7 hari.
-- [ ] Verifikasi unduhan non-admin ditolak; render contoh PDF panjang pada task I-02 sebelum menandai kualitas ekspor selesai. Commit laporan.
+- [x] Tulis fixture siswa pindah kelas dengan catatan kedua kelas, cancelled record, revision nilai, identifier nol awal, dan teks berawalan =/+/-/@.
+- [x] Pin rekap kelas memakai enrollment historis: `self::assertSame(10, $oldClassReport['summary']['violation']);` ketika kelas baru memiliki 5 poin terpisah. Uji filter identik menghasilkan nilai sama pada layar/data XLSX/PDF.
+- [x] Jalankan `php artisan test --filter=PointReportTest`; implementasikan snapshot konsisten saat generation, escape text, metadata filter/timezone, queue status, dan expiry 7 hari.
+- [x] Verifikasi unduhan non-admin ditolak; render contoh PDF panjang pada task I-02 sebelum menandai kualitas ekspor selesai. Commit laporan.
 
 ### B-11: Outbox, notifikasi, dan cleanup
 
