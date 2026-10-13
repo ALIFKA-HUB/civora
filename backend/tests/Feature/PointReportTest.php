@@ -11,7 +11,9 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\Reports\PointReportQuery;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -202,6 +204,98 @@ class PointReportTest extends TestCase
             self::assertNull($export->fresh()->file_path);
             self::assertSame([], Storage::disk('local')->allFiles());
         }
+    }
+
+    public function test_stale_processing_export_is_reclaimed_and_completed(): void
+    {
+        Carbon::setTestNow('2026-10-13 10:00:00 Asia/Jakarta');
+        $token = (string) Str::uuid();
+        $export = ReportExport::create(['admin_id' => $this->admin->id, 'filters' => ['semester_id' => $this->semester->id, 'format' => 'xlsx'], 'status' => 'processing']);
+        $export->update([
+            'generation_token' => $token,
+            'generation_lease_until' => now()->subSecond(),
+            'file_path' => 'reports/stale.xlsx',
+        ]);
+        Storage::disk('local')->put('reports/stale.xlsx', 'abandoned attempt');
+
+        try {
+            (new GeneratePointReport($export->id))->handle();
+
+            $fresh = $export->fresh();
+            self::assertSame('completed', $fresh->status);
+            self::assertNotSame($token, $fresh->generation_token);
+            self::assertTrue(Storage::disk('local')->exists($fresh->file_path));
+            self::assertFalse(Storage::disk('local')->exists('reports/stale.xlsx'));
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_live_processing_duplicate_does_not_publish_a_second_file(): void
+    {
+        $token = (string) Str::uuid();
+        $path = 'reports/current-attempt.xlsx';
+        $export = ReportExport::create(['admin_id' => $this->admin->id, 'filters' => ['semester_id' => $this->semester->id, 'format' => 'xlsx'], 'status' => 'processing']);
+        $export->update(['generation_token' => $token, 'generation_lease_until' => now()->addMinutes(2), 'file_path' => $path]);
+        Storage::disk('local')->put($path, 'active attempt');
+
+        (new GeneratePointReport($export->id))->handle();
+
+        self::assertSame('processing', $export->fresh()->status);
+        self::assertSame($token, $export->fresh()->generation_token);
+        self::assertSame($path, $export->fresh()->file_path);
+        self::assertArrayNotHasKey('generation_token', $export->fresh()->toArray());
+        self::assertArrayNotHasKey('generation_lease_until', $export->fresh()->toArray());
+        self::assertSame('active attempt', Storage::disk('local')->get($path));
+        self::assertCount(1, Storage::disk('local')->allFiles());
+    }
+
+    public function test_filesystem_preparation_failure_marks_export_failed_without_artifact(): void
+    {
+        $export = ReportExport::create(['admin_id' => $this->admin->id, 'filters' => ['semester_id' => $this->semester->id, 'format' => 'xlsx'], 'status' => 'queued']);
+        $realDisk = Storage::disk('local');
+        $brokenDisk = \Mockery::mock(FilesystemAdapter::class);
+        $brokenDisk->shouldReceive('makeDirectory')->once()->with('reports/'.$export->id)->andReturn(false);
+        $brokenDisk->shouldReceive('delete')->atLeast()->once()->andReturn(true);
+        Storage::shouldReceive('disk')->once()->with('local')->andReturn($brokenDisk);
+
+        try {
+            (new GeneratePointReport($export->id))->handle();
+            self::fail('Expected report directory preparation to fail.');
+        } catch (\RuntimeException) {
+            self::assertSame('failed', $export->fresh()->status);
+            self::assertNull($export->fresh()->file_path);
+            self::assertNull($export->fresh()->generation_token);
+            self::assertSame([], $realDisk->allFiles());
+        }
+    }
+
+    public function test_obsolete_failed_callback_preserves_newer_claim_and_completed_export(): void
+    {
+        $newToken = (string) Str::uuid();
+        $newPath = 'reports/newer-attempt.xlsx';
+        $processing = ReportExport::create(['admin_id' => $this->admin->id, 'filters' => ['semester_id' => $this->semester->id, 'format' => 'xlsx'], 'status' => 'processing']);
+        $processing->update(['generation_token' => $newToken, 'generation_lease_until' => now()->addMinutes(2), 'file_path' => $newPath]);
+        Storage::disk('local')->put($newPath, 'newer attempt');
+
+        $obsoleteJob = new GeneratePointReport($processing->id);
+        $obsoleteJob->claimToken = (string) Str::uuid();
+        $obsoleteJob->failed(new \RuntimeException('obsolete worker failed'));
+
+        self::assertSame('processing', $processing->fresh()->status);
+        self::assertSame($newToken, $processing->fresh()->generation_token);
+        self::assertSame('newer attempt', Storage::disk('local')->get($newPath));
+
+        $completedPath = 'reports/completed.xlsx';
+        $completed = ReportExport::create(['admin_id' => $this->admin->id, 'filters' => ['semester_id' => $this->semester->id, 'format' => 'xlsx'], 'status' => 'completed', 'file_path' => $completedPath, 'generated_at' => now(), 'expires_at' => now()->addDays(7)]);
+        Storage::disk('local')->put($completedPath, 'completed result');
+        $obsoleteCompletedJob = new GeneratePointReport($completed->id);
+        $obsoleteCompletedJob->claimToken = (string) Str::uuid();
+        $obsoleteCompletedJob->failed(new \RuntimeException('obsolete callback'));
+
+        self::assertSame('completed', $completed->fresh()->status);
+        self::assertSame($completedPath, $completed->fresh()->file_path);
+        self::assertSame('completed result', Storage::disk('local')->get($completedPath));
     }
 
     private function record(string $enrollmentId, string $class, string $major, string $category, int $points, string $status, string $description): object

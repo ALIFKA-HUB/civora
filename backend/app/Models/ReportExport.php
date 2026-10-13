@@ -12,9 +12,9 @@ class ReportExport extends Model
 
     protected $table = 'report_exports';
 
-    protected $fillable = ['admin_id', 'filters', 'status', 'file_path', 'generated_at', 'expires_at'];
+    protected $fillable = ['admin_id', 'filters', 'status', 'file_path', 'generated_at', 'expires_at', 'generation_token', 'generation_lease_until'];
 
-    protected $hidden = ['file_path'];
+    protected $hidden = ['file_path', 'generation_token', 'generation_lease_until'];
 
     protected function casts(): array
     {
@@ -22,6 +22,7 @@ class ReportExport extends Model
             'filters' => 'array',
             'generated_at' => 'immutable_datetime',
             'expires_at' => 'immutable_datetime',
+            'generation_lease_until' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];
