@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Reviews\DecideReviewRequest;
+use App\Actions\Reviews\SubmitReviewRequest;
 use App\Jobs\DispatchCivoraNotifications;
 use App\Models\DeviceToken;
 use App\Models\Notification;
@@ -61,6 +63,10 @@ class NotificationDeliveryTest extends TestCase
         self::assertSame($pointCountBeforePush, PointRecord::query()->count());
         self::assertSame(1, $event->fresh()->attempts);
         self::assertNotNull($event->fresh()->next_attempt_at);
+        self::assertDatabaseHas('device_tokens', [
+            'token' => 'synthetic-device-token',
+            'active' => true,
+        ]);
 
         $event->update(['next_attempt_at' => now()->subSecond()]);
         $retryGateway = $this->mock(FcmGateway::class);
@@ -152,6 +158,33 @@ class NotificationDeliveryTest extends TestCase
         $this->mock(FcmGateway::class)->shouldNotReceive('send');
         (new DispatchCivoraNotifications($nextEvent->id))->handle(app(OutboxDispatcher::class));
         self::assertNotNull($nextEvent->fresh()->processed_at);
+    }
+
+    public function test_teacher_correction_decision_notifies_record_owner(): void
+    {
+        DB::table('review_requests')->delete();
+        $admin = User::findOrFail($this->rows['users']['id']);
+        $admin->update(['account_status' => 'active', 'must_change_password' => false]);
+        $teacher = User::findOrFail(DB::table('teachers')->value('user_id'));
+        $teacher->update(['account_status' => 'active', 'must_change_password' => false]);
+        $review = app(SubmitReviewRequest::class)->execute(
+            $teacher,
+            PointRecord::findOrFail($this->rows['point_records']['id']),
+            'teacher_correction',
+            'Mohon koreksi catatan ini.',
+            ['operation' => 'revise', 'description' => 'Synthetic proposed correction'],
+        );
+        app(DecideReviewRequest::class)->execute($admin, $review, 'reject', 'Koreksi tidak didukung bukti.', 1, []);
+        $event = OutboxEvent::query()->where('event_key', 'review-decision:'.$review->id)->firstOrFail();
+
+        (new DispatchCivoraNotifications($event->id))->handle(app(OutboxDispatcher::class));
+
+        self::assertEqualsCanonicalizing(
+            [$teacher->id, $this->student->id],
+            Notification::query()->where('event_key', $event->event_key)->pluck('user_id')->all(),
+        );
+        self::assertSame('rejected', $review->fresh()->status);
+        self::assertSame(1, PointRecord::findOrFail($this->rows['point_records']['id'])->revisions()->count());
     }
 
     private function event(string $type, array $payload): OutboxEvent

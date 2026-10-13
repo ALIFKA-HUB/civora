@@ -85,7 +85,7 @@ final class OutboxDispatcher
             'review_submitted' => ['Permintaan pemeriksaan baru menunggu ditinjau.', array_filter([
                 isset($payload['requester_user_id']) && $payload['requester_user_id'] !== $teacherUserId ? $teacherUserId : null,
             ])],
-            'review_decided' => ['Permintaan pemeriksaan telah diputuskan.', array_filter([$payload['requester_user_id'] ?? null, $teacherUserId])],
+            'review_decided' => ['Permintaan pemeriksaan telah diputuskan.', array_filter([$studentUserId, $payload['requester_user_id'] ?? null, $teacherUserId])],
             default => ['Pembaruan tersedia.', []],
         };
     }

@@ -42,14 +42,11 @@ class FcmGateway
 
         $details = $response->json('error.details', []);
         foreach (is_array($details) ? $details : [] as $detail) {
-            if (($detail['errorCode'] ?? null) === 'UNREGISTERED') {
+            if (($detail['@type'] ?? null) === 'type.googleapis.com/google.firebase.fcm.v1.FcmError'
+                && ($detail['errorCode'] ?? null) === 'UNREGISTERED') {
                 throw new InvalidDeviceToken('FCM device token is no longer registered.');
             }
         }
-        if ($response->status() === 404) {
-            throw new InvalidDeviceToken('FCM device token is no longer registered.');
-        }
-
         throw new RuntimeException('FCM request failed with status '.$response->status().'.');
     }
 
