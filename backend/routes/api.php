@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PointTypeController;
 use App\Http\Middleware\EnsureActiveAccount;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,8 @@ Route::prefix('v1')->group(function (): void {
     Route::middleware(['auth:sanctum', EnsureActiveAccount::class.':activation'])->group(function (): void {
         Route::get('/me', [AuthController::class, 'me']);
         Route::get('/auth/me', [AuthController::class, 'me']);
+        Route::get('/teacher/point-types', [PointTypeController::class, 'index'])
+            ->middleware(EnsureActiveAccount::class.':active,teacher');
         Route::post('/auth/change-password', [AuthController::class, 'changePassword'])->middleware('throttle:account-sensitive');
         Route::post('/auth/logout', [AuthController::class, 'logout']);
         Route::post('/teacher/students/{student}/temporary-credential/reveal', [AuthController::class, 'reveal'])

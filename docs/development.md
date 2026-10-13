@@ -1,6 +1,6 @@
 # Pengembangan backend Civora
 
-Fondasi B-01, autentikasi B-02, dan action akademik B-03 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun/akademik, dan policy resource tersedia. Aksi poin dan admin UI belum tersedia.
+Fondasi B-01, autentikasi B-02, action akademik B-03, dan katalog berversi B-04 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun/akademik/katalog, daftar jenis poin aktif untuk guru, dan policy resource tersedia. Pencatatan poin, pemeriksaan, serta admin UI belum tersedia.
 
 ## Versi terverifikasi pada 12 Oktober 2026
 
