@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Actions\Points\SetThresholdPolicy;
 use App\Livewire\Admin\FollowUps;
 use App\Livewire\Admin\PointTypes;
+use App\Livewire\Admin\Settings;
 use App\Livewire\Admin\Thresholds;
 use App\Models\FollowUp;
 use App\Models\PointType;
@@ -156,6 +157,30 @@ class AdminPointRulesTest extends TestCase
         Livewire::test(FollowUps::class)
             ->set('semesterId', $this->semester->id)
             ->assertSee($followUp->scheduled_or_performed_at->timezone(config('app.school_timezone', 'Asia/Jakarta'))->format('d M Y H:i'));
+    }
+
+    public function test_follow_up_uses_the_saved_school_timezone_for_default_input_storage_and_display(): void
+    {
+        Livewire::test(Settings::class)
+            ->set('schoolName', 'Synthetic School')
+            ->set('timezone', 'Asia/Makassar')
+            ->call('saveSchool')
+            ->assertHasNoErrors();
+
+        $followUps = Livewire::test(FollowUps::class)
+            ->assertSet('scheduledOrPerformedAt', now()->timezone('Asia/Makassar')->format('Y-m-d\\TH:i'))
+            ->set('alertId', $this->rows['threshold_alerts']['id'])
+            ->set('action', 'Pertemuan dengan wali')
+            ->set('scheduledOrPerformedAt', '2026-08-03T10:00')
+            ->set('status', 'planned')
+            ->call('record')
+            ->assertHasNoErrors();
+
+        $followUp = FollowUp::where('threshold_alert_id', $this->rows['threshold_alerts']['id'])
+            ->where('action', 'Pertemuan dengan wali')->firstOrFail();
+        self::assertSame('2026-08-03T02:00:00+00:00', $followUp->scheduled_or_performed_at->utc()->format('Y-m-d\\TH:i:sP'));
+
+        $followUps->set('semesterId', $this->semester->id)->assertSee('03 Aug 2026 10:00');
     }
 
     public function test_follow_up_handler_rejects_a_forged_inactive_alert_id(): void

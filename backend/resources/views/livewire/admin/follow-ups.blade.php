@@ -30,7 +30,7 @@
                         <h3 id="alert-{{ $alert->id }}" class="font-semibold">{{ $alert->student->user->name }} · {{ $alert->thresholdLevel->label }} ({{ $alert->thresholdLevel->boundary_points }} poin)</h3>
                         <p class="admin-muted mt-1">{{ $alert->thresholdLevel->recommended_action }} · Peringatan aktif</p>
                         @if ($alert->followUps->isNotEmpty())
-                            <ul class="mt-3 space-y-2">@foreach ($alert->followUps->sortByDesc('created_at') as $followUp)<li><span class="admin-status">{{ ['planned' => 'Direncanakan', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'][$followUp->status] }}</span> {{ $followUp->action }} · {{ $followUp->scheduled_or_performed_at->timezone(config('app.school_timezone', 'Asia/Jakarta'))->format('d M Y H:i') }}<span class="admin-muted"> · dicatat oleh {{ $followUp->performedBy->name }}</span>@if ($followUp->notes)<p class="admin-muted text-sm">{{ $followUp->notes }}</p>@endif</li>@endforeach</ul>
+                            <ul class="mt-3 space-y-2">@foreach ($alert->followUps->sortByDesc('created_at') as $followUp)<li><span class="admin-status">{{ ['planned' => 'Direncanakan', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'][$followUp->status] }}</span> {{ $followUp->action }} · {{ $followUp->scheduled_or_performed_at->timezone($schoolTimezone)->format('d M Y H:i') }}<span class="admin-muted"> · dicatat oleh {{ $followUp->performedBy->name }}</span>@if ($followUp->notes)<p class="admin-muted text-sm">{{ $followUp->notes }}</p>@endif</li>@endforeach</ul>
                         @else
                             <p class="admin-muted mt-2 text-sm">Belum ada tindak lanjut.</p>
                         @endif

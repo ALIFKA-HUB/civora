@@ -138,12 +138,20 @@ class AdminReportAccessTest extends TestCase
         AuditLog::create([
             'actor_user_id' => $this->admin->id, 'action' => 'synthetic_security_change', 'resource_type' => 'user',
             'resource_id' => $this->admin->id, 'safe_before' => ['name' => 'Admin Sintetis', 'password_hash' => 'never-show-hash'],
-            'safe_after' => ['role' => 'admin', 'api_token' => 'never-show-token', 'credential' => 'never-show-password'],
+            'safe_after' => [
+                'role' => 'admin',
+                'integration' => ['api_key' => 'short-api-key-secret', 'apiKey' => 'short-camel-secret'],
+                'note' => 'api_key=short-inline-secret',
+                'api_token' => 'never-show-token',
+                'credential' => 'never-show-password',
+            ],
             'reason' => 'Perubahan rutin tanpa rahasia', 'request_id' => (string) Str::uuid(), 'created_at' => now(),
         ]);
 
         Livewire::test(AuditLogViewer::class)
             ->assertSee('synthetic_security_change')->assertSee('Admin Sintetis')
+            ->assertSee('admin')->assertSee('api_key=[disamarkan]')
+            ->assertDontSee('short-api-key-secret')->assertDontSee('short-camel-secret')->assertDontSee('short-inline-secret')
             ->assertDontSee('never-show-hash')->assertDontSee('never-show-token')->assertDontSee('never-show-password');
     }
 

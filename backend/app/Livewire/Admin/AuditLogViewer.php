@@ -52,7 +52,7 @@ class AuditLogViewer extends Component
         if (is_array($value)) {
             $safe = [];
             foreach ($value as $key => $item) {
-                if (preg_match('/password|secret|token|credential|qr|authorization|private_path|file_path/i', (string) $key)) {
+                if (preg_match('/password|secret|token|credential|qr|authorization|private_path|file_path|api[_-]?key/i', (string) $key)) {
                     continue;
                 }
                 $safe[$key] = $this->sanitize($item);
@@ -63,7 +63,7 @@ class AuditLogViewer extends Component
         if (is_string($value)) {
             $value = preg_replace('/\b(?:Bearer\s+)?[A-Za-z0-9_\-]{32,}\b/i', '[disamarkan]', $value) ?? '';
 
-            return preg_replace('/\b(password|secret|token|credential|qr)\s*[:=]\s*\S+/i', '$1=[disamarkan]', $value) ?? '';
+            return preg_replace('/\b(password|secret|token|credential|qr|api[_-]?key)\s*[:=]\s*\S+/i', '$1=[disamarkan]', $value) ?? '';
         }
 
         return is_scalar($value) || $value === null ? $value : '[disamarkan]';

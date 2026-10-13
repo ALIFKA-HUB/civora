@@ -6,6 +6,7 @@ use App\Actions\Points\RecordFollowUp;
 use App\Livewire\Admin\Concerns\RequiresRecentAdminConfirmation;
 use App\Models\Semester;
 use App\Models\ThresholdAlert;
+use App\Services\Academic\SchoolCalendar;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -33,7 +34,7 @@ class FollowUps extends Component
     public function mount(): void
     {
         $this->semesterId = (string) (Semester::query()->where('status', 'active')->orderBy('start_date')->value('id') ?? '');
-        $this->scheduledOrPerformedAt = now()->timezone(config('app.school_timezone', 'Asia/Jakarta'))->format('Y-m-d\TH:i');
+        $this->scheduledOrPerformedAt = now()->timezone(app(SchoolCalendar::class)->timezone())->format('Y-m-d\TH:i');
     }
 
     public function updatedSemesterId(): void
@@ -57,7 +58,7 @@ class FollowUps extends Component
         $scheduledAt = CarbonImmutable::createFromFormat(
             '!Y-m-d\\TH:i',
             $data['scheduledOrPerformedAt'],
-            config('app.school_timezone', 'Asia/Jakarta'),
+            app(SchoolCalendar::class)->timezone(),
         )->utc();
         app(RecordFollowUp::class)->execute(auth('web')->user(), $alert, [
             'action' => $data['action'],
@@ -83,6 +84,8 @@ class FollowUps extends Component
                 ->orderByDesc('reached_at')->get()
             : collect();
 
-        return view('livewire.admin.follow-ups', compact('semesters', 'semester', 'latestPolicy', 'alerts'), ['title' => 'Tindak lanjut']);
+        $schoolTimezone = app(SchoolCalendar::class)->timezone();
+
+        return view('livewire.admin.follow-ups', compact('semesters', 'semester', 'latestPolicy', 'alerts', 'schoolTimezone'), ['title' => 'Tindak lanjut']);
     }
 }
