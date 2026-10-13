@@ -60,11 +60,11 @@ backend/app/Models berisi model Eloquent. backend/app/Actions/{Accounts,Academic
 
 EnrollStudent::execute(User $admin, Student $student, Semester $semester, string $classroomId, string $effectiveAt): Enrollment menyiapkan penempatan awal pada semester draft/active untuk A-02/B-09. MoveStudent menangani perpindahan penempatan pada semester aktif; ChangeStudentStatus hanya transferred/graduated. EnrollStudent memakai validasi tahun ajaran/kelas aktif/rentang semester/tanpa overlap dan urutan lock yang sama; akhir penempatan berupa batas eksklusif setelah end_date pada timezone sekolah.
 
-- [ ] Tulis test semester rentang tumpang tindih/di luar tanggal ditolak, dua penempatan overlap ditolak, perpindahan mengakhiri penempatan lama, dan pindah/lulus mencabut akun tanpa menghapus record.
-- [ ] Pin riwayat: `self::assertSame($oldEnrollment->id, $record->fresh()->enrollment_id);` setelah pindah kelas; token siswa lulus pada endpoint /me mendapat `assertUnauthorized()`. Pembacaan record guru setelah siswa lulus diuji B-08 ketika endpoint riwayat sudah tersedia.
-- [ ] Jalankan `php artisan test --filter=AcademicLifecycleTest` dan konfirmasi gagal.
-- [ ] Implementasikan action dan lock berurutan: semester, siswa, lalu penempatan/resource domain. Samakan urutan dengan B-06 sampai B-08. Perubahan semester massal tidak menghapus record.
-- [ ] Jalankan test hingga lulus termasuk perlombaan pindah kelas vs pencatatan pada tahap B-07; commit action akademik.
+- [x] Tulis test semester rentang tumpang tindih/di luar tanggal ditolak, dua penempatan overlap ditolak, perpindahan mengakhiri penempatan lama, dan pindah/lulus mencabut akun tanpa menghapus record.
+- [x] Pin riwayat: `self::assertSame($oldEnrollment->id, $record->fresh()->enrollment_id);` setelah pindah kelas; token siswa lulus pada endpoint /me mendapat `assertUnauthorized()`. Pembacaan record guru setelah siswa lulus diuji B-08 ketika endpoint riwayat sudah tersedia.
+- [x] Jalankan `php artisan test --filter=AcademicLifecycleTest` dan konfirmasi gagal.
+- [x] Implementasikan action dan lock berurutan: semester, siswa, lalu penempatan/resource domain. Samakan urutan dengan B-06 sampai B-08. Perubahan semester massal tidak menghapus record.
+- [x] Jalankan test hingga lulus termasuk perlombaan pindah kelas vs pencatatan pada tahap B-07; commit action akademik.
 
 ### B-04: Daftar poin berversi
 
