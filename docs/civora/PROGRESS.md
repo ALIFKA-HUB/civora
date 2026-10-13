@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11 dan A-01 sampai A-03 Lulus setelah implementasi dan review independen. 14 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11 dan A-01 sampai A-04 Lulus setelah implementasi dan review independen. 15 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -17,7 +17,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
-| G2: Admin | Dikerjakan: A-04 | A-01 sampai A-03 lulus; catatan/pemeriksaan dan laporan masih dikerjakan |
+| G2: Admin | Dikerjakan: A-05 | A-01 sampai A-04 lulus; laporan, pengaturan, audit, dan alur terpadu masih dikerjakan |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
@@ -140,3 +140,9 @@ Review A-02 menemukan pencarian OR yang dapat melewati filter status. Regresi me
 Implementasi f908a80 menyediakan tiga layar dengan versi katalog/kebijakan, kontrol berlabel, dan tema terang/gelap. Review meminta penolakan peringatan nonaktif/kebijakan lama pada action tindak lanjut, serta konversi datetime-local dari zona waktu sekolah ke UTC. Fix a4c6604 menegakkan validasi setelah lock semester dan mengonversi waktu sebelum penyimpanan.
 
 Setelah fix: AdminPointRulesTest 6 test/46 assertion, PointTotalsAndThresholdTest 10/27, suite backend 290/1.211, Pint/diff check exit 0. Re-review menyetujui dua temuan tanpa masalah baru dan memeriksa kesamaan urutan lock. Browser 1/18 assertion serta build Vite lulus sebelum fix; markup tidak berubah pada fix. A-03 Lulus; 14/26 tugas lulus. Berikutnya A-04 catatan dan pemeriksaan.
+
+#### A-04: catatan dan pemeriksaan Lulus
+
+Implementasi b9ce479 menyediakan catatan, antrean/detail pemeriksaan, keputusan dengan revisi terkunci, koreksi langsung, serta route foto privat yang memakai AttachmentPolicy dan session admin. Test terfokus 10/63 assertion, suite 300/1.274, browser 1/15 (foto berhasil dimuat pada dua tema), Pint/build/diff check lulus. Suite/browser mendahului tambahan tautan muat ulang konflik; test terfokus lulus setelahnya.
+
+Review meminta preview penolakan menampilkan catatan yang tetap sama, bukan perubahan usulan. Fix aa23881 mereproduksi masalah lalu meluluskan 11 test/73 assertion, Pint/build/diff check (exit 0). Re-review menyetujui tanpa masalah baru. A-04 Lulus; 15/26 tugas lulus. Suite dan browser tersebut tidak diulang setelah fix preview; langkah berikutnya A-05 laporan, pengaturan, dan audit.

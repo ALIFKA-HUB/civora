@@ -71,10 +71,10 @@ B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahk
 
 **Interfaces:** ReviewDetail::decide(): void memanggil DecideReviewRequest dengan expectedRevision yang dibaca saat layar dibuka. Koreksi langsung memakai ReviseRecord dan menyelesaikan pending review dalam transaksi yang sama. Lampiran melalui AttachmentPolicy.
 
-- [ ] Tulis test approve/reject beralasan, cancellation, expectedRevision basi, perubahan katalog sejak review dibuka, dan pemohon siswa/guru tampil dengan identitas yang tepat.
-- [ ] Pin keputusan basi `assertHasErrors('revision')` atau konflik terstruktur yang dirender sebagai permintaan membaca ulang; jumlah revision tidak bertambah.
-- [ ] Jalankan `php artisan test --filter=AdminReviewWorkflowTest`; implementasikan daftar/filter pending, detail catatan/bukti, alasan pemohon, snapshot sebelum/sesudah, dan pilihan keputusan.
-- [ ] Verifikasi pembatalan tidak menawarkan pemindahan siswa, nilai baru dari versi katalog, dan status pending tidak dikira sudah disetujui; jalankan lulus lalu commit.
+- [x] Tulis test approve/reject beralasan, cancellation, expectedRevision basi, perubahan katalog sejak review dibuka, dan pemohon siswa/guru tampil dengan identitas yang tepat.
+- [x] Pin keputusan basi `assertHasErrors('revision')` atau konflik terstruktur yang dirender sebagai permintaan membaca ulang; jumlah revision tidak bertambah.
+- [x] Jalankan `php artisan test --filter=AdminReviewWorkflowTest`; implementasikan daftar/filter pending, detail catatan/bukti, alasan pemohon, snapshot sebelum/sesudah, dan pilihan keputusan.
+- [x] Verifikasi pembatalan tidak menawarkan pemindahan siswa, nilai baru dari versi katalog, dan status pending tidak dikira sudah disetujui; jalankan lulus lalu commit.
 
 ### A-05: Laporan, pengaturan, dan audit operasional
 
