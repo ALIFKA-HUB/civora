@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:civora_core/civora_core.dart';
@@ -24,6 +25,37 @@ class QueueTransport implements ApiTransport {
 
   @override
   void close() {}
+}
+
+class DeferredFirstTransport implements ApiTransport {
+  final firstResponse = Completer<ApiResponse>();
+  final requests = <ApiRequest>[];
+  final responses = <ApiResponse>[];
+  @override
+  Future<ApiResponse> send(ApiRequest request) async {
+    requests.add(request);
+    if (requests.length == 1) return firstResponse.future;
+    return responses.removeAt(0);
+  }
+
+  @override
+  void close() {}
+}
+
+class DelayedDeleteTokenStore implements SessionTokenStore {
+  final values = <String, String>{};
+  final deleteStarted = Completer<void>();
+  final allowDelete = Completer<void>();
+  @override
+  Future<String?> read(String key) async => values[key];
+  @override
+  Future<void> write(String key, String token) async => values[key] = token;
+  @override
+  Future<void> delete(String key) async {
+    if (!deleteStarted.isCompleted) deleteStarted.complete();
+    await allowDelete.future;
+    values.remove(key);
+  }
 }
 
 ApiResponse jsonResponse(Map<String, dynamic> body, [int status = 200]) =>
@@ -263,4 +295,128 @@ void main() {
     expect(session.state, SessionState.unauthenticated);
     expect(store.values, isEmpty);
   });
+
+  test(
+    'a delayed 401 from an older request cannot expire a newer login',
+    () async {
+      final store = MemoryTokenStore()
+        ..values['civora.student.token'] = 'old-token';
+      final transport = DeferredFirstTransport()
+        ..responses.add(
+          jsonResponse({
+            'data': {
+              'token': 'new-token',
+              'token_type': 'Bearer',
+              'expires_at': '2026-10-20T00:00:00Z',
+              'id': 'u3',
+              'name': 'Siswa Baru',
+              'role': 'student',
+              'account_status': 'active',
+              'must_change_password': false,
+            },
+          }),
+        )
+        ..responses.add(
+          jsonResponse({
+            'data': {
+              'id': 'u3',
+              'name': 'Siswa Baru',
+              'role': 'student',
+              'account_status': 'active',
+              'must_change_password': false,
+            },
+          }),
+        );
+      final session = SessionController(role: 'student', tokenStore: store)
+        ..bearerToken = 'old-token'
+        ..state = SessionState.authenticated;
+      final api = ApiClient(
+        baseUrl: Uri.parse('https://civora.test/api/v1'),
+        transport: transport,
+        sessionController: session,
+      );
+      session.bindApi(api);
+
+      final oldRequest = api.get('/student/summary');
+      await Future<void>.delayed(Duration.zero);
+      await session.login('0000000003', 'new password', role: 'student');
+      transport.firstResponse.complete(
+        jsonResponse({
+          'error': {'code': 'UNAUTHENTICATED', 'message': 'Expired'},
+        }, 401),
+      );
+      await expectLater(oldRequest, throwsA(isA<ApiException>()));
+
+      expect(
+        transport.requests.first.headers['Authorization'],
+        'Bearer old-token',
+      );
+      expect(session.bearerToken, 'new-token');
+      expect(session.state, SessionState.authenticated);
+      expect(store.values['civora.student.token'], 'new-token');
+    },
+  );
+
+  test(
+    'an in-flight token deletion cannot erase a newer login token',
+    () async {
+      final store = DelayedDeleteTokenStore()
+        ..values['civora.student.token'] = 'old-token';
+      final transport = DeferredFirstTransport()
+        ..responses.add(
+          jsonResponse({
+            'data': {
+              'token': 'new-token',
+              'token_type': 'Bearer',
+              'expires_at': '2026-10-20T00:00:00Z',
+              'id': 'u4',
+              'name': 'Siswa Baru',
+              'role': 'student',
+              'account_status': 'active',
+              'must_change_password': false,
+            },
+          }),
+        )
+        ..responses.add(
+          jsonResponse({
+            'data': {
+              'id': 'u4',
+              'name': 'Siswa Baru',
+              'role': 'student',
+              'account_status': 'active',
+              'must_change_password': false,
+            },
+          }),
+        );
+      final session = SessionController(role: 'student', tokenStore: store)
+        ..bearerToken = 'old-token'
+        ..state = SessionState.authenticated;
+      final api = ApiClient(
+        baseUrl: Uri.parse('https://civora.test/api/v1'),
+        transport: transport,
+        sessionController: session,
+      );
+      session.bindApi(api);
+
+      final oldRequest = api.get('/student/summary');
+      await Future<void>.delayed(Duration.zero);
+      transport.firstResponse.complete(
+        jsonResponse({
+          'error': {'code': 'UNAUTHENTICATED', 'message': 'Expired'},
+        }, 401),
+      );
+      await store.deleteStarted.future;
+      final login = session.login(
+        '0000000004',
+        'new password',
+        role: 'student',
+      );
+      store.allowDelete.complete();
+      await expectLater(oldRequest, throwsA(isA<ApiException>()));
+      await login;
+
+      expect(session.state, SessionState.authenticated);
+      expect(store.values['civora.student.token'], 'new-token');
+    },
+  );
 }

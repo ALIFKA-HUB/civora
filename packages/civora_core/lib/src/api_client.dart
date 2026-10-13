@@ -5,7 +5,12 @@ import 'api_exception.dart';
 import 'session_controller.dart';
 
 class ApiRequest {
-  const ApiRequest({required this.method, required this.uri, required this.headers, this.body});
+  const ApiRequest({
+    required this.method,
+    required this.uri,
+    required this.headers,
+    this.body,
+  });
 
   final String method;
   final Uri uri;
@@ -36,7 +41,10 @@ class IoApiTransport implements ApiTransport {
     request.headers.forEach(outbound.headers.set);
     if (request.body != null) outbound.add(utf8.encode(request.body!));
     final response = await outbound.close();
-    return ApiResponse(response.statusCode, await utf8.decoder.bind(response).join());
+    return ApiResponse(
+      response.statusCode,
+      await utf8.decoder.bind(response).join(),
+    );
   }
 
   @override
@@ -56,8 +64,10 @@ class ApiClient {
 
   void close() => _transport.close();
 
-  Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? query}) =>
-      _send('GET', path, query: query);
+  Future<Map<String, dynamic>> get(
+    String path, {
+    Map<String, dynamic>? query,
+  }) => _send('GET', path, query: query);
 
   Future<Map<String, dynamic>> post(
     String path,
@@ -79,24 +89,35 @@ class ApiClient {
       queryParameters: query?.map((key, value) => MapEntry(key, '$value')),
     );
     final headers = <String, String>{'Accept': 'application/json'};
-    final isLogin = path == '/auth/student/login' || path == '/auth/teacher/login' ||
-        path == 'auth/student/login' || path == 'auth/teacher/login';
+    final isLogin =
+        path == '/auth/student/login' ||
+        path == '/auth/teacher/login' ||
+        path == 'auth/student/login' ||
+        path == 'auth/teacher/login';
     final token = isLogin ? null : sessionController?.bearerToken;
+    final sessionGeneration = sessionController?.generation;
     if (token != null) headers['Authorization'] = 'Bearer $token';
     if (body != null) {
       headers['Content-Type'] = 'application/json; charset=utf-8';
     }
     if (idempotencyKey != null) headers['Idempotency-Key'] = idempotencyKey;
 
-    final response = await _transport.send(ApiRequest(
-      method: method,
-      uri: uri,
-      headers: headers,
-      body: body == null ? null : jsonEncode(body),
-    ));
+    final response = await _transport.send(
+      ApiRequest(
+        method: method,
+        uri: uri,
+        headers: headers,
+        body: body == null ? null : jsonEncode(body),
+      ),
+    );
     final payload = _decode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      if (response.statusCode == 401 && !isLogin) await sessionController?.expire();
+      if (response.statusCode == 401 && !isLogin) {
+        await sessionController?.expireIfCurrent(
+          token,
+          sessionGeneration ?? -1,
+        );
+      }
       final error = payload['error'] is Map<String, dynamic>
           ? payload['error'] as Map<String, dynamic>
           : const <String, dynamic>{};

@@ -13,6 +13,29 @@ class StudentProfileScreen extends StatefulWidget {
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
   String? _error;
   String? _notice;
+  bool _leaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.session.addListener(_sessionChanged);
+  }
+
+  void _sessionChanged() {
+    if (!mounted ||
+        _leaving ||
+        widget.session.state == SessionState.authenticated) {
+      return;
+    }
+    _leaving = true;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  @override
+  void dispose() {
+    widget.session.removeListener(_sessionChanged);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

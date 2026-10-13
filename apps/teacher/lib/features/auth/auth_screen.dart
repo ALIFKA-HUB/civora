@@ -26,6 +26,15 @@ class _TeacherAuthScreenState extends State<TeacherAuthScreen> {
       title: Text(
         widget.activation ? 'Aktivasi akun guru' : 'Masuk sebagai guru',
       ),
+      actions: widget.activation
+          ? [
+              IconButton(
+                tooltip: 'Keluar',
+                icon: const Icon(Icons.logout),
+                onPressed: widget.session.isBusy ? null : _logout,
+              ),
+            ]
+          : null,
     ),
     body: Center(
       child: ConstrainedBox(
@@ -110,6 +119,20 @@ class _TeacherAuthScreenState extends State<TeacherAuthScreen> {
         setState(
           () => _error =
               'Tidak dapat terhubung. Periksa koneksi internet lalu coba lagi.',
+        );
+      }
+    }
+  }
+
+  Future<void> _logout() async {
+    try {
+      await widget.session.logout();
+    } on ApiException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'Sesi dihapus dari perangkat. Coba masuk kembali.',
         );
       }
     }

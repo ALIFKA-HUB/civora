@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
 import 'api_client.dart';
@@ -25,35 +27,45 @@ class SessionController extends ChangeNotifier {
   String? noticeMessage;
   bool isBusy = false;
   bool isRestoring = false;
+  int _generation = 0;
+  Future<void> _storageQueue = Future<void>.value();
+
+  int get generation => _generation;
 
   String get _storageKey => 'civora.$role.token';
 
   void bindApi(ApiClient api) => _api = api;
 
   Future<void> restore() async {
+    final generation = ++_generation;
     isRestoring = true;
     restoreError = null;
     noticeMessage = null;
     notifyListeners();
     try {
-      final token = await _tokenStore.read(_storageKey);
+      final token = await _queueStorage(() => _tokenStore.read(_storageKey));
+      if (generation != _generation) return;
       if (token == null || token.isEmpty) return;
-      await _loadProfile(token);
+      await _loadProfile(token, generation);
     } on SessionRoleException {
-      await _clearLocalSession();
+      await _clearLocalSession(generation);
     } on ApiException catch (error) {
+      if (generation != _generation) return;
       if (error.statusCode == 401 || error.statusCode == 403) {
-        await _clearLocalSession();
+        await _clearLocalSession(generation);
       } else {
         restoreError = error;
         end();
       }
     } catch (error) {
+      if (generation != _generation) return;
       restoreError = error;
       end();
     } finally {
-      isRestoring = false;
-      notifyListeners();
+      if (generation == _generation) {
+        isRestoring = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -64,7 +76,9 @@ class SessionController extends ChangeNotifier {
   }) async {
     if (role != this.role) throw const SessionRoleException();
     final api = _requiredApi;
+    final generation = ++_generation;
     isBusy = true;
+    isRestoring = false;
     restoreError = null;
     notifyListeners();
     try {
@@ -76,20 +90,28 @@ class SessionController extends ChangeNotifier {
         'password': password,
       };
       final response = await api.post(path, body);
+      if (generation != _generation) return;
       final accountRole = response['role'];
       final token = response['token'];
       if (accountRole != role || token is! String || token.isEmpty) {
         throw const SessionRoleException();
       }
       bearerToken = token;
-      await _loadProfile(token);
-      await _tokenStore.write(_storageKey, token);
+      await _loadProfile(token, generation);
+      if (generation == _generation) {
+        await _queueStorage(() async {
+          if (generation == _generation)
+            await _tokenStore.write(_storageKey, token);
+        });
+      }
     } catch (_) {
-      await _clearLocalSession();
+      if (generation == _generation) await _clearLocalSession(generation);
       rethrow;
     } finally {
-      isBusy = false;
-      notifyListeners();
+      if (generation == _generation) {
+        isBusy = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -104,7 +126,9 @@ class SessionController extends ChangeNotifier {
     if (newPassword == currentPassword) {
       throw const PasswordMustDifferException();
     }
+    final generation = ++_generation;
     isBusy = true;
+    isRestoring = false;
     notifyListeners();
     try {
       await _requiredApi.post('/auth/change-password', {
@@ -112,31 +136,40 @@ class SessionController extends ChangeNotifier {
         'password': newPassword,
         'password_confirmation': newPassword,
       });
-      await _clearLocalSession();
+      if (generation != _generation) return;
+      await _clearLocalSession(generation);
       noticeMessage =
           'Password berhasil diganti. Masuk kembali menggunakan password baru.';
     } finally {
-      isBusy = false;
-      notifyListeners();
+      if (generation == _generation) {
+        isBusy = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<void> logout() async {
     final token = bearerToken;
+    final generation = ++_generation;
     isBusy = true;
+    isRestoring = false;
     notifyListeners();
     try {
       if (token != null) await _requiredApi.post('/auth/logout', const {});
     } finally {
-      await _clearLocalSession();
-      isBusy = false;
-      notifyListeners();
+      if (generation == _generation) await _clearLocalSession(generation);
+      if (generation == _generation) {
+        isBusy = false;
+        notifyListeners();
+      }
     }
   }
 
-  Future<void> _loadProfile(String token) async {
+  Future<void> _loadProfile(String token, int generation) async {
+    if (generation != _generation) return;
     bearerToken = token;
     final data = await _requiredApi.get('/me');
+    if (generation != _generation) return;
     final loaded = MeDto.fromJson(data);
     if (loaded.account.role != role) throw const SessionRoleException();
     profile = loaded;
@@ -148,19 +181,39 @@ class SessionController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _clearLocalSession() async {
+  Future<void> _clearLocalSession(int generation) async {
+    if (generation != _generation) return;
     end();
-    await _tokenStore.delete(_storageKey);
+    await _queueStorage(() => _tokenStore.delete(_storageKey));
   }
 
   void end() {
+    _generation++;
     bearerToken = null;
     profile = null;
     state = SessionState.unauthenticated;
+    isBusy = false;
+    isRestoring = false;
     notifyListeners();
   }
 
-  Future<void> expire() => _clearLocalSession();
+  Future<void> expireIfCurrent(String? requestToken, int requestGeneration) {
+    if (requestToken == null ||
+        requestToken != bearerToken ||
+        requestGeneration != _generation) {
+      return Future<void>.value();
+    }
+    return _clearLocalSession(requestGeneration);
+  }
+
+  Future<T> _queueStorage<T>(Future<T> Function() action) {
+    final next = _storageQueue.then((_) => action());
+    _storageQueue = next.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace __) {},
+    );
+    return next;
+  }
 
   ApiClient get _requiredApi =>
       _api ?? (throw StateError('SessionController has no ApiClient.'));

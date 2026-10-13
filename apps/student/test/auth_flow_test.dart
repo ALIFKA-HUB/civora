@@ -155,4 +155,192 @@ void main() {
       );
     },
   );
+
+  testWidgets('pending student can log out from activation mode', (
+    tester,
+  ) async {
+    final store = _MemoryStore();
+    final transport = _Transport()
+      ..responses.add(
+        _response({
+          'data': {
+            'token': 'pending-token',
+            'token_type': 'Bearer',
+            'expires_at': '2026-10-20T00:00:00Z',
+            'id': 'pending-1',
+            'name': 'Siswa Uji',
+            'role': 'student',
+            'account_status': 'pending_activation',
+            'must_change_password': true,
+          },
+        }),
+      )
+      ..responses.add(
+        _response({
+          'data': {
+            'id': 'pending-1',
+            'name': 'Siswa Uji',
+            'role': 'student',
+            'account_status': 'pending_activation',
+            'must_change_password': true,
+          },
+        }),
+      )
+      ..responses.add(
+        _response({
+          'data': {'message': 'Logout berhasil.'},
+        }),
+      );
+    await tester.pumpWidget(
+      CivoraApp(roleLabel: 'Siswa', transport: transport, tokenStore: store),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), '0000000001');
+    await tester.enterText(find.byType(TextFormField).at(1), 'temporary');
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Keluar'));
+    await tester.pumpAndSettle();
+    expect(find.text('Masuk sebagai siswa'), findsOneWidget);
+    expect(transport.requests.last.uri.path, '/api/v1/auth/logout');
+    expect(
+      transport.requests.last.headers['Authorization'],
+      'Bearer pending-token',
+    );
+    expect(store.values, isEmpty);
+  });
+
+  testWidgets(
+    'student profile leaves navigation after logout and password change',
+    (tester) async {
+      final store = _MemoryStore()
+        ..values['civora.student.token'] = 'active-token';
+      final activeMe = {
+        'data': {
+          'id': 'student-2',
+          'name': 'Siswa Rahasia',
+          'role': 'student',
+          'account_status': 'active',
+          'must_change_password': false,
+          'student': {
+            'id': 's2',
+            'nisn': '0000000002',
+            'education_status': 'active',
+          },
+        },
+      };
+      final transport = _Transport()
+        ..responses.add(_response(activeMe))
+        ..responses.add(
+          _response({
+            'data': {'message': 'Logout berhasil.'},
+          }),
+        );
+      await tester.pumpWidget(
+        CivoraApp(roleLabel: 'Siswa', transport: transport, tokenStore: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Profil'));
+      await tester.pumpAndSettle();
+      expect(find.text('Siswa Rahasia'), findsOneWidget);
+      await tester.drag(find.byType(ListView).last, const Offset(0, -700));
+      await tester.pumpAndSettle();
+      expect(find.text('Keluar'), findsOneWidget);
+      await tester.tap(find.text('Keluar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Masuk sebagai siswa'), findsOneWidget);
+      expect(find.text('Siswa Rahasia'), findsNothing);
+
+      final secondStore = _MemoryStore()
+        ..values['civora.student.token'] = 'active-token-2';
+      final secondTransport = _Transport()
+        ..responses.add(_response(activeMe))
+        ..responses.add(
+          _response({
+            'data': {'message': 'Password berhasil diganti.'},
+          }),
+        );
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pumpWidget(
+        CivoraApp(
+          roleLabel: 'Siswa',
+          transport: secondTransport,
+          tokenStore: secondStore,
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Profil'));
+      await tester.pumpAndSettle();
+      await tester.drag(find.byType(ListView).last, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(find.text('Ganti password'), findsWidgets);
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'current password',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'new secure password',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(2),
+        'new secure password',
+      );
+      await tester.tap(find.text('Ganti password').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Masuk sebagai siswa'), findsOneWidget);
+      expect(find.text('Siswa Rahasia'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'expired student session removes profile route and account details',
+    (tester) async {
+      final store = _MemoryStore()
+        ..values['civora.student.token'] = 'expired-token';
+      final transport = _Transport()
+        ..responses.add(
+          _response({
+            'data': {
+              'id': 'student-3',
+              'name': 'Siswa Privat',
+              'role': 'student',
+              'account_status': 'active',
+              'must_change_password': false,
+              'student': {
+                'id': 's3',
+                'nisn': '0000000003',
+                'education_status': 'active',
+              },
+            },
+          }),
+        )
+        ..responses.add(
+          ApiResponse(
+            401,
+            jsonEncode({
+              'error': {'code': 'UNAUTHENTICATED', 'message': 'Sesi habis.'},
+            }),
+          ),
+        );
+      await tester.pumpWidget(
+        CivoraApp(roleLabel: 'Siswa', transport: transport, tokenStore: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Profil'));
+      await tester.pumpAndSettle();
+      final root = tester.widget<CivoraFoundationScreen>(
+        find.byType(CivoraFoundationScreen, skipOffstage: false),
+      );
+      await expectLater(
+        root.apiClient.get('/me'),
+        throwsA(isA<ApiException>()),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Masuk sebagai siswa'), findsOneWidget);
+      expect(find.text('Siswa Privat'), findsNothing);
+      expect(store.values, isEmpty);
+    },
+  );
 }
