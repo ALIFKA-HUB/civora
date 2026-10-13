@@ -12,15 +12,16 @@ class ImportBatch extends Model
 
     protected $table = 'import_batches';
 
-    protected $fillable = ['admin_id', 'entity_type', 'file_path', 'semester_id', 'status', 'row_count', 'error_summary', 'confirmed_at'];
+    protected $fillable = ['admin_id', 'entity_type', 'file_path', 'semester_id', 'status', 'row_count', 'parsed_rows', 'error_summary', 'confirmed_at'];
 
-    protected $hidden = ['file_path'];
+    protected $hidden = ['file_path', 'parsed_rows'];
 
     protected function casts(): array
     {
         return [
             'row_count' => 'integer',
             'error_summary' => 'array',
+            'parsed_rows' => 'array',
             'confirmed_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
