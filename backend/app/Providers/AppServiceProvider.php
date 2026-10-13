@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Actions\Accounts\AccountSecurity;
 use App\Database\PostgresGrammar;
 use App\Support\GuardDestructiveMigrations;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -10,6 +11,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,6 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::define('access-admin', fn ($user): bool => $user->role === 'admin' && AccountSecurity::active($user));
+
         RateLimiter::for('account-login', function (Request $request) {
             $identity = $request->input('nisn', $request->input('identifier', ''));
             $identity = is_string($identity) ? mb_strtolower(trim($identity)) : '';

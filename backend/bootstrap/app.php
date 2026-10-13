@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Middleware\AssignRequestId;
+use App\Http\Middleware\EnsureActiveAdmin;
+use App\Http\Middleware\EnsureAdminRecentAuthentication;
+use App\Http\Middleware\EnsureAdminSessionIsFresh;
+use App\Http\Middleware\EnsurePendingAdminActivation;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -20,6 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('api', AssignRequestId::class);
+        $middleware->alias([
+            'admin.session' => EnsureAdminSessionIsFresh::class,
+            'admin.active' => EnsureActiveAdmin::class,
+            'admin.pending' => EnsurePendingAdminActivation::class,
+            'admin.reauthenticated' => EnsureAdminRecentAuthentication::class,
+        ]);
+        $middleware->redirectGuestsTo(fn () => route('admin.login'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
