@@ -119,3 +119,7 @@ Repository public tersedia di [ALIFKA-HUB/civora](https://github.com/ALIFKA-HUB/
 A-01 diimplementasikan pada 6b535b0 dan menunggu review independen: AdminSessionTest 7/34 assertion, suite backend 264/1.052 assertion, browser Dusk 1/36 assertion, build web, Pint/diff check lulus. Browser memeriksa tema terang/gelap/sistem, kontras, keyboard dan viewport 320/768/1024/1440. Belum mencentang A-01/G2. Kelanjutan implementasi ditahan sesuai permintaan pengguna untuk menyiapkan GitHub terlebih dahulu.
 
 Pengguna meminta commit/push setiap tugas atau perubahan bermakna dan pembaruan issue/PR dengan hasil yang nyata. GitHub memetakan author commit saat ini ke ALIFKA-HUB. Commit branch kerja menunggu integrasi ke main untuk kontribusi commit; PR/issue dapat dihitung sesuai kriteria GitHub. Aturan kerja tersimpan di AGENTS.md; kelulusan review tetap wajib.
+
+#### A-01: perlu perbaikan setelah review
+
+Review independen menemukan guard idle/role admin belum dipersistenkan pada update Livewire, serta drawer mobile belum memiliki fokus modal dan pemulihan fokus. Implementer memperbaiki kedua kasus dengan regresi HTTP update dan browser. Panduan Dusk dari checkout baru juga perlu tersedia pada dokumentasi publik. Suite 264/1.052 dan Dusk 1/36 adalah bukti sebelum fix; A-01 belum lulus.
