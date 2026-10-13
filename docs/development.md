@@ -1,6 +1,6 @@
 # Pengembangan backend Civora
 
-Fondasi B-01 dan autentikasi B-02 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun, dan policy resource tersedia. Aksi akademik/poin dan admin UI belum tersedia.
+Fondasi B-01, autentikasi B-02, dan action akademik B-03 berada di `backend/`. `GET /api/v1/health` memberi respons tepat `{"status":"ok"}`: pemeriksaan HTTP aplikasi, bukan kesiapan database. Login siswa/guru, profil, aktivasi/ganti password, logout, bantuan password sementara siswa, action akun/akademik, dan policy resource tersedia. Aksi poin dan admin UI belum tersedia.
 
 ## Versi terverifikasi pada 12 Oktober 2026
 
@@ -73,6 +73,16 @@ Login siswa memakai body `nisn/password`; guru memakai `identifier/password` unt
 Perubahan admin dikunci melalui advisory lock transaksi PostgreSQL sebelum row lock pengguna. Reset admin aktif terakhir ditolak karena mengubahnya menjadi pending_activation; reset admin lain dapat diaktifkan kembali melalui action aktivasi. Penonaktifan admin aktif terakhir juga ditolak. Audit hanya menyimpan identitas resource, role, status, dan alasan; tidak berisi password, hash, secret, atau token. Reset/deactivate/change-password menghapus sesi web/mobile, menonaktifkan semua push binding, mencabut QR, dan mengakhiri selection pending.
 
 `device_tokens.personal_access_token_id` adalah FK bigint nullable ke token Sanctum, SET NULL saat sesi dihapus. Logout menonaktifkan hanya binding milik token saat ini sebelum menghapus token, sehingga sesi lain tetap aktif. B-11 harus mengisi FK tersebut dari token server yang terautentikasi; client tidak memilih ID sesi. Binding lama tanpa FK ikut dinonaktifkan saat reset/deactivate/change-password.
+
+## Siklus akademik B-03
+
+`EnrollStudent::execute(admin, student, semester, classroomId, effectiveAt)` menyiapkan penempatan awal pada semester draft/aktif, dengan kelas/jurusan aktif dan tahun ajaran sesuai. Rentang baru berakhir eksklusif pada tengah malam sekolah sesudah `end_date`. `OpenSemester` memastikan setiap siswa berstatus pendidikan aktif sudah memiliki penempatan yang berlaku, termasuk akun pending_activation, lalu menutup semester lama dan membuka draft baru bersama audit dalam satu transaksi. Semester tertutup tidak dibuka ulang; rentang semester sekolah tidak boleh tumpang tindih dan harus berada dalam tahun ajarannya.
+
+`MoveStudent` memakai semester aktif saat pemanggilan dan mengakhiri penempatan lama tepat pada waktu perpindahan sebelum membuat penempatan baru. Batas akhir penempatan lama dipertahankan untuk penempatan baru; penempatan legacy tanpa batas diakhiri pada batas semester. Perpindahan yang mendahului atau bertepatan dengan record pada penempatan lama ditolak agar rentang historis tetap benar. Record tetap menunjuk enrollment awal. `CurrentEnrollment` adalah lookup temporal `[valid_from, valid_until)` dalam batas kalender semester; caller wajib memeriksa role/status pendidikan/akun dan status semester sebelum operasi bisnis.
+
+`ChangeStudentStatus` hanya menerima transferred/graduated dan alasan 5–1.000 karakter. Action mengakhiri penempatan yang sudah dimulai sebelum waktu server, menonaktifkan akun, mencabut sesi/token/QR/selection/device binding, dan menulis audit secara atomik. Penempatan yang disiapkan dengan `valid_from >= waktu keberangkatan` dipertahankan untuk menghindari rentang nol/negatif; status pendidikan/akun nonaktif mencegah penggunaannya dan siswa tersebut tidak masuk pemeriksaan kesiapan pembukaan semester.
+
+Semua action memeriksa admin aktif dari row terkunci; akun admin inactive/pending/must_change_password ditolak. Urutan lock adalah semester, siswa, lalu user/penempatan/resource turunannya; multi-semester dan multi-siswa dikunci urut ID. Pembukaan dan keberangkatan mengunci semua semester yang ada; penempatan/perpindahan mengunci semester target. Transaksi memakai retry terbatas tiga kali. School calendar memakai `school_settings.timezone` dengan fallback `app.school_timezone`; date-only effectiveAt adalah tengah malam lokal sekolah, timestamp ber-offset mempertahankan instant. Perlombaan perpindahan dengan pencatatan diuji pada B-07 dan pembacaan riwayat guru setelah kelulusan pada B-08.
 
 Sanctum memakai token ID bigint bawaan dengan `tokenable_id` UUID. `qr_tokens.session_id` nullable bigint FK dengan ON DELETE SET NULL: pencabutan sesi mempertahankan metadata QR. B-06 wajib menolak QR bila issuing token hilang/dicabut. Session/cache/queue/failed jobs memakai tabel Laravel. TTL Sanctum 10.080 menit (7 hari), session idle 30 menit; alur autentikasi dan pemeriksaan akun aktif adalah B-02.
 
