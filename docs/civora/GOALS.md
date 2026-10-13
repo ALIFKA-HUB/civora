@@ -4,6 +4,8 @@ Tanggal: 12 Oktober 2026. Acuan: [rancangan](README.md), [tugas](TASKS.md), dan 
 
 Pengguna mengizinkan tahap implementasi dan memilih subagent dengan review per tugas. Satu implementer mengerjakan satu tugas; reviewer lain memeriksa kesesuaian rancangan serta kualitasnya sebelum pekerjaan lanjut. Kriteria ini mengatur bukti yang diperlukan, bukan menyatakan aplikasi sudah selesai.
 
+Preferensi model pengguna (13 Oktober 2026): setiap subagent baru, termasuk implementer, reviewer, dan re-reviewer, memakai GPT-6 Luna (`gpt-6-luna`) dengan reasoning effort high. Orchestrator yang diminta adalah GPT-6.1 (`gpt-6.1-sol`) dengan effort medium; pemilihan model chat utama dilakukan melalui pengaturan chat, bukan tool spawn. Subagent yang sudah berjalan sebelum instruksi ini menyelesaikan tugasnya tanpa pengulangan pekerjaan. Preferensi pengguna ini mengatasi pilihan model bawaan skill.
+
 ## Goal utama
 
 Sekolah dapat mengelola data melalui website admin; guru memilih siswa melalui QR/manual dan mencatat poin; siswa melihat catatan serta mengajukan keberatan. Seluruh platform menggunakan identitas, semester, nilai efektif, dan aturan akses yang sama. Prestasi dan pelanggaran tetap terpisah, dan perubahan dapat ditelusuri.
