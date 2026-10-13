@@ -115,8 +115,11 @@ class Teachers extends Component
         $teachers = Teacher::query()->with('user.loginIdentifiers')
             ->when(trim($this->search) !== '', function ($query): void {
                 $term = '%'.mb_strtolower(trim($this->search)).'%';
-                $query->whereRaw('lower(teacher_code) like ?', [$term])->orWhereRaw('lower(coalesce(nip, \'\')) like ?', [$term])
-                    ->orWhereHas('user', fn ($user) => $user->whereRaw('lower(name) like ?', [$term]));
+                $query->where(function ($matches) use ($term): void {
+                    $matches->whereRaw('lower(teacher_code) like ?', [$term])
+                        ->orWhereRaw('lower(coalesce(nip, \'\')) like ?', [$term])
+                        ->orWhereHas('user', fn ($user) => $user->whereRaw('lower(name) like ?', [$term]));
+                });
             })
             ->when($this->status !== '', fn ($query) => $query->whereHas('user', fn ($user) => $user->where('account_status', $this->status)))
             ->orderBy('teacher_code')->paginate(15);

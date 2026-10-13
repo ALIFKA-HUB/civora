@@ -85,8 +85,10 @@ class Students extends Component
         $students = Student::query()->with(['user.loginIdentifiers', 'enrollments' => fn ($query) => $query->with(['classroom', 'semester'])->orderByDesc('valid_from')])
             ->when(trim($this->search) !== '', function ($query): void {
                 $term = '%'.mb_strtolower(trim($this->search)).'%';
-                $query->whereHas('user', fn ($user) => $user->whereRaw('lower(name) like ?', [$term]))
-                    ->orWhereRaw('lower(nisn) like ?', [$term]);
+                $query->where(function ($matches) use ($term): void {
+                    $matches->whereHas('user', fn ($user) => $user->whereRaw('lower(name) like ?', [$term]))
+                        ->orWhereRaw('lower(nisn) like ?', [$term]);
+                });
             })
             ->when($this->status === 'pending', fn ($query) => $query->whereHas('user', fn ($user) => $user->where('account_status', 'pending_activation')))
             ->when($this->status === 'inactive', fn ($query) => $query->whereHas('user', fn ($user) => $user->where('account_status', 'inactive')))

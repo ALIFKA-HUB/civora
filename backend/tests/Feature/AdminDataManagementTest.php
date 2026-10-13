@@ -105,6 +105,28 @@ class AdminDataManagementTest extends TestCase
             ->assertSee('Riwayat kelas');
     }
 
+    public function test_student_search_alternatives_respect_the_account_status_filter(): void
+    {
+        foreach (['Synthetic Student', '0012345678'] as $term) {
+            Livewire::test(Students::class)
+                ->set('status', 'inactive')
+                ->set('search', $term)
+                ->assertSee('Tidak ada siswa yang cocok')
+                ->assertDontSee('Synthetic Student');
+        }
+    }
+
+    public function test_teacher_search_alternatives_respect_the_account_status_filter(): void
+    {
+        foreach (['Synthetic Teacher', 'G001', '00098765'] as $term) {
+            Livewire::test(Teachers::class)
+                ->set('status', 'inactive')
+                ->set('search', $term)
+                ->assertSee('Tidak ada guru yang cocok')
+                ->assertDontSee('Synthetic Teacher');
+        }
+    }
+
     public function test_class_movement_keeps_existing_point_record_enrollment(): void
     {
         $destination = Classroom::create([
