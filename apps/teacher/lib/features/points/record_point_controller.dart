@@ -124,6 +124,9 @@ class RecordPointController {
   }
 
   Future<SelectionDto> _installSelection(SelectionDto next) async {
+    // Selection HTTP requests may finish after a different save enters its
+    // frozen/unknown state. Recheck before changing any controller state.
+    _ensureDraftMutable();
     _selection = next;
     _studentProfile = null;
     _savedRecord = null;

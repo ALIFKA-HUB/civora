@@ -15,10 +15,17 @@ class _Transport implements ApiTransport {
   final recordsByKey = <String, Map<String, dynamic>>{};
   final sentIdempotencyKeys = <String>[];
   Completer<ApiResponse>? heldRetry;
+  Completer<ApiResponse>? heldStudentSelection;
   int createdRecordCount = 0;
   @override
   Future<ApiResponse> send(ApiRequest request) async {
     requests.add(request);
+    if (request.method == 'POST' &&
+        request.uri.path.endsWith('/teacher/student-selections') &&
+        (jsonDecode(request.body!) as Map<String, dynamic>)['student_id'] ==
+            'student-2') {
+      return heldStudentSelection!.future;
+    }
     if (commitThenLoseFirstSave &&
         request.method == 'POST' &&
         request.uri.path.endsWith('/teacher/records')) {
@@ -76,6 +83,92 @@ const _record = {
 };
 
 void main() {
+  test(
+    'late manual selection cannot replace a save that became unknown',
+    () async {
+      final transport = _Transport(commitThenLoseFirstSave: true)
+        ..heldStudentSelection = Completer<ApiResponse>()
+        ..responses.addAll([
+          _ok({
+            'id': 'selection-1',
+            'student_id': 'student-1',
+            'expires_at': '2099-10-13T09:05:00Z',
+          }),
+          _ok(_student),
+          ApiResponse(
+            200,
+            jsonEncode({
+              'data': [
+                {
+                  'version_id': 'version-1',
+                  'name': 'Disiplin',
+                  'category': 'achievement',
+                  'points': 2,
+                },
+              ],
+            }),
+          ),
+          ApiResponse(
+            200,
+            jsonEncode({
+              'data': {
+                ..._record,
+                'student': {'id': 'student-1', 'name': 'Alya Sari'},
+              },
+            }),
+          ),
+          _ok(_student),
+        ]);
+      final controller = RecordPointController(
+        ApiClient(
+          baseUrl: Uri.parse('http://localhost/api/v1'),
+          transport: transport,
+        ),
+      );
+      await controller.selectManual('student-1');
+      await controller.loadPointTypes();
+      controller.selectPointType('version-1');
+      controller.description = 'Membantu merapikan kelas.';
+
+      final pendingSelection = controller.selectManual('student-2');
+      await expectLater(controller.submit(), throwsA(isA<FormatException>()));
+      expect(controller.hasUnknownAttempt, isTrue);
+      final originalSave = transport.requests.singleWhere(
+        (request) => request.uri.path.endsWith('/teacher/records'),
+      );
+      final frozenKey = originalSave.headers['Idempotency-Key'];
+      final frozenPayload = originalSave.body;
+
+      transport.heldStudentSelection!.complete(
+        _ok({
+          'id': 'selection-2',
+          'student_id': 'student-2',
+          'expires_at': '2099-10-13T09:05:00Z',
+        }),
+      );
+      await expectLater(pendingSelection, throwsA(isA<StateError>()));
+
+      expect(controller.hasUnknownAttempt, isTrue);
+      expect(controller.selection!.id, 'selection-1');
+      expect(controller.selection!.studentId, 'student-1');
+      expect(
+        () => controller.selectPointType('version-1'),
+        throwsA(isA<StateError>()),
+      );
+
+      final saved = await controller.retryUnknownAttempt();
+      expect(saved.id, 'record-1');
+      final posts = transport.requests
+          .where((request) => request.uri.path.endsWith('/teacher/records'))
+          .toList();
+      expect(posts, hasLength(2));
+      expect(posts[1].headers['Idempotency-Key'], frozenKey);
+      expect(posts[1].body, frozenPayload);
+      expect(transport.createdRecordCount, 1);
+      expect(controller.hasUnknownAttempt, isFalse);
+    },
+  );
+
   test(
     'lost save response retries identical frozen payload and key then resolves once',
     () async {
