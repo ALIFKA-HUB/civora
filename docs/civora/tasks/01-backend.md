@@ -100,11 +100,11 @@ EnrollStudent::execute(User $admin, Student $student, Semester $semester, string
 
 **Interfaces:** IssueStudentQr::execute(User $studentUser): array{token:string,expires_at:string,server_time:string}; RedeemStudentQr::execute(User $teacherUser, string $token, string $requestKey): StudentSelection; SelectStudentManually::execute(User $teacherUser, Student $student): StudentSelection. Produces QR/redeem/search/profile/select endpoints pada dokumen 06.
 
-- [ ] Tulis test dengan clock beku: QR valid sebelum 20 detik, expired pada 20 detik; QR baru mencabut lama; manual dan QR menuju student/enrollment sama; selection expiry 5 menit.
-- [ ] Pin token sekali pakai melalui dua koneksi PostgreSQL: satu redeem sukses, satu konflik. Retry guru/request_key sama `self::assertSame($firstSelection->id, $retrySelection->id);`.
-- [ ] Jalankan `php artisan test --filter='QrSelectionTest|QrConcurrencyTest'` sebelum implementasi; cek failure.
-- [ ] Implementasikan 32-byte token, hash, lock, redemption retry, status aktif, semester/penempatan, response no-store, dan pencarian berpagination. Token mentah tidak masuk log.
-- [ ] Verifikasi test lulus termasuk token milik siswa inactive; commit QR/manual.
+- [x] Tulis test dengan clock beku: QR valid sebelum 20 detik, expired pada 20 detik; QR baru mencabut lama; manual dan QR menuju student/enrollment sama; selection expiry 5 menit.
+- [x] Pin token sekali pakai melalui dua koneksi PostgreSQL: satu redeem sukses, satu konflik. Retry guru/request_key sama `self::assertSame($firstSelection->id, $retrySelection->id);`.
+- [x] Jalankan `php artisan test --filter='QrSelectionTest|QrConcurrencyTest'` sebelum implementasi; cek failure.
+- [x] Implementasikan 32-byte token, hash, lock, redemption retry, status aktif, semester/penempatan, response no-store, dan pencarian berpagination. Token mentah tidak masuk log.
+- [x] Verifikasi test lulus termasuk token milik siswa inactive; commit QR/manual.
 
 ### B-07: Pencatatan, bukti privat, dan idempotensi
 
