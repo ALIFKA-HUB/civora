@@ -6,6 +6,7 @@ use App\Actions\Points\RecordFollowUp;
 use App\Livewire\Admin\Concerns\RequiresRecentAdminConfirmation;
 use App\Models\Semester;
 use App\Models\ThresholdAlert;
+use Carbon\CarbonImmutable;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -47,15 +48,20 @@ class FollowUps extends Component
             'semesterId' => ['required', 'uuid', 'exists:semesters,id'],
             'alertId' => ['required', 'uuid', Rule::exists('threshold_alerts', 'id')->where('semester_id', $this->semesterId)],
             'action' => ['required', 'string', 'max:1000'],
-            'scheduledOrPerformedAt' => ['required', 'date'],
+            'scheduledOrPerformedAt' => ['required', 'date_format:Y-m-d\\TH:i'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'status' => ['required', Rule::in(['planned', 'completed', 'cancelled'])],
         ]);
 
         $alert = ThresholdAlert::findOrFail($data['alertId']);
+        $scheduledAt = CarbonImmutable::createFromFormat(
+            '!Y-m-d\\TH:i',
+            $data['scheduledOrPerformedAt'],
+            config('app.school_timezone', 'Asia/Jakarta'),
+        )->utc();
         app(RecordFollowUp::class)->execute(auth('web')->user(), $alert, [
             'action' => $data['action'],
-            'scheduled_or_performed_at' => $data['scheduledOrPerformedAt'],
+            'scheduled_or_performed_at' => $scheduledAt->format('Y-m-d\\TH:i:sP'),
             'notes' => $data['notes'] ?: null,
             'status' => $data['status'],
         ]);

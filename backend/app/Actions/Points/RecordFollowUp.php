@@ -18,11 +18,16 @@ final class RecordFollowUp
     {
         return DB::transaction(function () use ($admin, $alert, $attributes): FollowUp {
             $identity = ThresholdAlert::whereKey($alert->id)->firstOrFail(['id', 'student_id', 'semester_id']);
-            Semester::whereKey($identity->semester_id)->lockForUpdate()->firstOrFail();
+            $semester = Semester::whereKey($identity->semester_id)->lockForUpdate()->firstOrFail();
             Student::whereKey($identity->student_id)->lockForUpdate()->firstOrFail();
             $alert = ThresholdAlert::whereKey($identity->id)->lockForUpdate()->firstOrFail();
             $admin = User::whereKey($admin->id)->lockForUpdate()->firstOrFail();
             AccountSecurity::admin($admin);
+            $latestPolicyId = $semester->thresholdPolicies()->orderByDesc('version')->value('id');
+            $alertPolicyId = $alert->thresholdLevel()->value('policy_id');
+            if (! $alert->currently_reached || ! $latestPolicyId || $alertPolicyId !== $latestPolicyId) {
+                throw ValidationException::withMessages(['alertId' => 'Peringatan tidak lagi aktif pada kebijakan terbaru.']);
+            }
             $unknown = array_diff(array_keys($attributes), ['action', 'scheduled_or_performed_at', 'notes', 'status']);
             if ($unknown !== []) {
                 throw ValidationException::withMessages([array_values($unknown)[0] => 'Field tidak diizinkan.']);

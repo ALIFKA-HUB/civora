@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Points\SetThresholdPolicy;
 use App\Livewire\Admin\FollowUps;
 use App\Livewire\Admin\PointTypes;
 use App\Livewire\Admin\Thresholds;
+use App\Models\FollowUp;
 use App\Models\PointType;
 use App\Models\PointTypeVersion;
 use App\Models\Semester;
@@ -134,6 +136,7 @@ class AdminPointRulesTest extends TestCase
             ->set('alertId', $alert->id)
             ->set('action', 'Pertemuan dengan wali')
             ->set('scheduledOrPerformedAt', '2026-08-03T10:00')
+            ->assertSet('scheduledOrPerformedAt', '2026-08-03T10:00')
             ->set('notes', 'Catatan tindak lanjut sintetis')
             ->set('status', 'completed')
             ->call('record')
@@ -147,6 +150,51 @@ class AdminPointRulesTest extends TestCase
             'status' => 'completed',
             'action' => 'Pertemuan dengan wali',
         ]);
+
+        $followUp = FollowUp::where('threshold_alert_id', $alert->id)->where('action', 'Pertemuan dengan wali')->firstOrFail();
+        self::assertSame('2026-08-03T03:00:00+00:00', $followUp->scheduled_or_performed_at->utc()->format('Y-m-d\TH:i:sP'));
+        Livewire::test(FollowUps::class)
+            ->set('semesterId', $this->semester->id)
+            ->assertSee($followUp->scheduled_or_performed_at->timezone(config('app.school_timezone', 'Asia/Jakarta'))->format('d M Y H:i'));
+    }
+
+    public function test_follow_up_handler_rejects_a_forged_inactive_alert_id(): void
+    {
+        $alert = ThresholdAlert::findOrFail($this->rows['threshold_alerts']['id']);
+        $alert->update(['currently_reached' => false]);
+
+        Livewire::test(FollowUps::class)
+            ->set('semesterId', $this->semester->id)
+            ->set('alertId', $alert->id)
+            ->set('action', 'Pertemuan dengan wali')
+            ->set('scheduledOrPerformedAt', '2026-08-03T10:00')
+            ->set('status', 'planned')
+            ->call('record')
+            ->assertHasErrors(['alertId']);
+
+        self::assertSame(0, DB::table('follow_ups')->where('threshold_alert_id', $alert->id)->where('action', 'Pertemuan dengan wali')->count());
+    }
+
+    public function test_follow_up_handler_rejects_an_old_policy_alert_even_if_its_row_is_still_active(): void
+    {
+        $alert = ThresholdAlert::findOrFail($this->rows['threshold_alerts']['id']);
+        app(SetThresholdPolicy::class)->execute($this->admin, $this->semester, [[
+            'boundary_points' => 20,
+            'label' => 'Tingkat baru',
+            'recommended_action' => 'Periksa kondisi terbaru',
+        ]], 'Ganti kebijakan ambang');
+        $alert->update(['currently_reached' => true]);
+
+        Livewire::test(FollowUps::class)
+            ->set('semesterId', $this->semester->id)
+            ->set('alertId', $alert->id)
+            ->set('action', 'Pertemuan dengan wali')
+            ->set('scheduledOrPerformedAt', '2026-08-03T10:00')
+            ->set('status', 'planned')
+            ->call('record')
+            ->assertHasErrors(['alertId']);
+
+        self::assertSame(0, DB::table('follow_ups')->where('threshold_alert_id', $alert->id)->where('action', 'Pertemuan dengan wali')->count());
     }
 
     public function test_mutating_catalog_requires_recent_admin_confirmation_at_livewire_handler(): void
