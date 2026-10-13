@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11 dan A-01/A-02 Lulus setelah implementasi dan review independen. 13 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11 dan A-01 sampai A-03 Lulus setelah implementasi dan review independen. 14 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -17,7 +17,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
-| G2: Admin | Dikerjakan: A-03 | A-01/A-02 lulus; session, data, dan impor diuji melalui HTTP dan browser |
+| G2: Admin | Dikerjakan: A-04 | A-01 sampai A-03 lulus; catatan/pemeriksaan dan laporan masih dikerjakan |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
@@ -134,3 +134,9 @@ Integrasi memperbaiki representasi null/daftar kosong pada error_summary impor B
 
 
 Review A-02 menemukan pencarian OR yang dapat melewati filter status. Regresi mereproduksi kegagalan pada daftar siswa dan guru; fix b50e7ee mengelompokkan alternatif pencarian. Test terfokus setelah fix: 16 test/83 assertion, Pint/diff check exit 0. Re-review menyetujui satu temuan tanpa masalah baru. A-02 Lulus; 13/26 tugas lulus. Suite 282/1.155 dan browser 1/10 adalah bukti sebelum fix. Minor tautan import guru yang tidak menerapkan pilihan jenis disimpan untuk review akhir. Berikutnya A-03 katalog, ambang, dan tindak lanjut.
+
+#### A-03: katalog, ambang, dan tindak lanjut Lulus
+
+Implementasi f908a80 menyediakan tiga layar dengan versi katalog/kebijakan, kontrol berlabel, dan tema terang/gelap. Review meminta penolakan peringatan nonaktif/kebijakan lama pada action tindak lanjut, serta konversi datetime-local dari zona waktu sekolah ke UTC. Fix a4c6604 menegakkan validasi setelah lock semester dan mengonversi waktu sebelum penyimpanan.
+
+Setelah fix: AdminPointRulesTest 6 test/46 assertion, PointTotalsAndThresholdTest 10/27, suite backend 290/1.211, Pint/diff check exit 0. Re-review menyetujui dua temuan tanpa masalah baru dan memeriksa kesamaan urutan lock. Browser 1/18 assertion serta build Vite lulus sebelum fix; markup tidak berubah pada fix. A-03 Lulus; 14/26 tugas lulus. Berikutnya A-04 catatan dan pemeriksaan.

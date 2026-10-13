@@ -58,10 +58,10 @@ B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahk
 
 **Interfaces:** PointTypes memakai action B-04; Thresholds memakai SetThresholdPolicy B-05; FollowUps memakai RecordFollowUp B-05. Versi kebijakan dan versi katalog ditampilkan pada detail administratif.
 
-- [ ] Tulis test nilai nonpositif ditolak, revisi katalog menjaga nilai lama, tingkat ambang duplikat ditolak, dan status follow-up tidak mengurangi total.
-- [ ] Pin tipe dinonaktifkan tidak hilang dari riwayat; mengganti threshold menghasilkan policy version +1, bukan menimpa policy lama.
-- [ ] Jalankan `php artisan test --filter=AdminPointRulesTest`; implementasikan form, konfirmasi revisi, status aktif, versi, dan daftar peringatan berdasarkan kebijakan terbaru.
-- [ ] Jalankan lulus dan periksa label semantik pada terang/gelap; commit aturan admin.
+- [x] Tulis test nilai nonpositif ditolak, revisi katalog menjaga nilai lama, tingkat ambang duplikat ditolak, dan status follow-up tidak mengurangi total.
+- [x] Pin tipe dinonaktifkan tidak hilang dari riwayat; mengganti threshold menghasilkan policy version +1, bukan menimpa policy lama.
+- [x] Jalankan `php artisan test --filter=AdminPointRulesTest`; implementasikan form, konfirmasi revisi, status aktif, versi, dan daftar peringatan berdasarkan kebijakan terbaru.
+- [x] Jalankan lulus dan periksa label semantik pada terang/gelap; commit aturan admin.
 
 ### A-04: Catatan, antrean pemeriksaan, dan audit perubahan
 
@@ -89,4 +89,3 @@ B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahk
 - [ ] Jalankan `php artisan test --filter=AdminReportAccessTest`; implementasikan rekap/filter, permintaan download privat, pengaturan sekolah/logo opsional, manajemen admin, dan audit berpagination.
 - [ ] Buat satu browser test alur import → katalog → membuka semester → menerima catatan API → pemeriksaan → laporan. Jalankan melalui runner browser yang dipilih/didokumentasikan pada B-01, tanpa database produksi.
 - [ ] Jalankan semua test admin sampai lulus; periksa keyboard, tabel panjang, focus dialog, dan tema. Commit; kualitas PDF/Excel akhir diperiksa pada I-02.
-
