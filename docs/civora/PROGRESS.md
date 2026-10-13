@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-07 Lulus setelah implementasi dan review independen. 7 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 sampai B-08 Lulus setelah implementasi dan review independen. 8 dari 26 tugas Lulus; backend keseluruhan belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Perlu perbaikan: B-08 lampiran/uji paralel | Commit 6df3fd8; 217 test/771 assertion lulus, review menemukan validasi lampiran dan bukti concurrency kurang |
+| G1: Backend | Dikerjakan: B-09 import akun | B-08 fix c01e379; test terfokus 20/79 dan barrier 1/9 assertion lulus, re-review menyetujui |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -87,3 +87,5 @@ Fix ddab9ef memakai AttachmentPolicy dan guard akun aktif sebelum membuka file. 
 #### B-08: perlu perbaikan setelah review
 
 Commit 6df3fd8 melaporkan riwayat, ringkasan, profil/metadata, keberatan, dan keputusan revisi dengan suite 217/771 assertion lulus. Reviewer menemukan perubahan bukti hanya memeriksa ID ada, sehingga lampiran pengguna lain dapat ditautkan. Test keputusan dua admin juga masih berurutan. Perbaikan dikembalikan ke implementer: validasi kepemilikan/record bukti saat usulan dan saat penerapan, serta uji paralel PostgreSQL. B-08 belum lulus; filter tahun ajaran pencarian B-06 telah diperbaiki pada perubahan metadata, tetap diverifikasi dalam review ini.
+
+Fix c9391c1 memvalidasi lampiran milik guru pencatat dan menolak penautan lintas catatan, pada usulan maupun penerapan terkunci; test 20/79 assertion lulus. Re-review menyetujui lampiran, tetapi meminta bukti kedua proses siap sebelum barrier dilepas. Fix c01e379 memenuhi barrier kesiapan; test PostgreSQL 1/9 assertion, Pint/diff check lulus, re-review kedua menyetujui tanpa breakage. B-08 Lulus. Suite 217/771 adalah bukti sebelum fix; kode terakhir diverifikasi melalui cakupan terfokus tersebut. Minor pencarian tahun ajaran B-06 selesai pada perubahan metadata; minor lain tetap untuk review akhir. Langkah berikutnya import B-09.

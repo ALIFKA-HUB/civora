@@ -137,10 +137,10 @@ Respons riwayat berpagination menyertakan meta.available_semesters dari cakupan 
 
 decision adalah approve/reject. changes/proposedChange memakai operation cancel/revise, point_type_version_id opsional, description opsional, dan attachment_id opsional; setidaknya satu perubahan sah diperlukan untuk revise. Pengajuan siswa hanya reason dan proposedChange kosong. Reject memakai changes kosong; approve harus menentukan cancel/revise secara eksplisit. Field identitas siswa/guru/semester tidak diizinkan.
 
-- [ ] Tulis test siswa hanya record sendiri; guru hanya meminta koreksi record sendiri; guru tetap baca record sendiri siswa lulus; satu pending; pending/ditolak tidak mengubah total; cancellation mengecualikan total.
-- [ ] Pin immutable owner: `self::assertSame($student->id, $record->fresh()->student_id);`; dua admin memutuskan expectedRevision sama: kedua `assertStatus(409)` dan jumlah revision tidak bertambah dua kali.
-- [ ] Jalankan `php artisan test --filter='RecordHistoryAccessTest|ReviewDecisionTest'`; implementasikan action append-only, lock/version conflict, update threshold/outbox atomik, serta keputusan reason wajib.
-- [ ] Jalankan sampai lulus untuk koreksi semester closed dan salah siswa yang harus dibatalkan, bukan dipindah; commit pemeriksaan.
+- [x] Tulis test siswa hanya record sendiri; guru hanya meminta koreksi record sendiri; guru tetap baca record sendiri siswa lulus; satu pending; pending/ditolak tidak mengubah total; cancellation mengecualikan total.
+- [x] Pin immutable owner: `self::assertSame($student->id, $record->fresh()->student_id);`; dua admin memutuskan expectedRevision sama: kedua `assertStatus(409)` dan jumlah revision tidak bertambah dua kali.
+- [x] Jalankan `php artisan test --filter='RecordHistoryAccessTest|ReviewDecisionTest'`; implementasikan action append-only, lock/version conflict, update threshold/outbox atomik, serta keputusan reason wajib.
+- [x] Jalankan sampai lulus untuk koreksi semester closed dan salah siswa yang harus dibatalkan, bukan dipindah; commit pemeriksaan.
 
 ### B-09: Import dan pengelolaan akun massal
 
