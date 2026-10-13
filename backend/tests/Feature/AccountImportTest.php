@@ -6,6 +6,7 @@ use App\Actions\Imports\CommitAccountsImport;
 use App\Actions\Imports\PreviewAccountsImport;
 use App\Models\Semester;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\UploadedFile;
@@ -66,10 +67,61 @@ class AccountImportTest extends TestCase
         self::assertSame(1, DB::table('temporary_credentials')->where('user_id', $student->user_id)->count());
         self::assertSame(1, DB::table('audit_logs')->where('resource_id', $student->user_id)->where('action', 'account_created')->count());
 
+        $this->travelTo(CarbonImmutable::parse($confirmed->created_at)->addDays(7)->addSecond());
         $retried = app(CommitAccountsImport::class)->execute($this->admin, $confirmed);
         self::assertSame('confirmed', $retried->status);
         self::assertSame(1, DB::table('users')->where('role', 'student')->count());
         self::assertSame(1, DB::table('enrollments')->count());
+    }
+
+    public function test_preview_can_commit_immediately_before_its_seven_day_expiry(): void
+    {
+        $batch = app(PreviewAccountsImport::class)->execute($this->admin, $this->csv("name,nisn,major_code,class_code\nStudent,0088888888,RPL,X-1\n"), 'student', $this->semester());
+        $this->travelTo(CarbonImmutable::parse($batch->created_at)->addDays(7)->subSecond());
+
+        $confirmed = app(CommitAccountsImport::class)->execute($this->admin, $batch);
+
+        self::assertSame('confirmed', $confirmed->status);
+        self::assertSame(1, DB::table('users')->where('role', 'student')->count());
+    }
+
+    public function test_preview_expires_at_seven_days_without_creating_accounts(): void
+    {
+        $batch = app(PreviewAccountsImport::class)->execute($this->admin, $this->csv("name,nisn,major_code,class_code\nStudent,0088888889,RPL,X-1\n"), 'student', $this->semester());
+        $this->travelTo(CarbonImmutable::parse($batch->created_at)->addDays(7));
+
+        $expired = app(CommitAccountsImport::class)->execute($this->admin, $batch);
+
+        self::assertSame('failed', $expired->status);
+        self::assertSame('batch', $expired->error_summary[0]['field']);
+        self::assertStringContainsString('kedaluwarsa', mb_strtolower($expired->error_summary[0]['message']));
+        self::assertNoImportedAccounts();
+    }
+
+    public function test_changed_academic_year_dates_fail_with_row_semester_error_before_account_creation(): void
+    {
+        $batch = app(PreviewAccountsImport::class)->execute($this->admin, $this->csv("name,nisn,major_code,class_code\nStudent,0088888890,RPL,X-1\n"), 'student', $this->semester());
+        DB::table('academic_years')->where('id', $this->semester()->academic_year_id)->update(['end_date' => '2026-07-31']);
+
+        $failed = app(CommitAccountsImport::class)->execute($this->admin, $batch);
+
+        self::assertSame('failed', $failed->status);
+        self::assertSame(2, $failed->error_summary[0]['row']);
+        self::assertSame('semester', $failed->error_summary[0]['field']);
+        self::assertNoImportedAccounts();
+    }
+
+    public function test_active_semester_expired_after_preview_fails_with_row_error_before_account_creation(): void
+    {
+        $batch = app(PreviewAccountsImport::class)->execute($this->admin, $this->csv("name,nisn,major_code,class_code\nStudent,0088888891,RPL,X-1\n"), 'student', $this->semester());
+        DB::table('semesters')->where('id', $this->semesterId)->update(['end_date' => '2026-07-31']);
+
+        $failed = app(CommitAccountsImport::class)->execute($this->admin, $batch);
+
+        self::assertSame('failed', $failed->status);
+        self::assertSame(2, $failed->error_summary[0]['row']);
+        self::assertSame('semester', $failed->error_summary[0]['field']);
+        self::assertNoImportedAccounts();
     }
 
     public function test_duplicate_rows_make_the_preview_uncommittable_and_create_nothing(): void
@@ -234,6 +286,15 @@ SQL);
     private function semester(): Semester
     {
         return Semester::findOrFail($this->semesterId);
+    }
+
+    private function assertNoImportedAccounts(): void
+    {
+        self::assertSame(0, DB::table('users')->where('role', 'student')->count());
+        self::assertSame(0, DB::table('login_identifiers')->where('role', 'student')->count());
+        self::assertSame(0, DB::table('temporary_credentials')->count());
+        self::assertSame(0, DB::table('enrollments')->count());
+        self::assertSame(0, DB::table('audit_logs')->count());
     }
 
     private function csv(string $contents, string $name = 'students.csv'): UploadedFile
