@@ -18,7 +18,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
-| G3: Mobile | Dikerjakan: M-03 | M-01/M-02 lulus; autentikasi tersedia, fitur siswa/guru dan uji perangkat belum selesai |
+| G3: Mobile | Dikerjakan: M-04; M-03 menunggu HP | Kode M-03 disetujui review lokal; QR fisik belum diverifikasi, M-04 dikerjakan |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
 
@@ -164,3 +164,9 @@ Review menemukan URL API per lingkungan belum tersambung ke client shell. Fix ba
 Commit 5575a56 menyediakan login sesuai role, aktivasi, profil/ganti password, secure token storage, restore melalui me, serta logout. Test lokal core 12, siswa 5, guru 4, analisis empat target, dan kedua build APK lulus. API test memakai respons terkontrol; integrasi Laravel serta secure storage perangkat fisik belum dibuktikan.
 
 Review meminta logout pada aktivasi, penutupan route profil setelah session berakhir, dan perlindungan token baru dari 401 request lama. Fix 86c6d33 meluluskan core 14, test auth siswa 5/guru 4, analisis core/dua app, kedua build APK, dan diff check exit 0. Regresi stale-401 memakai mutasi sementara perilaku expiry lama lalu mengembalikan guard final; bukan hasil checkout baseline. Re-review menyetujui tiga temuan tanpa masalah baru. Minor pesan storage yang dianggap gangguan jaringan dicatat untuk review akhir. M-02 Lulus; 18/26 tugas lulus, lanjut fitur siswa M-03.
+
+#### M-03: review kode lokal disetujui, menunggu HP
+
+Commit c9cb843 menyediakan ringkasan siswa, QR server-relative 20 detik, riwayat/detail privat, dan keberatan. Test backend 311/1.354 assertion, core 16, siswa 17, guru 7, analisis tiga target, kedua APK, dan diff check exit 0. Review independen menyetujui kode tanpa temuan; pemeriksaan bentuk record/revisi dan zona waktu tersimpan juga dilakukan.
+
+M-03 belum Lulus: QR terang/gelap hanya dibuktikan pada widget, ADB tidak menemukan perangkat tersambung, dan belum ada AVD. Pengguna menyatakan bisa menyambungkan HP tetapi perlu waktu; uji fisik tetap menunggu. Jumlah tugas Lulus tetap 18/26. M-04 dapat dikerjakan sebagai pekerjaan lokal independen sesuai dependensinya M-02/B-06/B-07/B-08; status HP tidak diganti menjadi pass.

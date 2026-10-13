@@ -59,10 +59,10 @@ ApiException berisi statusCode, code, message, fields, requestId. ApiClient.get(
 
 **Interfaces:** QrController.refresh(): Future<QrDto>; QrController.setForeground(bool active): void; QrController.dispose(): void. Ringkasan/riwayat/detail memakai endpoint student dokumen 06 dan PointRecordDto; keberatan mengirim reason, tidak mengubah total client sebelum server setuju.
 
-- [ ] Tulis test refresh setiap 20 detik berdasarkan serverTime, background menghentikan timer, foreground meminta baru, offline tidak menunjukkan QR lama aktif, dan dispose tidak meninggalkan timer.
-- [ ] Pin jam HP maju 10 menit tetap memiliki countdown valid dari selisih server; `expect(qrVisibleAsActive, false);` setelah expiresAt tanpa refresh berhasil.
-- [ ] Tulis test dua total terpisah, filter semester, bukti sendiri, satu pending objection, dan pending tidak mengurangi total.
-- [ ] Jalankan `flutter test test/qr_flow_test.dart test/student_record_flow_test.dart`; implementasikan empat tab dan layar terkait, hitung mundur aksesibel, form alasan 5-1.000, serta status keputusan/revisi.
+- [x] Tulis test refresh setiap 20 detik berdasarkan serverTime, background menghentikan timer, foreground meminta baru, offline tidak menunjukkan QR lama aktif, dan dispose tidak meninggalkan timer.
+- [x] Pin jam HP maju 10 menit tetap memiliki countdown valid dari selisih server; `expect(qrVisibleAsActive, false);` setelah expiresAt tanpa refresh berhasil.
+- [x] Tulis test dua total terpisah, filter semester, bukti sendiri, satu pending objection, dan pending tidak mengurangi total.
+- [x] Jalankan `flutter test test/qr_flow_test.dart test/student_record_flow_test.dart`; implementasikan empat tab dan layar terkait, hitung mundur aksesibel, form alasan 5-1.000, serta status keputusan/revisi.
 - [ ] Jalankan test/analyze dan periksa QR pada HP dalam terang/gelap. Commit siswa; scanning QR nyata diverifikasi M-04/I-01.
 
 ### M-04: Guru: scan, pencarian, pencatatan, dan koreksi
