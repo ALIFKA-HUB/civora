@@ -65,13 +65,14 @@ void main() {
           },
         ]),
       );
-    final session = SessionController(role: 'student', tokenStore: _Store());
+    final session = SessionController(role: 'student', tokenStore: _Store())
+      ..state = SessionState.authenticated
+      ..bearerToken = 'session';
     final api = ApiClient(
       baseUrl: Uri.parse('https://civora.test/api/v1/'),
       transport: transport,
       sessionController: session,
     );
-    session.bearerToken = 'session';
     final controller = NotificationController(
       api: api,
       session: session,

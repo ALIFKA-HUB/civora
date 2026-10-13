@@ -75,6 +75,7 @@ class _StudentNotificationsScreenState
       animation: widget.controller,
       builder: (context, _) => NotificationList(
         items: widget.controller.notifications,
+        isLoading: widget.controller.isLoading,
         errorMessage: widget.controller.errorMessage == null
             ? null
             : 'Notifikasi tidak dapat dimuat.',

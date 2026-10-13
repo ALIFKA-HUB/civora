@@ -33,6 +33,7 @@ class NotificationController extends ChangeNotifier {
   final NotificationPushClient? push;
   List<NotificationDto> notifications = const [];
   String? errorMessage;
+  bool isLoading = false;
   String? deviceTokenId;
   bool pushAvailable = false;
   bool loginRequested = false;
@@ -44,21 +45,32 @@ class NotificationController extends ChangeNotifier {
   int _registeredGeneration = -1;
 
   Future<void> load() async {
+    final token = session.bearerToken;
+    final generation = session.generation;
     errorMessage = null;
+    isLoading = true;
+    notifyListeners();
     try {
       final result = await api.get('/notifications');
+      if (!_isCurrentSession(token, generation)) return;
       final rows = result['data'] is List ? result['data'] as List : const [];
       notifications = rows
           .whereType<Map<String, dynamic>>()
           .map(NotificationDto.fromJson)
           .toList(growable: false);
     } on ApiException catch (error) {
-      errorMessage = error.message;
+      if (_isCurrentSession(token, generation)) errorMessage = error.message;
       rethrow;
     } finally {
-      notifyListeners();
+      if (_isCurrentSession(token, generation)) {
+        isLoading = false;
+        notifyListeners();
+      }
     }
   }
+
+  bool _isCurrentSession(String? token, int generation) =>
+      session.bearerToken == token && session.generation == generation;
 
   Future<void> markRead(NotificationDto item) async {
     if (item.readAt != null) return;
@@ -238,6 +250,8 @@ class NotificationController extends ChangeNotifier {
     } else if (session.state != SessionState.authenticated) {
       deviceTokenId = null;
       notifications = const [];
+      errorMessage = null;
+      isLoading = false;
     }
     notifyListeners();
   }

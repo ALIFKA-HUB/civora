@@ -7,6 +7,7 @@ class NotificationList extends StatelessWidget {
     required this.items,
     required this.onOpen,
     required this.onRefresh,
+    this.isLoading = false,
     this.errorMessage,
     this.onRetry,
   });
@@ -14,6 +15,7 @@ class NotificationList extends StatelessWidget {
   final List<NotificationDto> items;
   final ValueChanged<NotificationDto> onOpen;
   final Future<void> Function() onRefresh;
+  final bool isLoading;
   final String? errorMessage;
   final VoidCallback? onRetry;
 
@@ -31,6 +33,11 @@ class NotificationList extends StatelessWidget {
       );
     }
     if (items.isEmpty) {
+      if (isLoading) {
+        return const Center(
+          child: CircularProgressIndicator(semanticsLabel: 'Memuat notifikasi'),
+        );
+      }
       return RefreshIndicator(
         onRefresh: onRefresh,
         child: ListView(
