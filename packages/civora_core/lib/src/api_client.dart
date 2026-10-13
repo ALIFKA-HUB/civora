@@ -96,7 +96,7 @@ class ApiClient {
     ));
     final payload = _decode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      if (response.statusCode == 401 && !isLogin) sessionController?.end();
+      if (response.statusCode == 401 && !isLogin) await sessionController?.expire();
       final error = payload['error'] is Map<String, dynamic>
           ? payload['error'] as Map<String, dynamic>
           : const <String, dynamic>{};

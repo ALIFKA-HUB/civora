@@ -17,6 +17,16 @@ class RecordingTransport implements ApiTransport {
   void close() {}
 }
 
+class _TokenStore implements SessionTokenStore {
+  final values = <String, String>{};
+  @override
+  Future<String?> read(String key) async => values[key];
+  @override
+  Future<void> write(String key, String token) async => values[key] = token;
+  @override
+  Future<void> delete(String key) async => values.remove(key);
+}
+
 void main() {
   group('ApiClient and DTOs', () {
     test('maps summary snake_case and preserves null as unavailable', () {
@@ -82,7 +92,8 @@ void main() {
     test('login never sends a prior bearer token', () async {
       final transport = RecordingTransport()
         ..responses.add(ApiResponse(200, jsonEncode({'data': {'token': 'new'}})));
-      final session = SessionController()..authenticate('old-token', role: 'teacher');
+      final session = SessionController(role: 'teacher', tokenStore: _TokenStore())
+        ..bearerToken = 'old-token';
       final client = ApiClient(
         baseUrl: Uri.parse('http://localhost/api/v1'),
         transport: transport,
@@ -98,7 +109,10 @@ void main() {
     test('401 ends the current session', () async {
       final transport = RecordingTransport()
         ..responses.add(ApiResponse(401, jsonEncode({'error': {'code': 'INVALID_CREDENTIALS', 'message': 'Sesi habis.'}})));
-      final session = SessionController()..authenticate('token', role: 'student');
+      final store = _TokenStore()..values['civora.student.token'] = 'token';
+      final session = SessionController(role: 'student', tokenStore: store)
+        ..bearerToken = 'token'
+        ..state = SessionState.authenticated;
       final client = ApiClient(
         baseUrl: Uri.parse('http://localhost/api/v1'),
         transport: transport,
@@ -108,6 +122,7 @@ void main() {
       await expectLater(client.get('/me'), throwsA(isA<ApiException>()));
       expect(session.state, SessionState.unauthenticated);
       expect(session.bearerToken, isNull);
+      expect(store.values, isEmpty);
     });
     test('keeps pending profile minimal and parses nullable teacher identity', () {
       final pending = MeDto.fromJson({

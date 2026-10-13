@@ -20,6 +20,15 @@ class RecordingTransport implements ApiTransport {
   void close() => closed = true;
 }
 
+class _EmptyTokenStore implements SessionTokenStore {
+  @override
+  Future<String?> read(String key) async => null;
+  @override
+  Future<void> write(String key, String token) async {}
+  @override
+  Future<void> delete(String key) async {}
+}
+
 void main() {
   testWidgets('student composition root uses configured base URL and owns one client', (tester) async {
     final firstTransport = RecordingTransport();
@@ -28,6 +37,7 @@ void main() {
       roleLabel: 'Siswa',
       config: CivoraAppConfig(apiBaseUrl: Uri.parse('https://student.local.test/api/v1')),
       transport: firstTransport,
+        tokenStore: _EmptyTokenStore(),
     );
     await tester.pumpWidget(firstApp);
     final firstScreen = tester.widget<CivoraFoundationScreen>(find.byType(CivoraFoundationScreen));
@@ -40,6 +50,7 @@ void main() {
       roleLabel: 'Siswa diperbarui',
       config: CivoraAppConfig(apiBaseUrl: Uri.parse('https://ignored-on-rebuild.test/api/v1')),
       transport: RecordingTransport(),
+          tokenStore: _EmptyTokenStore(),
     ));
     final rebuiltClient = tester.widget<CivoraFoundationScreen>(find.byType(CivoraFoundationScreen)).apiClient;
     expect(identical(firstClient, rebuiltClient), isTrue);
@@ -52,6 +63,7 @@ void main() {
       roleLabel: 'Siswa',
       config: CivoraAppConfig(apiBaseUrl: Uri.parse('https://student.staging.test/api/v1')),
       transport: secondTransport,
+          tokenStore: _EmptyTokenStore(),
     ));
     final secondClient = tester.widget<CivoraFoundationScreen>(find.byType(CivoraFoundationScreen)).apiClient;
     await secondClient.get('/health');
@@ -63,15 +75,16 @@ void main() {
     expect(secondTransport.closed, isTrue);
   });
 
-  testWidgets('student shell retains its fixed role label', (tester) async {
-    await tester.pumpWidget(const CivoraApp(roleLabel: 'Siswa'));
+  testWidgets('student auth gate retains its fixed role label', (tester) async {
+    await tester.pumpWidget(CivoraApp(roleLabel: 'Siswa', tokenStore: _EmptyTokenStore()));
+    await tester.pumpAndSettle();
+    expect(find.text('Masuk sebagai siswa'), findsOneWidget);
     expect(find.text('Civora Siswa'), findsOneWidget);
-    expect(find.text('Fondasi aplikasi Siswa'), findsOneWidget);
   });
 
   testWidgets('student root uses the compile-time API base URL when config is omitted', (tester) async {
     final transport = RecordingTransport();
-    await tester.pumpWidget(CivoraApp(roleLabel: 'Siswa', transport: transport));
+      await tester.pumpWidget(CivoraApp(roleLabel: 'Siswa', transport: transport, tokenStore: _EmptyTokenStore()));
     final client = tester.widget<CivoraFoundationScreen>(find.byType(CivoraFoundationScreen)).apiClient;
     await client.get('/health');
     expect(transport.requests.single.uri, Uri.parse('https://student.compiled.test/api/v1/health'));
