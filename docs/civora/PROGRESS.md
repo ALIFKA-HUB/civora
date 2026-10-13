@@ -16,7 +16,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Dikerjakan: B-03 akademik/penempatan | B-02 commit 8faf8db; 113 test/409 assertion lulus, review bersih |
+| G1: Backend | Menunggu review: B-03 akademik/penempatan | Commit 6d48372; laporan 155 test/522 assertion lulus, keputusan review belum tersedia |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai | Belum ada |
@@ -51,3 +51,15 @@ Commit 8faf8db menyediakan login terpisah siswa/guru, aktivasi, reset/penonaktif
 Logout mencabut perangkat yang terikat sesi saat ini; reset/penonaktifan mencabut seluruh perangkat. Reset admin aktif terakhir ditolak agar tetap ada administrator yang dapat mengelola sekolah. Hashing memakai Argon2id setelah test menemukan pemotongan frasa sandi panjang oleh bcrypt. Konfirmasi password terbaru pada website admin dan pembukaan password sementara guru khusus admin tetap menjadi dependensi A-01/A-02; registrasi perangkat dengan ikatan sesi server menjadi dependensi B-11.
 
 Reviewer B-02 menyetujui kesesuaian rancangan dan kualitas tanpa temuan blocking/minor. B-02 Lulus; langkah berikutnya B-03 untuk semester, penempatan, perpindahan, serta status pendidikan siswa. G1 belum lulus sampai seluruh backend selesai.
+
+### 13 Oktober 2026
+
+Pengguna menetapkan GPT-6 Luna dengan effort high untuk semua subagent baru, termasuk reviewer, dan menginginkan GPT-6.1 dengan effort medium sebagai orchestrator. Preferensi tersimpan pada GOALS.md; pemilihan model chat utama dilakukan melalui pengaturan chat.
+
+#### B-03: implementasi selesai, menunggu review independen
+
+Commit 6d48372 menyediakan pembukaan semester, penempatan awal, perpindahan kelas, perubahan status pindah/lulus, serta query penempatan dengan kalender sekolah. Laporan implementer: suite backend 155 test/522 assertion lulus, Pint dan diff check lulus. Reviewer GPT-6 Luna high memeriksa kesesuaian rancangan dan kualitas; B-03 belum dicentang.
+
+Penempatan awal EnrollStudent melengkapi kebutuhan persiapan semester draft untuk admin/import. Penempatan masa depan siswa yang keluar dipertahankan tanpa membuat rentang nol/negatif; status nonaktif mencegah pemakaian. Test perlombaan perpindahan dengan pencatatan tetap menjadi kewajiban B-07 dan akses guru ke arsip siswa lulus menjadi B-08.
+
+Database lokal proyek sempat tidak menerima koneksi. Cluster milik workspace dinyalakan kembali, lalu test terfokus dan suite final lulus; penyebab berhenti belum diketahui. Data developer dan instalasi/database di luar proyek tidak direset.
