@@ -6,10 +6,13 @@ use App\Livewire\Admin\AccountsImport;
 use App\Livewire\Admin\Activate;
 use App\Livewire\Admin\ConfirmPassword;
 use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\FollowUps;
 use App\Livewire\Admin\Login;
+use App\Livewire\Admin\PointTypes;
 use App\Livewire\Admin\StudentDetail;
 use App\Livewire\Admin\Students;
 use App\Livewire\Admin\Teachers;
+use App\Livewire\Admin\Thresholds;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +43,9 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             Route::get('/academic', Academic::class)->name('academic');
             Route::get('/imports', AccountsImport::class)->name('import');
             Route::get('/imports/template/{entityType}/{format}', AccountImportTemplateController::class)->name('import.template');
+            Route::get('/point-types', PointTypes::class)->name('point-types');
+            Route::get('/thresholds', Thresholds::class)->name('thresholds');
+            Route::get('/follow-ups', FollowUps::class)->name('follow-ups');
         });
     });
 });

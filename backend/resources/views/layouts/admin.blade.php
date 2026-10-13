@@ -56,10 +56,11 @@
                     <section aria-labelledby="nav-points">
                         <h2 id="nav-points" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Poin</h2>
                         <div class="mt-2 space-y-1">
-                            <span class="admin-link admin-muted" aria-disabled="true">Daftar poin <span class="ml-auto text-xs">Belum tersedia</span></span>
+                            <a href="{{ route('admin.point-types') }}" class="admin-link" @if (request()->routeIs('admin.point-types')) aria-current="page" @endif @click="closeNavigation()">Daftar poin</a>
                             <span class="admin-link admin-muted" aria-disabled="true">Catatan poin <span class="ml-auto text-xs">Belum tersedia</span></span>
                             <span class="admin-link admin-muted" aria-disabled="true">Pemeriksaan <span class="ml-auto text-xs">Belum tersedia</span></span>
-                            <span class="admin-link admin-muted" aria-disabled="true">Ambang &amp; tindak lanjut <span class="ml-auto text-xs">Belum tersedia</span></span>
+                            <a href="{{ route('admin.thresholds') }}" class="admin-link" @if (request()->routeIs('admin.thresholds')) aria-current="page" @endif @click="closeNavigation()">Ambang poin</a>
+                            <a href="{{ route('admin.follow-ups') }}" class="admin-link" @if (request()->routeIs('admin.follow-ups')) aria-current="page" @endif @click="closeNavigation()">Tindak lanjut</a>
                         </div>
                     </section>
                     <section aria-labelledby="nav-administration">
