@@ -150,10 +150,10 @@ decision adalah approve/reject. changes/proposedChange memakai operation cancel/
 
 **Interfaces:** PreviewAccountsImport::execute(User $admin, UploadedFile $file, string $entityType, ?Semester $semester): ImportBatch; CommitAccountsImport::execute(User $admin, ImportBatch $batch): ImportBatch. Preview menyimpan rows/errors privat; commit memakai CreateAccount B-02 dan EnrollStudent B-03. XLSX template dihasilkan endpoint admin, bukan binary mock dalam repo.
 
-- [ ] Tulis fixture CSV/XLSX NISN "0012345678", duplicate dalam file/database, guru tanpa NIP, kode kelas salah, formula berbahaya, file melebihi 10 MB/5.000 baris, dan batch admin lain.
-- [ ] Pin identifier `self::assertSame('0012345678', $student->nisn);`; satu row invalid menghasilkan `self::assertSame(0, $createdAccountCount);`.
-- [ ] Jalankan `php artisan test --filter=AccountImportTest`; implementasikan reader terbatasi, preview, validasi ulang, batch atomik/idempotent, dan hasil tanpa password pada error/log.
-- [ ] Uji referensi kelas berubah setelah preview dan gangguan commit; verifikasi tidak ada import parsial. Commit import dengan pemeriksaan dependency parsing XLSX yang dipilih.
+- [x] Tulis fixture CSV/XLSX NISN "0012345678", duplicate dalam file/database, guru tanpa NIP, kode kelas salah, formula berbahaya, file melebihi 10 MB/5.000 baris, dan batch admin lain.
+- [x] Pin identifier `self::assertSame('0012345678', $student->nisn);`; satu row invalid menghasilkan `self::assertSame(0, $createdAccountCount);`.
+- [x] Jalankan `php artisan test --filter=AccountImportTest`; implementasikan reader terbatasi, preview, validasi ulang, batch atomik/idempotent, dan hasil tanpa password pada error/log.
+- [x] Uji referensi kelas berubah setelah preview dan gangguan commit; verifikasi tidak ada import parsial. Commit import dengan pemeriksaan dependency parsing XLSX yang dipilih.
 
 ### B-10: Query laporan dan ekspor
 

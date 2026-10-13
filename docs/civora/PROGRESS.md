@@ -9,14 +9,14 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-08 Lulus setelah implementasi dan review independen. 8 dari 26 tugas Lulus; backend keseluruhan belum selesai.
+- B-01 sampai B-09 Lulus setelah implementasi dan review independen. 9 dari 26 tugas Lulus; backend keseluruhan belum selesai.
 
 ## Milestone
 
 | Goal | Status | Bukti |
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
-| G1: Backend | Perlu perbaikan: B-09 expiry/referensi tanggal | Commit 3b0bbd9; 236 test/849 assertion lulus, review meminta guard expiry dan error semester yang jelas |
+| G1: Backend | Dikerjakan: B-10 laporan/ekspor | B-09 fix d65fcc8; test 16/73 assertion lulus, re-review menyetujui |
 | G2: Admin | Belum mulai | Belum ada |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
@@ -95,3 +95,5 @@ Pengguna mengonfirmasi memiliki HP Android, tetapi belum memiliki Firebase. Peng
 #### B-09: perlu perbaikan setelah review
 
 Commit 3b0bbd9 menyediakan import terbatas CSV/XLSX, pratinjau privat, commit atomik, dan dependency PhpSpreadsheet 5.10. Test terfokus 12/47 assertion dan suite 236/849 assertion lulus. Review meminta penolakan preview tidak terkonfirmasi pada batas 7 hari, serta validasi ulang tanggal semester/tahun ajaran dengan error yang membantu admin. Perbaikan dikembalikan ke implementer; cleanup berkas dan parsed rows terjadwal tetap tugas B-11. B-09 belum lulus.
+
+Fix d65fcc8 menolak preview pada batas tepat 7 hari dan memeriksa ulang semester/tahun ajaran serta waktu penempatan sebelum membuat akun, dengan error per baris. Test 16/73 assertion, Pint/diff check lulus; re-review menyetujui tanpa breakage. B-09 Lulus. Retry batch terkonfirmasi tetap tidak membuat akun baru; cleanup terjadwal B-11 menghapus sumber/preview privat sesuai lifecycle. Suite 236/849 adalah bukti sebelum fix; kode fix memakai test terfokus. Langkah berikutnya B-10 untuk laporan dan ekspor.
