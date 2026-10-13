@@ -44,11 +44,11 @@ Admin pending setelah reset memiliki jalur aktivasi terbatas untuk identitas, ga
 
 B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahkan pembukaan credential sementara guru khusus admin, dengan konfirmasi password terbaru, TTL 24 jam, audit tanpa secret, dan penolakan setelah aktivasi/kedaluwarsa. Jangan memperluas hak guru ke credential guru lain.
 
-- [ ] Tulis Livewire test tambah siswa/guru tanpa NIP, class movement, lulus, temporary expired, import errors per baris, dan konfirmasi batch admin lain.
-- [ ] Pin import invalid dengan `->assertHasErrors()` dan jumlah User tidak berubah; confirm batch valid menghasilkan NISN nol awal persis. Uji kode kelas yang dinonaktifkan setelah preview memblokir commit.
-- [ ] Jalankan `php artisan test --filter=AdminDataManagementTest`; implementasikan tabel/filter/pagination, detail historis, form, reset beralasan/reauth, template XLSX/CSV, preview, konfirmasi, dan hasil batch.
-- [ ] Verifikasi hasil import tidak berisi password pada error/export umum; perubahan kelas tidak mengubah catatan lama. Sediakan pencarian audit distribusi credential.
-- [ ] Jalankan test dan alur browser dari template sampai akun aktif; commit pengelolaan data.
+- [x] Tulis Livewire test tambah siswa/guru tanpa NIP, class movement, lulus, temporary expired, import errors per baris, dan konfirmasi batch admin lain.
+- [x] Pin import invalid dengan `->assertHasErrors()` dan jumlah User tidak berubah; confirm batch valid menghasilkan NISN nol awal persis. Uji kode kelas yang dinonaktifkan setelah preview memblokir commit.
+- [x] Jalankan `php artisan test --filter=AdminDataManagementTest`; implementasikan tabel/filter/pagination, detail historis, form, reset beralasan/reauth, template XLSX/CSV, preview, konfirmasi, dan hasil batch.
+- [x] Verifikasi hasil import tidak berisi password pada error/export umum; perubahan kelas tidak mengubah catatan lama. Sediakan pencarian audit distribusi credential.
+- [x] Jalankan test dan alur browser dari template sampai akun aktif; commit pengelolaan data.
 
 ### A-03: Katalog poin, ambang, dan tindak lanjut
 
@@ -89,3 +89,4 @@ B-02 menyediakan RevealTemporaryCredential dengan target Student. A-02 menambahk
 - [ ] Jalankan `php artisan test --filter=AdminReportAccessTest`; implementasikan rekap/filter, permintaan download privat, pengaturan sekolah/logo opsional, manajemen admin, dan audit berpagination.
 - [ ] Buat satu browser test alur import → katalog → membuka semester → menerima catatan API → pemeriksaan → laporan. Jalankan melalui runner browser yang dipilih/didokumentasikan pada B-01, tanpa database produksi.
 - [ ] Jalankan semua test admin sampai lulus; periksa keyboard, tabel panjang, focus dialog, dan tema. Commit; kualitas PDF/Excel akhir diperiksa pada I-02.
+

@@ -9,7 +9,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 - PHP 8.4.0, Composer 2.8.11, Node 26.3.0, Git 2.47.0, Flutter 3.41.9, dan Dart 3.11.5 ditemukan melalui perintah versi.
 - Instalasi PostgreSQL 17/18 ditemukan; tidak ada listener pada port 5432 yang ditemukan pada pemeriksaan awal.
 - PHP CLI saat ini tidak memuat pdo_pgsql. Runtime PostgreSQL dan driver PHP harus disiapkan sebelum test database dinyatakan valid.
-- B-01 sampai B-11 dan A-01 Lulus setelah implementasi dan review independen. 12 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
+- B-01 sampai B-11 dan A-01/A-02 Lulus setelah implementasi dan review independen. 13 dari 26 tugas Lulus; website admin dan aplikasi mobile belum selesai.
 
 ## Milestone
 
@@ -17,7 +17,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | --- | --- | --- |
 | G0: Fondasi | Lulus | Commit 3bd1c1a; 84 test/260 assertion, Pint, migration, health HTTP, review bersih |
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
-| G2: Admin | Dikerjakan: A-02 | A-01 lulus; session/layout/dashboard diuji melalui HTTP dan browser |
+| G2: Admin | Dikerjakan: A-03 | A-01/A-02 lulus; session, data, dan impor diuji melalui HTTP dan browser |
 | G3: Mobile | Belum mulai | Belum ada |
 | G4: Integrasi | Belum mulai; Firebase belum tersedia | Pengguna memiliki HP Android; push nyata menunggu project/config Firebase |
 | G5: Produksi | Belum mulai | Belum ada |
@@ -131,3 +131,6 @@ Fix a9cfc7d menegakkan empat guard admin pada update Livewire dan membuat drawer
 Commit 032d081 telah di-push ke branch kerja. Pengelolaan siswa/guru, akademik, bantuan akun sementara, template CSV/XLSX, dan preview/konfirmasi impor tersedia. AdminDataManagementTest: 14 test/73 assertion; suite backend final: 282 test/1.155 assertion; browser Dusk impor sampai aktivasi: 1 test/10 assertion. Semua command tersebut, Pint, build Vite, dan diff check keluar dengan exit 0.
 
 Integrasi memperbaiki representasi null/daftar kosong pada error_summary impor B-09. Runtime server lokal memakai folder upload sementara milik proyek melalui ops/dev/serve.ps1. Browser QA memakai session file khusus pengujian; hasil ini tidak membuktikan pencabutan session database produksi. Reviewer independen GPT-6 Luna high sedang memeriksa perubahan; A-02 belum dicentang.
+
+
+Review A-02 menemukan pencarian OR yang dapat melewati filter status. Regresi mereproduksi kegagalan pada daftar siswa dan guru; fix b50e7ee mengelompokkan alternatif pencarian. Test terfokus setelah fix: 16 test/83 assertion, Pint/diff check exit 0. Re-review menyetujui satu temuan tanpa masalah baru. A-02 Lulus; 13/26 tugas lulus. Suite 282/1.155 dan browser 1/10 adalah bukti sebelum fix. Minor tautan import guru yang tidak menerapkan pilihan jenis disimpan untuk review akhir. Berikutnya A-03 katalog, ambang, dan tindak lanjut.
