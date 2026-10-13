@@ -12,6 +12,8 @@ dependencies:
     path: ../../packages/civora_core
   civora_ui:
     path: ../../packages/civora_ui
+  image_picker: ^1.2.4
+  mobile_scanner: ^7.4.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

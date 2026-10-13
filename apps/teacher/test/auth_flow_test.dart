@@ -30,6 +30,13 @@ class _Transport implements ApiTransport {
 
 ApiResponse _response(Map<String, dynamic> body) =>
     ApiResponse(200, jsonEncode(body));
+ApiResponse _emptyRecords() => ApiResponse(
+  200,
+  jsonEncode({
+    'data': [],
+    'meta': {'current_page': 1, 'per_page': 5, 'total': 0, 'last_page': 1},
+  }),
+);
 
 void main() {
   testWidgets(
@@ -187,6 +194,7 @@ void main() {
         ..values['civora.teacher.token'] = 'active-token';
       final transport = _Transport()
         ..responses.add(_response(activeMe))
+        ..responses.addAll([_emptyRecords(), _emptyRecords(), _emptyRecords()])
         ..responses.add(
           _response({
             'data': {'message': 'Logout berhasil.'},
@@ -211,6 +219,7 @@ void main() {
         ..values['civora.teacher.token'] = 'active-token-2';
       final secondTransport = _Transport()
         ..responses.add(_response(activeMe))
+        ..responses.addAll([_emptyRecords(), _emptyRecords(), _emptyRecords()])
         ..responses.add(
           _response({
             'data': {'message': 'Password berhasil diganti.'},
@@ -267,6 +276,7 @@ void main() {
             },
           }),
         )
+        ..responses.addAll([_emptyRecords(), _emptyRecords(), _emptyRecords()])
         ..responses.add(
           ApiResponse(
             401,

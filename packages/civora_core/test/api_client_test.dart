@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:civora_core/civora_core.dart';
@@ -18,6 +19,20 @@ class RecordingTransport implements ApiTransport {
   void close() {}
 }
 
+class _DelayedTransport implements ApiTransport {
+  _DelayedTransport(this.response);
+  final Completer<ApiResponse> response;
+  final requestSent = Completer<ApiRequest>();
+  @override
+  Future<ApiResponse> send(ApiRequest request) {
+    requestSent.complete(request);
+    return response.future;
+  }
+
+  @override
+  void close() {}
+}
+
 class _TokenStore implements SessionTokenStore {
   final values = <String, String>{};
   @override
@@ -30,6 +45,181 @@ class _TokenStore implements SessionTokenStore {
 
 void main() {
   group('ApiClient and DTOs', () {
+    test(
+      'multipart attachment upload uses authenticated transport and preserves bytes',
+      () async {
+        final bytes = Uint8List.fromList([0xff, 0xd8, 0x00, 0x80]);
+        final transport = RecordingTransport()
+          ..responses.add(
+            ApiResponse(
+              201,
+              jsonEncode({
+                'data': {'id': 'attachment-1'},
+              }),
+            ),
+          );
+        final session = SessionController(
+          role: 'teacher',
+          tokenStore: _TokenStore(),
+        )..bearerToken = 'teacher-session';
+        final client = ApiClient(
+          baseUrl: Uri.parse('http://localhost/api/v1'),
+          transport: transport,
+          sessionController: session,
+        );
+
+        final response = await client.uploadFile(
+          '/teacher/attachments',
+          bytes: bytes,
+          filename: 'proof.jpg',
+          mimeType: 'image/jpeg',
+        );
+
+        final request = transport.requests.single;
+        expect(response['id'], 'attachment-1');
+        expect(request.headers['Authorization'], 'Bearer teacher-session');
+        expect(
+          request.headers['Content-Type'],
+          startsWith('multipart/form-data; boundary='),
+        );
+        expect(request.bodyBytes!.indexOf(0xff), greaterThan(0));
+        expect(
+          request.bodyBytes!.sublist(
+            request.bodyBytes!.indexOf(0xff),
+            request.bodyBytes!.indexOf(0xff) + bytes.length,
+          ),
+          bytes,
+        );
+        expect(
+          utf8.decode(
+            request.bodyBytes!.sublist(0, request.bodyBytes!.indexOf(0xff)),
+          ),
+          contains('name="file"; filename="proof.jpg"'),
+        );
+      },
+    );
+
+    test('multipart upload preserves structured validation errors', () async {
+      final transport = RecordingTransport()
+        ..responses.add(
+          ApiResponse(
+            422,
+            jsonEncode({
+              'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': 'Bukti tidak valid.',
+                'fields': {
+                  'file': ['Format tidak didukung.'],
+                },
+              },
+              'request_id': 'upload-1',
+            }),
+          ),
+        );
+      final client = ApiClient(
+        baseUrl: Uri.parse('http://localhost/api/v1'),
+        transport: transport,
+      );
+      await expectLater(
+        client.uploadFile(
+          '/teacher/attachments',
+          bytes: Uint8List.fromList([1]),
+          filename: 'proof.jpg',
+          mimeType: 'image/jpeg',
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (error) => error.fields['file'],
+            'file errors',
+            ['Format tidak didukung.'],
+          ),
+        ),
+      );
+    });
+
+    test(
+      'multipart upload preserves conflict fields and does not expire a session on 409',
+      () async {
+        final transport = RecordingTransport()
+          ..responses.add(
+            ApiResponse(
+              409,
+              jsonEncode({
+                'error': {
+                  'code': 'ATTACHMENT_CONFLICT',
+                  'message': 'Bukti tidak dapat digunakan.',
+                  'fields': {
+                    'file': ['Coba unggah ulang.'],
+                  },
+                },
+                'request_id': 'upload-conflict',
+              }),
+            ),
+          );
+        final store = _TokenStore()
+          ..values['civora.teacher.token'] = 'teacher-session';
+        final session = SessionController(role: 'teacher', tokenStore: store)
+          ..bearerToken = 'teacher-session'
+          ..state = SessionState.authenticated;
+        final client = ApiClient(
+          baseUrl: Uri.parse('http://localhost/api/v1'),
+          transport: transport,
+          sessionController: session,
+        );
+        await expectLater(
+          client.uploadFile(
+            '/teacher/attachments',
+            bytes: Uint8List.fromList([1]),
+            filename: 'proof.jpg',
+            mimeType: 'image/jpeg',
+          ),
+          throwsA(
+            isA<ApiException>()
+                .having((error) => error.statusCode, 'statusCode', 409)
+                .having((error) => error.fields['file'], 'file errors', [
+                  'Coba unggah ulang.',
+                ]),
+          ),
+        );
+        expect(session.state, SessionState.authenticated);
+      },
+    );
+
+    test('stale multipart 401 cannot end a newer session generation', () async {
+      final response = Completer<ApiResponse>();
+      final transport = _DelayedTransport(response);
+      final session =
+          SessionController(role: 'teacher', tokenStore: _TokenStore())
+            ..bearerToken = 'old-session'
+            ..state = SessionState.authenticated;
+      final client = ApiClient(
+        baseUrl: Uri.parse('http://localhost/api/v1'),
+        transport: transport,
+        sessionController: session,
+      );
+      final upload = client.uploadFile(
+        '/teacher/attachments',
+        bytes: Uint8List.fromList([1]),
+        filename: 'proof.jpg',
+        mimeType: 'image/jpeg',
+      );
+      session.end();
+      session.bearerToken = 'new-session';
+      session.state = SessionState.authenticated;
+      final request = await transport.requestSent.future;
+      expect(request.headers['Authorization'], 'Bearer old-session');
+      response.complete(
+        ApiResponse(
+          401,
+          jsonEncode({
+            'error': {'code': 'UNAUTHENTICATED', 'message': 'Sesi lama habis.'},
+          }),
+        ),
+      );
+      await expectLater(upload, throwsA(isA<ApiException>()));
+      expect(session.bearerToken, 'new-session');
+      expect(session.state, SessionState.authenticated);
+    });
     test('maps summary snake_case and preserves null as unavailable', () {
       final active = SummaryDto.fromJson({
         'semester': {'id': 'semester-1', 'name': 'Ganjil'},

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'app_config.dart';
 import 'features/auth/auth_screen.dart';
-import 'features/profile/profile_screen.dart';
+import 'features/home/home_screen.dart';
 
 class CivoraApp extends StatefulWidget {
   const CivoraApp({
@@ -110,49 +110,9 @@ class _CivoraFoundationScreenState extends State<CivoraFoundationScreen> {
         );
       }
       if (session.state == SessionState.authenticated) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Text('Civora ${widget.roleLabel}'),
-            actions: [
-              IconButton(
-                tooltip: 'Profil',
-                icon: const Icon(Icons.account_circle_outlined),
-                onPressed: _openProfile,
-              ),
-            ],
-          ),
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.school_outlined,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Halo, ${session.profile?.account.name ?? 'Guru'}',
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text('Sesi guru aktif.'),
-                ],
-              ),
-            ),
-          ),
-        );
+        return TeacherHomeScreen(api: widget.apiClient, session: session);
       }
       return TeacherAuthScreen(session: session, api: widget.apiClient);
     },
-  );
-
-  void _openProfile() => Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => TeacherProfileScreen(session: widget.sessionController),
-    ),
   );
 }

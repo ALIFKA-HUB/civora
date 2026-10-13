@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import 'api_exception.dart';
 import 'session_controller.dart';
@@ -11,12 +13,14 @@ class ApiRequest {
     required this.uri,
     required this.headers,
     this.body,
+    this.bodyBytes,
   });
 
   final String method;
   final Uri uri;
   final Map<String, String> headers;
   final String? body;
+  final Uint8List? bodyBytes;
 }
 
 class ApiResponse {
@@ -41,7 +45,11 @@ class IoApiTransport implements ApiTransport {
   Future<ApiResponse> send(ApiRequest request) async {
     final outbound = await _client.openUrl(request.method, request.uri);
     request.headers.forEach(outbound.headers.set);
-    if (request.body != null) outbound.add(utf8.encode(request.body!));
+    if (request.bodyBytes != null) {
+      outbound.add(request.bodyBytes!);
+    } else if (request.body != null) {
+      outbound.add(utf8.encode(request.body!));
+    }
     final response = await outbound.close();
     final bytes = await response.fold<List<int>>(
       <int>[],
@@ -82,10 +90,43 @@ class ApiClient {
     String? idempotencyKey,
   }) => _send('POST', path, body: body, idempotencyKey: idempotencyKey);
 
+  Future<Map<String, dynamic>> uploadFile(
+    String path, {
+    required Uint8List bytes,
+    required String filename,
+    required String mimeType,
+  }) async {
+    final requestToken = sessionController?.bearerToken;
+    final requestGeneration = sessionController?.generation ?? -1;
+    final multipart = http.MultipartRequest('POST', _uri(path))
+      ..files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          bytes,
+          filename: filename,
+          contentType: MediaType.parse(mimeType),
+        ),
+      );
+    final bodyBytes = await multipart.finalize().toBytes();
+    return _send(
+      'POST',
+      path,
+      bodyBytes: bodyBytes,
+      contentType: multipart.headers['content-type'],
+      capturedToken: requestToken,
+      capturedGeneration: requestGeneration,
+    );
+  }
+
   Future<Uint8List> getBytes(String path) async {
     final requestToken = sessionController?.bearerToken;
     final requestGeneration = sessionController?.generation ?? -1;
-    final response = await _request('GET', path);
+    final response = await _request(
+      'GET',
+      path,
+      requestToken: requestToken,
+      requestGeneration: requestGeneration,
+    );
     if (response.statusCode < 200 || response.statusCode >= 300) {
       await _throwResponse(response, path, requestToken, requestGeneration);
     }
@@ -98,15 +139,26 @@ class ApiClient {
     Map<String, dynamic>? query,
     Map<String, dynamic>? body,
     String? idempotencyKey,
+    Uint8List? bodyBytes,
+    String? contentType,
+    String? capturedToken,
+    int? capturedGeneration,
   }) async {
-    final requestToken = sessionController?.bearerToken;
-    final requestGeneration = sessionController?.generation ?? -1;
+    final requestToken = capturedGeneration == null
+        ? sessionController?.bearerToken
+        : capturedToken;
+    final requestGeneration =
+        capturedGeneration ?? sessionController?.generation ?? -1;
     final response = await _request(
       method,
       path,
       query: query,
       body: body,
+      bodyBytes: bodyBytes,
+      contentType: contentType,
       idempotencyKey: idempotencyKey,
+      requestToken: requestToken,
+      requestGeneration: requestGeneration,
     );
     final payload = _decode(response.body);
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -123,21 +175,21 @@ class ApiClient {
     Map<String, dynamic>? query,
     Map<String, dynamic>? body,
     String? idempotencyKey,
+    Uint8List? bodyBytes,
+    String? contentType,
+    required String? requestToken,
+    required int requestGeneration,
   }) async {
-    final endpoint = path.startsWith('/') ? path.substring(1) : path;
-    final root = baseUrl.path.endsWith('/') ? baseUrl.path : '${baseUrl.path}/';
-    final uri = baseUrl.replace(
-      path: '$root$endpoint',
-      queryParameters: query?.map((key, value) => MapEntry(key, '$value')),
-    );
+    final uri = _uri(path, query);
     final headers = <String, String>{'Accept': 'application/json'};
     final isLogin =
         path == '/auth/student/login' ||
         path == '/auth/teacher/login' ||
         path == 'auth/student/login' ||
         path == 'auth/teacher/login';
-    final token = isLogin ? null : sessionController?.bearerToken;
+    final token = isLogin ? null : requestToken;
     if (token != null) headers['Authorization'] = 'Bearer $token';
+    if (contentType != null) headers['Content-Type'] = contentType;
     if (body != null)
       headers['Content-Type'] = 'application/json; charset=utf-8';
     if (idempotencyKey != null) headers['Idempotency-Key'] = idempotencyKey;
@@ -147,7 +199,17 @@ class ApiClient {
         uri: uri,
         headers: headers,
         body: body == null ? null : jsonEncode(body),
+        bodyBytes: bodyBytes,
       ),
+    );
+  }
+
+  Uri _uri(String path, [Map<String, dynamic>? query]) {
+    final endpoint = path.startsWith('/') ? path.substring(1) : path;
+    final root = baseUrl.path.endsWith('/') ? baseUrl.path : '${baseUrl.path}/';
+    return baseUrl.replace(
+      path: '$root$endpoint',
+      queryParameters: query?.map((key, value) => MapEntry(key, '$value')),
     );
   }
 
