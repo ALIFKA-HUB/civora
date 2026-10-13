@@ -41,13 +41,16 @@ final class SubmitReviewRequest
                 if ($kind !== 'teacher_correction') {
                     throw ValidationException::withMessages(['kind' => 'Jenis permintaan tidak sesuai dengan peran.']);
                 }
-                ReviewChanges::validate($proposedChange);
+                $proposedChange = ReviewChanges::validate($proposedChange);
             } else {
                 throw new AuthorizationException('Akses ditolak.');
             }
 
             if (! in_array($kind, ['student_objection', 'teacher_correction'], true)) {
                 throw ValidationException::withMessages(['kind' => 'Jenis pemeriksaan tidak valid.']);
+            }
+            if (array_key_exists('attachment_id', $proposedChange)) {
+                ReviewChanges::validateAttachment($record, $proposedChange['attachment_id']);
             }
             $reason = trim($reason);
             if (mb_strlen($reason) < 5 || mb_strlen($reason) > 1000) {

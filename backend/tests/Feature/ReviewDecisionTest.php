@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Catalog\RevisePointType;
 use App\Actions\Reviews\DecideReviewRequest;
 use App\Actions\Reviews\ReviseRecord;
 use App\Actions\Reviews\SubmitReviewRequest;
+use App\Models\Attachment;
 use App\Models\PointRecord;
+use App\Models\PointType;
 use App\Models\Semester;
 use App\Models\Student;
 use App\Models\User;
@@ -148,5 +151,175 @@ class ReviewDecisionTest extends TestCase
 
         self::assertSame('closed', $this->semester->fresh()->status);
         self::assertSame('Historical corrected description', $revised->latestRevision->description);
+    }
+
+    public function test_teacher_cannot_submit_an_attachment_owned_by_another_teacher(): void
+    {
+        $otherTeacher = User::create(['role' => 'teacher', 'name' => 'Evidence owner', 'password_hash' => 'Synthetic password', 'account_status' => 'active', 'must_change_password' => false]);
+        DB::table('teachers')->insert(['id' => (string) Str::uuid(), 'user_id' => $otherTeacher->id, 'teacher_code' => 'G002']);
+        $attachment = $this->attachment($otherTeacher->id);
+
+        try {
+            app(SubmitReviewRequest::class)->execute($this->teacherUser, $this->record, 'teacher_correction', 'Lampiran koreksi.', ['operation' => 'revise', 'attachment_id' => $attachment->id]);
+            self::fail('A teacher cannot propose another teacher’s private attachment.');
+        } catch (ValidationException $exception) {
+            self::assertArrayHasKey('attachment_id', $exception->errors());
+        }
+
+        self::assertDatabaseCount('review_requests', 0);
+        self::assertSame($this->rows['students']['id'], $this->record->fresh()->student_id);
+    }
+
+    public function test_teacher_cannot_submit_evidence_already_used_by_another_record(): void
+    {
+        $attachment = $this->attachment($this->teacherUser->id);
+        $this->otherRecordUsing($attachment->id);
+
+        try {
+            app(SubmitReviewRequest::class)->execute($this->teacherUser, $this->record, 'teacher_correction', 'Lampiran telah dipakai.', ['operation' => 'revise', 'attachment_id' => $attachment->id]);
+            self::fail('Evidence referenced by another record cannot be reused.');
+        } catch (ValidationException $exception) {
+            self::assertArrayHasKey('attachment_id', $exception->errors());
+        }
+
+        self::assertDatabaseCount('review_requests', 0);
+    }
+
+    public function test_teacher_can_propose_own_staged_evidence_and_reuse_evidence_from_same_record(): void
+    {
+        $staged = $this->attachment($this->teacherUser->id);
+        $review = app(SubmitReviewRequest::class)->execute($this->teacherUser, $this->record, 'teacher_correction', 'Lampiran baru milik pencatat.', ['operation' => 'revise', 'attachment_id' => $staged->id]);
+        app(DecideReviewRequest::class)->execute($this->admin, $review, 'approve', 'Bukti baru diperiksa.', 1, $review->proposed_change);
+        self::assertSame($staged->id, $this->record->fresh()->latestRevision->attachment_id);
+
+        $sameRecordEvidence = $this->rows['attachments']['id'];
+        $review = app(SubmitReviewRequest::class)->execute($this->teacherUser, $this->record, 'teacher_correction', 'Bukti catatan dipertahankan.', ['operation' => 'revise', 'attachment_id' => $sameRecordEvidence]);
+        app(DecideReviewRequest::class)->execute($this->admin, $review, 'approve', 'Bukti catatan tetap berlaku.', 2, $review->proposed_change);
+
+        self::assertSame($sameRecordEvidence, $this->record->fresh()->latestRevision->attachment_id);
+        self::assertSame(3, $this->record->revisions()->count());
+    }
+
+    public function test_admin_rechecks_attachment_eligibility_when_approving_a_stale_proposal(): void
+    {
+        $attachment = $this->attachment($this->teacherUser->id);
+        $review = app(SubmitReviewRequest::class)->execute($this->teacherUser, $this->record, 'teacher_correction', 'Lampiran masih tersedia.', ['operation' => 'revise', 'attachment_id' => $attachment->id]);
+        $otherRecord = $this->otherRecordUsing($attachment->id, 'cancelled');
+        $before = app(PointTotals::class)->forStudent($this->student, $this->semester);
+
+        try {
+            app(DecideReviewRequest::class)->execute($this->admin, $review, 'approve', 'Lampiran diperiksa.', 1, $review->proposed_change);
+            self::fail('Approval must recheck attachment use under its row lock.');
+        } catch (ValidationException $exception) {
+            self::assertArrayHasKey('attachment_id', $exception->errors());
+        }
+
+        self::assertSame('pending', $review->fresh()->status);
+        self::assertSame(1, $this->record->revisions()->count());
+        self::assertSame($before, app(PointTotals::class)->forStudent($this->student, $this->semester));
+        self::assertDatabaseHas('record_revisions', ['point_record_id' => $otherRecord, 'attachment_id' => $attachment->id, 'status' => 'cancelled']);
+        $this->assertDatabaseMissing('audit_logs', ['action' => 'review_approve', 'resource_id' => $review->id]);
+        $this->assertDatabaseMissing('outbox_events', ['event_key' => 'review-decision:'.$review->id]);
+    }
+
+    public function test_direct_admin_revision_rejects_foreign_and_cross_record_evidence(): void
+    {
+        $otherTeacher = User::create(['role' => 'teacher', 'name' => 'Another evidence owner', 'password_hash' => 'Synthetic password', 'account_status' => 'active', 'must_change_password' => false]);
+        DB::table('teachers')->insert(['id' => (string) Str::uuid(), 'user_id' => $otherTeacher->id, 'teacher_code' => 'G003']);
+        $foreign = $this->attachment($otherTeacher->id);
+        $used = $this->attachment($this->teacherUser->id);
+        $this->otherRecordUsing($used->id);
+
+        foreach ([$foreign->id, $used->id] as $attachmentId) {
+            try {
+                app(ReviseRecord::class)->execute($this->admin, $this->record, 'Lampiran pengganti ditolak.', 1, ['operation' => 'revise', 'attachment_id' => $attachmentId]);
+                self::fail('Direct admin revision must enforce the same evidence ownership rule.');
+            } catch (ValidationException $exception) {
+                self::assertArrayHasKey('attachment_id', $exception->errors());
+            }
+        }
+
+        self::assertSame(1, $this->record->revisions()->count());
+        self::assertSame($this->rows['students']['id'], $this->record->fresh()->student_id);
+    }
+
+    public function test_approval_rechecks_catalog_latest_version_after_locking_mutable_type(): void
+    {
+        $review = app(SubmitReviewRequest::class)->execute($this->teacherUser, $this->record, 'teacher_correction', 'Gunakan versi katalog ini.', [
+            'operation' => 'revise',
+            'point_type_version_id' => $this->rows['point_type_versions']['id'],
+        ]);
+        app(RevisePointType::class)->execute($this->admin, PointType::findOrFail($this->rows['point_types']['id']), [
+            'name' => 'Updated synthetic achievement',
+            'points' => 20,
+            'description' => 'Latest catalog version for stale proposal verification',
+        ]);
+
+        try {
+            app(DecideReviewRequest::class)->execute($this->admin, $review, 'approve', 'Versi lama ditolak.', 1, $review->proposed_change);
+            self::fail('A proposal with a stale point-type version must conflict.');
+        } catch (HttpResponseException $exception) {
+            self::assertSame(409, $exception->getResponse()->getStatusCode());
+        }
+
+        self::assertSame(1, $this->record->revisions()->count());
+        self::assertSame('pending', $review->fresh()->status);
+    }
+
+    private function attachment(string $ownerId): Attachment
+    {
+        return Attachment::create([
+            'owner_user_id' => $ownerId,
+            'private_path' => 'evidence/'.Str::uuid().'.png',
+            'mime_type' => 'image/png',
+            'size' => 1024,
+            'checksum' => str_repeat('a', 64),
+        ]);
+    }
+
+    private function otherRecordUsing(string $attachmentId, string $status = 'active'): string
+    {
+        $selectionId = (string) Str::uuid();
+        DB::table('student_selections')->insert([
+            'id' => $selectionId,
+            'teacher_id' => DB::table('teachers')->value('id'),
+            'student_id' => $this->student->id,
+            'enrollment_id' => $this->rows['enrollments']['id'],
+            'semester_id' => $this->semester->id,
+            'source' => 'manual',
+            'expires_at' => now()->addMinutes(5),
+        ]);
+        $recordId = (string) Str::uuid();
+        DB::table('point_records')->insert([
+            'id' => $recordId,
+            'student_id' => $this->student->id,
+            'teacher_id' => DB::table('teachers')->value('id'),
+            'enrollment_id' => $this->rows['enrollments']['id'],
+            'semester_id' => $this->semester->id,
+            'selection_id' => $selectionId,
+            'source' => 'manual',
+            'occurred_at' => now(),
+            'class_snapshot' => 'Other Class',
+            'major_snapshot' => 'Other Major',
+            'idempotency_key' => 'attachment-claim-'.$recordId,
+            'request_hash' => str_repeat('b', 64),
+        ]);
+        DB::table('record_revisions')->insert([
+            'id' => (string) Str::uuid(),
+            'point_record_id' => $recordId,
+            'revision_number' => 1,
+            'point_type_version_id' => $this->rows['point_type_versions']['id'],
+            'points_snapshot' => 10,
+            'name_snapshot' => 'Other evidence record',
+            'category_snapshot' => 'achievement',
+            'description' => 'Other record claims evidence',
+            'attachment_id' => $attachmentId,
+            'status' => $status,
+            'changed_by' => $this->admin->id,
+            'reason' => 'Initial other record',
+            'created_at' => now(),
+        ]);
+
+        return $recordId;
     }
 }

@@ -7,6 +7,7 @@ use App\Models\PointRecord;
 use App\Models\PointType;
 use App\Models\PointTypeVersion;
 use App\Models\RecordRevision;
+use App\Models\Teacher;
 use App\Models\User;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Validator;
@@ -63,10 +64,11 @@ final class ReviewChanges
                 }
             }
             if (array_key_exists('point_type_version_id', $changes)) {
-                $version = PointTypeVersion::whereKey($changes['point_type_version_id'])->lockForUpdate()->first();
-                $type = $version ? PointType::whereKey($version->point_type_id)->lockForUpdate()->first() : null;
+                $versionIdentity = PointTypeVersion::whereKey($changes['point_type_version_id'])->first();
+                $type = $versionIdentity ? PointType::whereKey($versionIdentity->point_type_id)->lockForUpdate()->first() : null;
+                $version = PointTypeVersion::whereKey($changes['point_type_version_id'])->first();
                 $latestVersion = $type ? PointTypeVersion::where('point_type_id', $type->id)->orderByDesc('version')->value('id') : null;
-                if (! $version || ! $type?->active || $latestVersion !== $version->id) {
+                if (! $version || ! $type?->active || $version->point_type_id !== $type->id || $latestVersion !== $version->id) {
                     self::conflict('POINT_TYPE_CHANGED', 'Versi jenis poin tidak lagi tersedia. Muat ulang daftar poin.');
                 }
                 $snapshot['point_type_version_id'] = $version->id;
@@ -75,9 +77,7 @@ final class ReviewChanges
                 $snapshot['category_snapshot'] = $type->category;
             }
             if (array_key_exists('attachment_id', $changes)) {
-                if ($changes['attachment_id'] !== null && ! Attachment::whereKey($changes['attachment_id'])->lockForUpdate()->exists()) {
-                    throw ValidationException::withMessages(['attachment_id' => 'Bukti tidak tersedia.']);
-                }
+                self::validateAttachment($record, $changes['attachment_id']);
                 $snapshot['attachment_id'] = $changes['attachment_id'];
             }
         }
@@ -88,6 +88,22 @@ final class ReviewChanges
             'changed_by' => $admin->id,
             'reason' => $reason,
         ]);
+    }
+
+    public static function validateAttachment(PointRecord $record, ?string $attachmentId): ?Attachment
+    {
+        if ($attachmentId === null) {
+            return null;
+        }
+
+        $attachment = Attachment::whereKey($attachmentId)->lockForUpdate()->first();
+        $teacherUserId = Teacher::whereKey($record->teacher_id)->value('user_id');
+        if (! $attachment || $attachment->owner_user_id !== $teacherUserId
+            || $attachment->recordRevisions()->where('point_record_id', '!=', $record->id)->exists()) {
+            throw ValidationException::withMessages(['attachment_id' => 'Bukti hanya dapat dipakai jika milik guru pencatat dan belum terikat ke catatan lain.']);
+        }
+
+        return $attachment;
     }
 
     public static function conflict(string $code, string $message): never
