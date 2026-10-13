@@ -1,22 +1,27 @@
 <?php
 
+use App\Actions\Reports\DownloadReportExport;
 use App\Http\Controllers\Admin\AccountImportTemplateController;
 use App\Livewire\Admin\Academic;
 use App\Livewire\Admin\AccountsImport;
 use App\Livewire\Admin\Activate;
+use App\Livewire\Admin\AuditLogViewer;
 use App\Livewire\Admin\ConfirmPassword;
 use App\Livewire\Admin\Dashboard;
 use App\Livewire\Admin\FollowUps;
 use App\Livewire\Admin\Login;
 use App\Livewire\Admin\PointRecords;
 use App\Livewire\Admin\PointTypes;
+use App\Livewire\Admin\Reports;
 use App\Livewire\Admin\ReviewDetail;
 use App\Livewire\Admin\ReviewQueue;
+use App\Livewire\Admin\Settings;
 use App\Livewire\Admin\StudentDetail;
 use App\Livewire\Admin\Students;
 use App\Livewire\Admin\Teachers;
 use App\Livewire\Admin\Thresholds;
 use App\Models\Attachment;
+use App\Models\ReportExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +57,12 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
             Route::get('/point-types', PointTypes::class)->name('point-types');
             Route::get('/thresholds', Thresholds::class)->name('thresholds');
             Route::get('/follow-ups', FollowUps::class)->name('follow-ups');
+            Route::get('/reports', Reports::class)->name('reports');
+            Route::get('/reports/exports/{reportExport}/download', function (ReportExport $reportExport) {
+                return app(DownloadReportExport::class)->execute(auth('web')->user(), $reportExport->id);
+            })->middleware('admin.reauthenticated')->name('reports.download');
+            Route::get('/settings', Settings::class)->name('settings');
+            Route::get('/audit', AuditLogViewer::class)->name('audit');
             Route::get('/point-records', PointRecords::class)->name('point-records');
             Route::get('/reviews', ReviewQueue::class)->name('reviews');
             Route::get('/reviews/{reviewId}', ReviewDetail::class)->whereUuid('reviewId')->name('reviews.show');

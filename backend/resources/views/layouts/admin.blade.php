@@ -67,9 +67,9 @@
                         <h2 id="nav-administration" class="admin-muted px-3 text-xs font-semibold uppercase tracking-wide">Administrasi</h2>
                         <div class="mt-2 space-y-1">
                             <a href="{{ route('admin.import') }}" class="admin-link" @if (request()->routeIs('admin.import*')) aria-current="page" @endif @click="closeNavigation()">Import akun</a>
-                            <span class="admin-link admin-muted" aria-disabled="true">Laporan <span class="ml-auto text-xs">Belum tersedia</span></span>
-                            <span class="admin-link admin-muted" aria-disabled="true">Pengaturan <span class="ml-auto text-xs">Belum tersedia</span></span>
-                            <span class="admin-link admin-muted" aria-disabled="true">Audit <span class="ml-auto text-xs">Belum tersedia</span></span>
+                            <a href="{{ route('admin.reports') }}" class="admin-link" @if (request()->routeIs('admin.reports*')) aria-current="page" @endif @click="closeNavigation()">Laporan</a>
+                            <a href="{{ route('admin.settings') }}" class="admin-link" @if (request()->routeIs('admin.settings')) aria-current="page" @endif @click="closeNavigation()">Pengaturan</a>
+                            <a href="{{ route('admin.audit') }}" class="admin-link" @if (request()->routeIs('admin.audit')) aria-current="page" @endif @click="closeNavigation()">Audit</a>
                         </div>
                     </section>
                 </nav>
