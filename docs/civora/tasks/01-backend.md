@@ -87,10 +87,10 @@ EnrollStudent::execute(User $admin, Student $student, Semester $semester, string
 
 **Interfaces:** PointTotals::forStudent(Student $student, Semester $semester): array{achievement:int,violation:int}; ThresholdEvaluator::evaluate(Student $student, Semester $semester): void; SetThresholdPolicy::execute(User $admin, Semester $semester, array $levels, string $reason): ThresholdPolicy; RecordFollowUp::execute(User $admin, ThresholdAlert $alert, array $attributes): FollowUp. Evaluator dipanggil setelah revision ditulis dalam transaksi yang memegang lock siswa.
 
-- [ ] Tulis fixture catatan dengan prestasi 10, pelanggaran 15, revisi pelanggaran menjadi 5, satu cancellation, dan semester lain. Pin `self::assertSame(['achievement'=>10,'violation'=>5], $totals);`.
-- [ ] Uji batas tepat sama dengan threshold, dua threshold terlewati, turun karena koreksi, naik kembali tanpa duplikasi, dan kebijakan baru menggantikan status versi lama tanpa menghapus follow-up.
-- [ ] Jalankan `php artisan test --filter=PointTotalsAndThresholdTest` dan lihat gagal; implementasikan query latest revision dan evaluator tanpa cached total yang dapat basi.
-- [ ] Verifikasi test lulus, action hanya admin, tindak lanjut completed tidak mengurangi nilai. Commit total/ambang.
+- [x] Tulis fixture catatan dengan prestasi 10, pelanggaran 15, revisi pelanggaran menjadi 5, satu cancellation, dan semester lain. Pin `self::assertSame(['achievement'=>10,'violation'=>5], $totals);`.
+- [x] Uji batas tepat sama dengan threshold, dua threshold terlewati, turun karena koreksi, naik kembali tanpa duplikasi, dan kebijakan baru menggantikan status versi lama tanpa menghapus follow-up.
+- [x] Jalankan `php artisan test --filter=PointTotalsAndThresholdTest` dan lihat gagal; implementasikan query latest revision dan evaluator tanpa cached total yang dapat basi.
+- [x] Verifikasi test lulus, action hanya admin, tindak lanjut completed tidak mengurangi nilai. Commit total/ambang.
 
 ### B-06: QR dan pemilihan manual
 
