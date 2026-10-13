@@ -15,3 +15,7 @@
 - Laporkan command, exit code, dan hasil verifikasi yang benar-benar dijalankan. Bedakan test terfokus setelah fix dari suite penuh sebelum fix.
 - Gunakan runtime/database lokal milik proyek melalui `ops/dev`; jangan mengubah instalasi atau database pengguna di luar proyek.
 - HP Android tersedia, tetapi Firebase belum tersedia. Mock tidak membuktikan push nyata; jangan membuat project/credential eksternal atau mengklaim integrasi produksi telah lulus.
+
+## Artefak koordinasi
+
+- Report, brief, ledger, dan paket review di .superpowers adalah artefak lokal yang diabaikan Git. Jangan gunakan force-add untuk memasukkannya ke commit. Bukti publik dan status proyek disimpan di docs/.
