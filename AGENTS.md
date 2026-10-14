@@ -14,7 +14,7 @@
 - Acuan: `docs/civora/README.md`, `TASKS.md`, `GOALS.md`, dan `PROGRESS.md`. Baca brief serta dokumen yang terkait tugas, bukan semua dokumen setiap kali.
 - Laporkan command, exit code, dan hasil verifikasi yang benar-benar dijalankan. Bedakan test terfokus setelah fix dari suite penuh sebelum fix.
 - Gunakan runtime/database lokal milik proyek melalui `ops/dev`; jangan mengubah instalasi atau database pengguna di luar proyek.
-- HP Android tersedia tetapi belum tersambung. Pengguna telah menyediakan project Firebase testing `civora-testing`, konfigurasi dua aplikasi, dan service account untuk pemasangan lokal. Simpan credential hanya di file lokal yang diabaikan Git. Mock/build tidak membuktikan push nyata; jangan membuat project/credential eksternal tambahan atau mengklaim integrasi produksi telah lulus.
+- HP Android telah tersambung dan debugging diizinkan; serial perangkat disimpan hanya pada bukti lokal ignored. Pengguna telah menyediakan project Firebase testing `civora-testing`, konfigurasi dua aplikasi, dan service account untuk pemasangan lokal. Simpan credential hanya di file lokal yang diabaikan Git. Mock/build tidak membuktikan push nyata; jangan membuat project/credential eksternal tambahan atau mengklaim integrasi produksi telah lulus.
 
 ## Artefak koordinasi
 
