@@ -10,6 +10,8 @@ if (!(Test-Path $taskPhp)) {
     if ((Get-FileHash $taskZip -Algorithm SHA256).Hash.ToLower() -ne '0ea96e0d2b9b737a6036f05cf4e95c49313faa6d0f27bd97edb2742503f0c043') { throw 'Official PHP archive checksum mismatch.' }
     Expand-Archive $taskZip (Join-Path $taskRuntime 'php') -Force
 }
+$taskPhpIni = Join-Path $taskRuntime 'php/php.ini'
+if (!(Test-Path $taskPhpIni)) {
 @'
 extension_dir="ext"
 extension=curl
@@ -24,7 +26,9 @@ extension=gd
 extension=sodium
 memory_limit=512M
 date.timezone=Asia/Jakarta
-'@ | Set-Content (Join-Path $taskRuntime 'php/php.ini')
+'@ | Set-Content $taskPhpIni
+}
+& (Join-Path $PSScriptRoot 'setup-ca.ps1')
 $taskComposer = Join-Path $taskRuntime 'composer.phar'
 if (!(Test-Path $taskComposer)) {
     Copy-Item $ComposerPhar $taskComposer

@@ -11,6 +11,20 @@ Konfigurasi pengembangan lokal untuk aplikasi Android siswa dan guru memakai Fir
 
 Semua file tersebut diabaikan Git. Service account berhasil diparse secara lokal; nilai key, token, alamat email, dan JSON credential tidak dicatat. Pengaturan Laravel efektif menunjuk ke file service account lokal dan project ID yang sama. `backend/.env.testing` dan `backend/.env.dusk.local` tidak mengatur FCM; `config:show services.fcm --env=testing` dan `--env=dusk.local` menghasilkan `null` untuk kedua nilai. Tidak ada inherited FCM environment override atau Laravel config cache saat pemeriksaan.
 
+## OAuth backend dan CA runtime
+
+PHP runtime proyek memakai cURL dengan OpenSSL. CA store lokal proyek berada di `.runtime/certs/cacert.pem`; `ops/dev/setup-ca.ps1` mengambil bundle dari [curl.se](https://curl.se/ca/cacert.pem) dan checksum dari [curl.se](https://curl.se/ca/cacert.pem.sha256), memverifikasi SHA-256, lalu mengatur `curl.cainfo` dan `openssl.cafile` pada `.runtime/php/php.ini`. Unduhan memakai validasi TLS bawaan Windows. Script `ops/dev/setup.ps1` memanggil helper ini setelah memastikan PHP INI tersedia. Helper hanya mengganti dua direktif CA dan mempertahankan baris INI lainnya.
+
+Pada 14 Oktober 2026, dari root repository:
+
+| Perintah | Exit | Hasil |
+| --- | ---: | --- |
+| `.\ops\dev\setup-ca.ps1` | 0 | SHA-256 `a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505` cocok dengan checksum official; PHP memvalidasi direktif CA dan sertifikat PEM |
+| `.\ops\dev\php.ps1 -r '$bundle = realpath(ini_get("curl.cainfo")); echo json_encode(["ca_bundle_file_exists" => is_file($bundle), "curl_and_openssl_share_bundle" => $bundle === realpath(ini_get("openssl.cafile")), "bundle_has_parseable_certificate" => openssl_x509_read(file_get_contents($bundle)) !== false], JSON_THROW_ON_ERROR), PHP_EOL;'` | 0 | Ketiga pemeriksaan bernilai `true` |
+| `.\ops\dev\php.ps1 'C:\Users\ASUS\Documents\ALIFKA\PROJECT\MobileApp\Civora\.runtime\qa\fcm-oauth-precheck.php'` | 0 | `success=true`, cache `array`, TLS verification aktif; token tidak dicetak |
+
+Helper CA dijalankan ulang dengan exit 0; perbandingan menunjukkan baris PHP INI selain `curl.cainfo` dan `openssl.cafile` tetap sama. OAuth memakai implementasi `FcmGateway::accessToken` aktual. Hasil ini membuktikan pertukaran token OAuth untuk credential lokal, tetapi tidak membuktikan izin Cloud Messaging API atau pengantaran push pada perangkat. Tidak ada pesan FCM yang dikirim dalam precheck ini. Sumber bundle/checksum: [cacert.pem](https://curl.se/ca/cacert.pem), [cacert.pem.sha256](https://curl.se/ca/cacert.pem.sha256). Referensi perilaku CA: [SSL certificate verification](https://curl.se/docs/sslcerts.html) dan [CA Extract](https://curl.se/docs/caextract.html).
+
 ## Bukti build dan resource native
 
 Pada 14 Oktober 2026, menggunakan Flutter dari `C:/Android/flutter/bin/flutter.bat` dan Java 21:
