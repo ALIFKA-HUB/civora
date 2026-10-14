@@ -32,7 +32,7 @@ Jalankan dari release backend pada host operasi terotorisasi. Contoh shell berik
 
    ```sh
    pg_dump --format=custom --no-owner --no-acl --file="$BACKUP_DIR/$stamp/civora.dump" "$DATABASE_URL"
-   tar -czf "$BACKUP_DIR/$stamp/private-storage.tar.gz" -C backend/storage/app/private .
+   tar -czf "$BACKUP_DIR/$stamp/private-storage.tar.gz" -C storage/app/private .
    psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -At -F '|' -c "SELECT 'point_records', count(*) FROM point_records UNION ALL SELECT 'record_revisions', count(*) FROM record_revisions UNION ALL SELECT 'audit_logs', count(*) FROM audit_logs UNION ALL SELECT 'attachments', count(*) FROM attachments UNION ALL SELECT 'outbox_events', count(*) FROM outbox_events UNION ALL SELECT 'outbox_processed', count(*) FROM outbox_events WHERE processed_at IS NOT NULL UNION ALL SELECT 'jobs', count(*) FROM jobs UNION ALL SELECT 'failed_jobs', count(*) FROM failed_jobs ORDER BY 1" > "$BACKUP_DIR/$stamp/row-counts.txt"
    test -s "$BACKUP_DIR/$stamp/civora.dump"
    test -s "$BACKUP_DIR/$stamp/private-storage.tar.gz"
@@ -54,11 +54,13 @@ Untuk dump yang lebih besar, sesuaikan storage/streaming setelah diuji; jangan m
 
 Lakukan drill sebelum produksi, setelah perubahan besar skema/storage, dan berkala sesuai pemilik operasi. Gunakan host/instance PostgreSQL terpisah tanpa route/credential ke production, direktori privat kosong, `APP_URL` lokal/terisolasi, egress FCM ditolak, dan worker/scheduler **tidak dijalankan**. Jangan memakai `.env` production sebagai file kerja dan jangan menjalankan restore terhadap nama DB yang tidak memiliki prefix target drill. Backup dapat memuat data pribadi; aksesnya tetap dibatasi walau drill memakai staging sintetis.
 
+Jalankan perintah Artisan dan blok filesystem restore dari direktori `backend` pada release terisolasi. Perintah PostgreSQL berjalan pada endpoint restore yang diset melalui environment koneksi khusus.
+
 1. Pilih satu ID backup dan catat timestamp/sumber. Ambil ciphertext database, ciphertext disk privat, dua manifest checksum, serta decryption identity dari custody yang berwenang. Verifikasi checksum ciphertext sebelum dekripsi; setelah dekripsi, verifikasi pula checksum plaintext di scratch. Sediakan scratch directory mode `0700` di volume terenkripsi dan `umask 077`.
 2. Konfigurasi variabel PostgreSQL hanya untuk instance restore khusus (`PGHOST`, `PGPORT`, `PGUSER`); pastikan host/port tersebut bukan production dan jalur jaringan production diblokir. Jalankan query baca-saja berikut pada database maintenance `postgres`, lalu cocokkan IP/port yang dikembalikan dengan catatan endpoint restore yang telah disetujui. **Jangan melanjutkan** bila endpoint tidak cocok atau meragukan:
 
    ```sh
-   psql --dbname=postgres -X -Atc 'select current_database(), inet_server_addr(), inet_server_port()'
+   psql --dbname=postgres -X -At -F '|' -c "SELECT current_database(), inet_server_addr(), inet_server_port(), current_setting('data_directory'), current_user"
    ```
 
    Tetapkan nama target eksplisit, misalnya `civora_restore_YYYYMMDD`. Tolak nama target kosong atau selain pola tersebut. Jangan menyalin `DATABASE_URL` production ke terminal atau file drill.
@@ -92,15 +94,22 @@ Lakukan drill sebelum produksi, setelah perubahan besar skema/storage, dan berka
 5. Restore the private disk to a fresh empty directory mounted at the isolated release's `backend/storage/app/private`:
 
    ```sh
-   install -d -m 700 backend/storage/app/private
-   test -z "$(find backend/storage/app/private -mindepth 1 -print -quit)"
-   tar --extract --gzip --file="$RESTORE_DIR/private-storage.tar.gz" --directory=backend/storage/app/private --no-same-owner --no-same-permissions
+   install -d -m 700 storage/app/private
+   test -z "$(find storage/app/private -mindepth 1 -print -quit)"
+   tar --extract --gzip --file="$RESTORE_DIR/private-storage.tar.gz" --directory=storage/app/private --no-same-owner --no-same-permissions
    ```
 
    Confirm ownership and least-privilege permissions for the isolated application service. Do not point this path at the live volume.
-6. Use the original `APP_KEY` from authorized custody and a restore-only env file: production mode/debug off, isolated `APP_URL`, isolated DB, private restore disk, `QUEUE_CONNECTION=database`, and no FCM service account path/project. Run `php artisan config:clear`, `php artisan migrate:status`, and `php artisan about`; do not run `migrate:fresh`, rollback, scheduler, or worker. If schema status shows migrations pending, stop: first determine whether the backup pairs with the expected release, then apply only forward migrations on this isolated target if the drill plan requires it.
-7. Before application-level checks, prove the active DB identity: `psql --dbname="$RESTORE_DB" -X -Atc 'select current_database(), inet_server_addr(), inet_server_port()'`. Confirm the name matches the target, host/port match the isolated instance record, and the web/API service cannot reach production networks. If any value differs, stop and do not start the app.
-8. Generate row counts on the restored target and compare with `row-counts.txt` captured in the same backup directory. Repeat the backup query with `--dbname="$RESTORE_DB"` and the same output format:
+6. Use the original `APP_KEY` from authorized custody and prepare a restore-only env file: production mode/debug off, isolated `APP_URL`, `DB_CONNECTION=pgsql`, `DB_DATABASE` set to the exact `RESTORE_DB`, `DB_HOST`/`DB_PORT` equal to the verified `PGHOST`/`PGPORT`, and `DB_USERNAME` equal to both `PGUSER` and the disposable `RESTORE_DB_OWNER`. Leave `DB_URL` unset so it cannot override those fields. Also set the private restore disk and `QUEUE_CONNECTION=database`, and omit FCM service account path/project. Do not run Artisan yet.
+7. Before **any Artisan command that may connect to the database**, prove the target database identity and ownership using the same connection environment the app will use:
+
+   ```sh
+   psql --dbname="$RESTORE_DB" -X -v ON_ERROR_STOP=1 -At -F '|' -c "SELECT current_database(), inet_server_addr(), inet_server_port(), current_setting('data_directory'), current_user, pg_get_userbyid(datdba), datallowconn FROM pg_database WHERE datname = current_database()"
+   ```
+
+   Require `current_database()` to equal `RESTORE_DB`, the IP/port and data directory to match the recorded isolated instance, `current_user` to equal `RESTORE_DB_OWNER`, `pg_get_userbyid(datdba)` to equal that disposable owner, and `datallowconn` to be true. Also confirm the web/API service cannot reach production networks. If any value differs or the ownership/endpoint cannot be established, stop; do not run Artisan or start the app.
+8. Only after identity proof, run `php artisan config:clear`, `php artisan migrate:status`, and `php artisan about`; do not run `migrate:fresh`, rollback, scheduler, or worker. If schema status shows migrations pending, stop: first determine whether the backup pairs with the expected release, then apply only forward migrations on this isolated target if the drill plan requires it.
+9. Generate row counts on the restored target and compare with `row-counts.txt` captured in the same backup directory. Repeat the backup query with `--dbname="$RESTORE_DB"` and the same output format:
 
    ```sh
    psql --dbname="$RESTORE_DB" -X -v ON_ERROR_STOP=1 -At -F '|' -c "SELECT 'point_records', count(*) FROM point_records UNION ALL SELECT 'record_revisions', count(*) FROM record_revisions UNION ALL SELECT 'audit_logs', count(*) FROM audit_logs UNION ALL SELECT 'attachments', count(*) FROM attachments UNION ALL SELECT 'outbox_events', count(*) FROM outbox_events UNION ALL SELECT 'outbox_processed', count(*) FROM outbox_events WHERE processed_at IS NOT NULL UNION ALL SELECT 'jobs', count(*) FROM jobs UNION ALL SELECT 'failed_jobs', count(*) FROM failed_jobs ORDER BY 1" > "$RESTORE_DIR/row-counts.actual"
@@ -108,8 +117,8 @@ Lakukan drill sebelum produksi, setelah perubahan besar skema/storage, dan berka
    ```
 
    Require record, revision, audit, attachment, processed-event, and queue counts to match exactly. Record any explained difference; do not use record totals alone as proof.
-9. With an authorized synthetic owner account, fetch a known private attachment through the application and compare its stored checksum/bytes with the pre-backup evidence. As a different authorized test identity, attempt the same URL and confirm access is denied (403/404 without disclosing content). Check an audit row remains present and readable by authorized admin. Record response code and sanitized request ID only.
-10. Keep the worker and scheduler stopped through all checks and inspect pending rows. Select one processed event ID from the restored database, record its `processed_at`, and record notification counts for that event key. With FCM config absent and egress blocked, invoke the same job handler directly in the isolated app:
+10. With an authorized synthetic owner account, fetch a known private attachment through the application and compare its stored checksum/bytes with the pre-backup evidence. As a different authorized test identity, attempt the same URL and confirm access is denied (403/404 without disclosing content). Check an audit row remains present and readable by authorized admin. Record response code and sanitized request ID only.
+11. Keep the worker and scheduler stopped through all checks and inspect pending rows. Select one processed event ID from the restored database, record its `processed_at`, and record notification counts for that event key. With FCM config absent and egress blocked, invoke the same job handler directly in the isolated app:
 
    ```sh
    : "${PROCESSED_EVENT_ID:?set one UUID selected from processed outbox rows}"
@@ -124,7 +133,7 @@ Lakukan drill sebelum produksi, setelah perubahan besar skema/storage, dan berka
    ```
 
    Require the timestamp/attempt count and notification counts to remain unchanged. This invokes no queue worker and the chosen processed event must return before FCM; blocked egress is a second safeguard. Do not replay pending events during the restore check. If a later recovery decision chooses to resume pending events, treat that as an explicit notification-impact decision: the outbox is idempotent for in-app notification keys, but FCM side effects are not transactionally coupled to PostgreSQL and an interrupted send can be repeated. This repository has no safe bulk replay/skip command.
-11. Stop the isolated app, remove/decommission the disposable database and restored files using the approved data disposal procedure, and erase decrypted scratch using the approved media process. Preserve the encrypted source backup. Record the actual start/end time and calculate RTO; calculate backup age at recovery start for RPO. Do not copy restored state into live service as part of this drill.
+12. Stop the isolated app, remove/decommission the disposable database and restored files using the approved data disposal procedure, and erase decrypted scratch using the approved media process. Preserve the encrypted source backup. Record the actual start/end time and calculate RTO; calculate backup age at recovery start for RPO. Do not copy restored state into live service as part of this drill.
 
 ## Bukti drill yang wajib dicatat
 
