@@ -193,3 +193,8 @@ Review memperbaiki interaksi fixture: smoke tidak lagi membuat keberatan pada ca
 
 Review branch menemukan pesan pembuka push hilang sebelum listener terpasang. Commit 27af005 memasang listener sebelum inisialisasi. Regresi notification_controller_test gagal sebelum fix (exit 1), kemudian 4/4 test lulus (exit 0); analyze core dan diff check exit 0. Reviewer terpisah menyetujui tanpa temuan; suite penuh, APK, dan push perangkat tidak diuji ulang. Pengguna memilih testing menyeluruh pada tahap akhir; cek terfokus tetap dilakukan per perubahan. Jumlah tugas utama tetap 20/26.
 
+
+#### I-02: kesamaan ekspor dan layout — Lulus
+
+Commit c73bd8a menambahkan fixture 121 baris terfilter, kelas historis, revisi/pembatalan, kontrol semester, NISN nol awal, dan teks mirip formula. ExportConsistencyTest 1/2.856 assertion exit 0; Pint dan diff check exit 0. PDF final 46 halaman dirender, halaman awal/detail/akhir diperiksa, header/nomor halaman dan pembungkusan teks terbaca. Review independen menyetujui spesifikasi/kualitas; perbandingan PDF dibatasi jumlah baris, total, teks terpilih dan inspeksi generator, bukan per-sel penuh seperti XLSX. Sampel privat ignored. I-02 Lulus; 21/26 tugas Lulus. Suite penuh dan testing perangkat tetap tahap akhir sesuai pengguna.
+

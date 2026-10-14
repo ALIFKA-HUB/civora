@@ -40,3 +40,8 @@ Semua command dijalankan dari `C:\Users\ASUS\Documents\ALIFKA\PROJECT\MobileApp\
 | `& C:\Users\ASUS\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe -c "from pypdf import PdfReader; p=PdfReader('.runtime/qa/exports/i02-point-report.pdf').pages; print({'pages':len(p),'page2_detail':all(x in (p[1].extract_text() or '') for x in ['Detail catatan','NISN']),'page3_repeated_header':'NISN' in (p[2].extract_text() or ''),'last_footer':'46 / 46' in (p[-1].extract_text() or '')})"` | 0 | 46 halaman; halaman 2 berisi detail/header, halaman 3 mengulang header, dan halaman akhir menampilkan `46 / 46`. |
 
 Hasil ini membuktikan kesamaan untuk fixture sintetis lokal yang dijalankan. Hasil ini tidak mengukur kapasitas produksi atau menggantikan penerimaan lintas platform I-01.
+
+## Review independen
+
+Reviewer terpisah menyetujui spesifikasi dan kualitas tanpa blocker. Batas cakupan: XLSX dibandingkan penuh per sel; PDF diperiksa melalui jumlah baris/NISN, total, teks terpilih, inspeksi generator/query yang sama, serta render halaman representatif. Test belum membandingkan seluruh nilai tiap baris PDF terhadap snapshot; pemeriksaan tersebut dapat diperkuat pada testing akhir.
+
