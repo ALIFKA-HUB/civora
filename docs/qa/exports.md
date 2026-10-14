@@ -44,4 +44,3 @@ Hasil ini membuktikan kesamaan untuk fixture sintetis lokal yang dijalankan. Has
 ## Review independen
 
 Reviewer terpisah menyetujui spesifikasi dan kualitas tanpa blocker. Batas cakupan: XLSX dibandingkan penuh per sel; PDF diperiksa melalui jumlah baris/NISN, total, teks terpilih, inspeksi generator/query yang sama, serta render halaman representatif. Test belum membandingkan seluruh nilai tiap baris PDF terhadap snapshot; pemeriksaan tersebut dapat diperkuat pada testing akhir.
-
