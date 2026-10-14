@@ -1,5 +1,7 @@
 /.runtime/
 /.superpowers/
+**/google-services.json
+**/civora-fcm-service-account.json
 **/vendor/
 **/node_modules/
 **/.env
@@ -18,3 +20,4 @@
 **/*.jks
 **/*.keystore
 **/storage/*.key
+/docs/qa/mobile.*.json

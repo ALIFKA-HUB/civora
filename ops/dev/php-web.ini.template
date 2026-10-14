@@ -1,0 +1,8 @@
+; Per-project PHP settings used only by ops/dev/serve.ps1.
+; Keep the upload ceiling above the 10 MB import and 5 MB photo validators.
+upload_max_filesize = 12M
+post_max_size = 16M
+max_execution_time = 120
+max_input_time = 180
+sys_temp_dir = "@UPLOAD_TEMP_DIR@"
+upload_tmp_dir = "@UPLOAD_TEMP_DIR@"

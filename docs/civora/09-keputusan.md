@@ -69,5 +69,7 @@ Rincian di bawah tidak ditanyakan sebagai pilihan tersendiri. Ia dipilih untuk m
 | T-16 | Backup harian/offsite terenkripsi, retensi 30 hari, target restore 4 jam | Default operasional yang harus diuji sebelum release |
 | T-17 | Satu peringatan per siswa/semester/tingkat kebijakan; status dapat turun setelah koreksi | Riwayat tetap ada tanpa duplikasi peringatan |
 | T-18 | Guru tetap melihat catatan buatan sendiri untuk siswa nonaktif; arsip siswa lain hanya admin | Riwayat kerja guru tidak hilang ketika siswa lulus |
+| T-19 | UUID untuk model domain; ID native untuk tabel auth/session/queue; FK sesi QR SET NULL | Kompatibilitas framework tanpa menghapus metadata; QR sesi dicabut tetap ditolak |
+| T-20 | Server UTC, timezone sekolah default Asia/Jakarta, format datetime PostgreSQL mempertahankan offset | Review menemukan pergeseran tujuh jam pada model; diuji dengan model nyata dan tanggal kalender |
 
 Perubahan terhadap rincian teknis dapat dilakukan pada tinjauan dokumen, dengan seluruh acuan terkait diperbarui. Tidak ada layanan eksternal, dependency produk, aplikasi, atau database yang dibuat ketika menulis paket ini.
