@@ -52,9 +52,9 @@ void main() {
       await _waitFor(tester, find.text('Catat poin'));
       await tester.tap(find.text('Catat poin'));
 
-      final pointType = find.byType(DropdownButtonFormField<String>).first;
-      await _waitFor(tester, pointType);
-      await tester.tap(pointType);
+      final pointTypes = find.byType(DropdownButtonFormField<String>);
+      await _waitFor(tester, pointTypes);
+      await tester.tap(pointTypes.first);
       await tester.pumpAndSettle();
       final pointOption = find.textContaining('poin').last;
       await tester.tap(pointOption);
@@ -97,7 +97,12 @@ void main() {
         ),
         'Keterangan hasil verifikasi integrasi M06.',
       );
-      await tester.tap(find.text('Kirim permintaan'));
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      final submitRequest = find.text('Kirim permintaan');
+      await tester.ensureVisible(submitRequest);
+      await tester.pumpAndSettle();
+      await tester.tap(submitRequest);
       await _waitFor(
         tester,
         find.text('Permintaan koreksi menunggu pemeriksaan.'),

@@ -45,6 +45,27 @@ class _TokenStore implements SessionTokenStore {
 
 void main() {
   group('ApiClient and DTOs', () {
+    test('omits null query parameters', () async {
+      final transport = RecordingTransport()
+        ..responses.add(ApiResponse(200, jsonEncode({'data': []})));
+      final client = ApiClient(
+        baseUrl: Uri.parse('http://localhost/api/v1'),
+        transport: transport,
+      );
+
+      await client.get('/teacher/students', query: {
+        'q': '9000000001',
+        'classroom_id': null,
+        'major_id': null,
+        'per_page': 50,
+      });
+
+      expect(transport.requests.single.uri.queryParameters, {
+        'q': '9000000001',
+        'per_page': '50',
+      });
+    });
+
     test(
       'multipart attachment upload uses authenticated transport and preserves bytes',
       () async {

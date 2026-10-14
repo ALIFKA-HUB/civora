@@ -97,4 +97,4 @@ Record the device model, Android version/API, screen size, and UI test result af
 
 ### Device run record
 
-No Android device or configured AVD was attached during the current M-06 implementation. Both native integration test commands were attempted, but Flutter reported no supported connected device (only Windows, Chrome, and Edge were available). Therefore the widget-driven native workflows, camera decoding, lifecycle behavior, and physical-device accessibility checks remain pending. The passing desktop API/client smoke is service evidence only and does not substitute for those checks. Update this record after the UI tests run on a documented emulator/device.
+The native Android student and teacher integration workflows passed on a Samsung SM-S711B running Android 16/API 36 against the local testing API with synthetic fixtures. See the [Android device QA record](android-device.md) for exact commands and scope. These integration tests do not verify camera decoding, live laptop-QR scanning, lifecycle/accessibility behavior, or real FCM delivery; those checks remain pending.

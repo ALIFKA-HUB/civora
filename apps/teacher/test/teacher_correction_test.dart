@@ -53,12 +53,10 @@ void main() {
       );
       expect(review.status, 'pending');
       expect(controller.recordTotalChanged, isFalse);
-      expect(
-        jsonDecode(
-          transport.requests.single.body!,
-        )['proposed_change']['operation'],
-        'revise',
-      );
+      expect(jsonDecode(transport.requests.single.body!)['proposed_change'], {
+        'operation': 'revise',
+        'description': 'Keterangan koreksi yang tepat.',
+      });
     },
   );
 }

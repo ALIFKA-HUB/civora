@@ -211,7 +211,12 @@ class ApiClient {
     final root = baseUrl.path.endsWith('/') ? baseUrl.path : '${baseUrl.path}/';
     return baseUrl.replace(
       path: '$root$endpoint',
-      queryParameters: query?.map((key, value) => MapEntry(key, '$value')),
+      queryParameters: query == null
+          ? null
+          : {
+              for (final entry in query.entries)
+                if (entry.value != null) entry.key: '${entry.value}',
+            },
     );
   }
 
