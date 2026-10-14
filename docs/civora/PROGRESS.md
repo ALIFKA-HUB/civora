@@ -19,7 +19,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
 | G3: Mobile | Menunggu Android: M-03/M-06 | Review kode lokal bersih; QR/kamera, native cold-start, dan UI integration belum diverifikasi |
-| G4: Integrasi | Firebase testing terpasang lokal; uji perangkat/push pending | API/outbox dapat diuji lokal; scan dua target, OAuth dan push nyata masih pending |
+| G4: Integrasi | Firebase testing dan OAuth terverifikasi; scan/push pending | Workflow Android siswa/guru lulus parsial; kamera QR dan penerimaan push nyata masih pending |
 | G5: Produksi | Belum mulai | Belum ada |
 
 ## Log
@@ -214,3 +214,7 @@ Pengguna membuat project civora-testing, mendaftarkan aplikasi siswa/guru, dan m
 #### M-06: workflow Android nyata — lulus parsial, acceptance perangkat pending
 
 HP Samsung SM-S711B Android 16/API 36 tersambung dengan izin debugging. Workflow siswa lulus 1/1 sebelum fix URI bersama. Pencarian guru mereproduksi HTTP 422 karena query filter null dikirim sebagai teks; regresi URI RED exit 1 lalu GREEN 13 test exit 0 setelah fix. Harness guru diperbaiki untuk menunggu dropdown dan memastikan tombol kirim terlihat setelah keyboard ditutup. Run Android guru terakhir lulus 1/1; test payload koreksi 1/1 dan dua analyze terfokus exit 0. Tidak ada bug payload koreksi produksi; dugaan 503 log server juga dibatalkan karena angka merupakan durasi request. Commit 67bb9dc disetujui review/re-review setelah nomor seri HP disamarkan dari dokumen publik dan commit lokal. Bukti: docs/qa/android-device.md. Kamera/QR hidup laptop, permission/lifecycle/accessibility dan push nyata masih pending; M-03/M-06/I-01 belum Lulus dan jumlah tetap 21/26.
+
+#### Firebase OAuth dan CA runtime — Lulus precheck, push pending
+
+Precheck gateway OAuth awal gagal pada verifikasi TLS karena runtime PHP proyek belum mempunyai CA bundle. Commit d5aef41 menambahkan helper ops/dev/setup-ca.ps1, integrasi setup, dan bukti QA; helper memverifikasi SHA-256 bundle resmi sebelum pemakaian dan hanya mengatur runtime .runtime/php. Pemeriksaan sintaks, idempotence/INI/PEM dan precheck OAuth nyata exit 0; TLS tetap aktif dan cache array menjaga token hanya dalam memori. Reviewer independen menyetujui tanpa temuan. Tidak ada pesan FCM/queue worker atau perubahan database, OS trust, kamera, maupun API lokal dalam scope ini. Bukti OAuth tidak membuktikan izin Cloud Messaging API atau penerimaan di HP. Jumlah task tetap 21/26; uji kamera manual dan push masih berjalan/pending.
