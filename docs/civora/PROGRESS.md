@@ -198,3 +198,7 @@ Review branch menemukan pesan pembuka push hilang sebelum listener terpasang. Co
 
 Commit c73bd8a menambahkan fixture 121 baris terfilter, kelas historis, revisi/pembatalan, kontrol semester, NISN nol awal, dan teks mirip formula. ExportConsistencyTest 1/2.856 assertion exit 0; Pint dan diff check exit 0. PDF final 46 halaman dirender, halaman awal/detail/akhir diperiksa, header/nomor halaman dan pembungkusan teks terbaca. Review independen menyetujui spesifikasi/kualitas; perbandingan PDF dibatasi jumlah baris, total, teks terpilih dan inspeksi generator, bukan per-sel penuh seperti XLSX. Sampel privat ignored. I-02 Lulus; 21/26 tugas Lulus. Suite penuh dan testing perangkat tetap tahap akhir sesuai pengguna.
 
+
+#### I-03: persiapan runbook — disetujui, latihan pending
+
+Commit 3d185c6 menyediakan deployment, backup/restore, incident response, komentar konfigurasi tanpa nilai secret, dan pembaruan panduan developer. Review meminta path lampiran sesuai cwd serta identitas database dibuktikan sebelum diagnostik Artisan; fix 1470db3 menutup keduanya dan re-review menyetujui. Cek dokumentasi/tautan, nama konfigurasi, command Artisan yang tersedia, urutan/path restore, dan diff exit 0. Bash tidak tersedia sehingga parser shell tidak dijalankan. Tidak ada backup, restore, deploy, alarm, atau suite luas yang dijalankan. I-03 tetap pending latihan testing akhir dan staging/offsite/kepemilikan secret; jumlah Lulus tetap 21/26.
