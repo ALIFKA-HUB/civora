@@ -29,6 +29,35 @@ class _Transport implements ApiTransport {
   void close() {}
 }
 
+class _InitialMessagePush implements NotificationPushClient {
+  _InitialMessagePush(this.message);
+
+  final Map<String, String> message;
+  final _opened = StreamController<Map<String, String>>.broadcast();
+
+  @override
+  Future<void> initialize() async {
+    _opened.add(message);
+  }
+
+  @override
+  Future<bool> requestPermission() async => true;
+
+  @override
+  Future<String?> getToken() async => null;
+
+  @override
+  Stream<String> get tokenRefreshes => const Stream.empty();
+
+  @override
+  Stream<Map<String, String>> get openedMessages => _opened.stream;
+
+  @override
+  Stream<Map<String, String>> get foregroundMessages => const Stream.empty();
+
+  Future<void> close() => _opened.close();
+}
+
 ApiResponse _ok(String id) => ApiResponse(
   200,
   jsonEncode({
@@ -52,6 +81,79 @@ void _loginAs(SessionController session, String token) {
 }
 
 void main() {
+  test('routes a cold-start push emitted during initialization', () async {
+    const id = '123e4567-e89b-42d3-a456-426614174000';
+    final transport = _Transport();
+    final session = SessionController(role: 'student', tokenStore: _Store());
+    final api = ApiClient(
+      baseUrl: Uri.parse('https://civora.test/api/v1/'),
+      transport: transport,
+      sessionController: session,
+    );
+    final push = _InitialMessagePush({
+      'type': 'point_record_created',
+      'resource_id': id,
+    });
+    final controller = NotificationController(
+      api: api,
+      session: session,
+      push: push,
+    );
+    final opened = <String>[];
+    controller.onPushedResource = (type, resourceId) async {
+      opened.add('$type:$resourceId');
+    };
+
+    await controller.initializePush();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.pendingPush, {
+      'type': 'point_record_created',
+      'resource_id': id,
+    });
+    expect(controller.loginRequested, isTrue);
+    expect(transport.requests, isEmpty);
+
+    _loginAs(session, 'account-a');
+    await Future<void>.delayed(Duration.zero);
+
+    expect(controller.loginRequested, isTrue);
+    expect(transport.requests, hasLength(1));
+    expect(transport.requests.single.uri.path, endsWith('/notifications'));
+
+    transport.pending.single.complete(
+      ApiResponse(
+        200,
+        jsonEncode({
+          'data': [
+            {'type': 'point_record_created', 'resource_id': id},
+          ],
+        }),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+    expect(transport.requests, hasLength(2));
+    expect(transport.requests.last.uri.path, endsWith('/student/records/$id'));
+
+    transport.pending.last.complete(
+      ApiResponse(
+        200,
+        jsonEncode({
+          'data': {'id': id},
+        }),
+      ),
+    );
+    await Future<void>.delayed(Duration.zero);
+
+    expect(opened, ['point_record_created:$id']);
+    expect(controller.pendingPush, isNull);
+    expect(controller.loginRequested, isFalse);
+    controller.dispose();
+    await push.close();
+    api.close();
+    session.dispose();
+  });
+
   test('the current session can load notifications', () async {
     final transport = _Transport();
     final session = SessionController(role: 'student', tokenStore: _Store());

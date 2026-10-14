@@ -97,8 +97,6 @@ class NotificationController extends ChangeNotifier {
   Future<void> initializePush() async {
     if (push == null) return;
     try {
-      await push!.initialize();
-      pushAvailable = true;
       _openedSubscription ??= push!.openedMessages.listen((message) {
         final type = message['type'];
         final id = message['resource_id'];
@@ -106,6 +104,8 @@ class NotificationController extends ChangeNotifier {
         pendingPush = {'type': type, 'resource_id': id};
         unawaited(_openPendingPush());
       });
+      await push!.initialize();
+      pushAvailable = true;
       _foregroundSubscription ??= push!.foregroundMessages.listen((_) {
         if (session.state == SessionState.authenticated) unawaited(load());
       });
