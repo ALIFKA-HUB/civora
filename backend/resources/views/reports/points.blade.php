@@ -7,6 +7,7 @@
         body { font-family: "DejaVu Sans", sans-serif; font-size: 9pt; color: #172b2b; }
         h1 { font-size: 17pt; margin: 0 0 4mm; }
         h2 { font-size: 11pt; margin: 6mm 0 2mm; }
+        .details-title { page-break-before: always; }
         .meta { color: #405454; margin: 1mm 0; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         thead { display: table-header-group; }
@@ -34,7 +35,7 @@
         </tbody>
     </table>
 
-    <h2>Detail catatan</h2>
+    <h2 class="details-title">Detail catatan</h2>
     <table class="details">
         <thead><tr><th>NISN</th><th>Nama siswa</th><th>Waktu</th><th>Kelas saat kejadian</th><th>Jurusan saat kejadian</th><th>Kategori</th><th>Jenis poin</th><th>Poin</th><th>Status</th><th>Keterangan</th></tr></thead>
         <tbody>
