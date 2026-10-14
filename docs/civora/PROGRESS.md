@@ -19,7 +19,7 @@ Mulai: 12 Oktober 2026. Cara kerja: subagent implementer dan reviewer terpisah p
 | G1: Backend | Lulus | B-11 fix 823fbd9; test 6/43 assertion lulus, re-review menyetujui; suite sebelum fix 254/1.007 |
 | G2: Admin | Lulus | A-01 sampai A-05, alur browser terpadu 1/10, suite 309/1.337 sebelum fix terakhir; test fix dan re-review lulus |
 | G3: Mobile | Menunggu Android: M-03/M-06 | Review kode lokal bersih; QR/kamera, native cold-start, dan UI integration belum diverifikasi |
-| G4: Integrasi | Dikerjakan lokal: I-01; Firebase/perangkat belum tersedia | API/outbox dapat diuji lokal; scan dua target dan push nyata masih pending |
+| G4: Integrasi | Firebase testing terpasang lokal; uji perangkat/push pending | API/outbox dapat diuji lokal; scan dua target, OAuth dan push nyata masih pending |
 | G5: Produksi | Belum mulai | Belum ada |
 
 ## Log
@@ -206,3 +206,7 @@ Commit 3d185c6 menyediakan deployment, backup/restore, incident response, koment
 #### I-04: persiapan kapasitas dan penerimaan — disetujui, pengukuran pending
 
 Commit 7d7a4eb menyiapkan checklist release dan rencana kapasitas 3.000 siswa/200 guru. Profil histori, concurrency, serta anggaran performa adalah asumsi/hipotesis atau belum disetujui, bukan hasil pengukuran. Review meminta fail-fast command PowerShell, server di terminal terpisah, serta jaringan dan URL build yang konsisten untuk emulator/HP. Fix 5abf2a dan 3c4548d menutup temuan; re-review akhir lulus. Cek tautan, parsing PowerShell, nama konfigurasi/command, simulasi exit 7, dan diff exit 0. Tidak menjalankan suite luas, beban, restore, perangkat, ADB, Firebase, atau deploy. I-04 tetap pending testing akhir/penerimaan sekolah/dependency produksi. Status 21/26 tugas Lulus; M-03, M-06, I-01, I-03, I-04 belum Lulus. Release tetap NO-GO.
+
+#### Firebase testing — konfigurasi lokal disetujui
+
+Pengguna membuat project civora-testing, mendaftarkan aplikasi siswa/guru, dan menyediakan konfigurasi Android serta service account dari Downloads. Commit 9ee6299 melindungi file konfigurasi/credential lewat Git ignore dan mencatat bukti build lokal. Konfigurasi Android dan private key backend disalin ke lokasi lokal ignored; file asal tidak diubah. Dua build APK debug exit 0; package dan resource project/app Firebase cocok. Konfigurasi Laravel development cocok; testing dan dusk.local tidak memakai FCM nyata, tanpa inherited override/config cache. Reviewer independen menyetujui tanpa temuan; diff check exit 0. OAuth, pengiriman push dan perangkat belum diuji. ADB devices exit 0 tanpa perangkat; pengguna memilih menyelesaikan konfigurasi lokal dahulu. Jumlah task Lulus tetap 21/26.
