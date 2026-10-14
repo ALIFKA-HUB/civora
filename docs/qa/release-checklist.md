@@ -39,45 +39,64 @@ Semua hasil di bawah ini saat dokumen disiapkan belum dijalankan sebagai rangkai
 
 Perintah mobile device menggunakan file QA lokal ignored sebagaimana dijelaskan dalam [QA mobile](mobile.md); simpan kredensial hanya pada file lokal tersebut dan jangan lampirkan file ke bukti publik. Wrapper ops/dev memakai runtime/database milik proyek. Pastikan database disposable dan identitas target terverifikasi sebelum command yang terhubung database.
 
-Jalankan command final berikut berurutan hanya setelah tahap implementasi/preparasi selesai. Run dari PowerShell di root Civora kecuali cwd disebutkan. Isi `APP_ENV` kosong hanya untuk Dusk lokal; semua akun/record QA sintetis. Ini adalah prosedur yang akan dijalankan, bukan bukti hasil saat ini.
+Jalankan command final berikut berurutan hanya setelah tahap implementasi/preparasi selesai. Run dari PowerShell di root Civora kecuali cwd disebutkan. Isi `APP_ENV` kosong hanya untuk Dusk lokal; semua akun/record QA sintetis. Wrapper `Invoke-CheckedNative` memeriksa `$LASTEXITCODE` tepat setelah setiap command native lalu menghentikan urutan jika nilainya bukan nol. `finally` hanya memulihkan directory; kegagalan tidak ditutupi oleh `Pop-Location`.
 
 ```powershell
+$ErrorActionPreference = 'Stop'
+function Invoke-CheckedNative {
+    param([string]$Name, [scriptblock]$Command)
+    & $Command
+    $code = $LASTEXITCODE
+    if ($code -ne 0) { throw "$Name gagal (exit $code); urutan dihentikan." }
+}
+
 # Backend suite, style, dan aset admin
-./ops/dev/php.ps1 artisan test
-./ops/dev/php.ps1 vendor/bin/pint --test
+Invoke-CheckedNative 'Backend suite' { ./ops/dev/php.ps1 artisan test }
+Invoke-CheckedNative 'Pint' { ./ops/dev/php.ps1 vendor/bin/pint --test }
 Push-Location backend
-npm run build
-Pop-Location
+try { Invoke-CheckedNative 'Build aset admin' { npm run build } }
+finally { Pop-Location }
 
 # Browser admin end-to-end (database/runtime lokal Civora)
 $env:APP_ENV = $null
-./ops/dev/php.ps1 artisan dusk --filter=AdminSchoolWorkflowTest --without-tty
+Invoke-CheckedNative 'Browser admin Dusk' { ./ops/dev/php.ps1 artisan dusk --filter=AdminSchoolWorkflowTest --without-tty }
 
 # Export regression dan file QA
-./ops/dev/php.ps1 artisan test --filter=ExportConsistencyTest
+Invoke-CheckedNative 'Export regression' { ./ops/dev/php.ps1 artisan test --filter=ExportConsistencyTest }
 
 # QA mobile: hanya setelah runtime/database proyek civora_test terverifikasi
-./ops/dev/php.ps1 artisan civora:prepare-mobile-qa-fixtures --env=testing
-./ops/dev/serve.ps1 -BrowserTest -Port 8031
+Invoke-CheckedNative 'Persiapan fixture mobile' { ./ops/dev/php.ps1 artisan civora:prepare-mobile-qa-fixtures --env=testing }
+```
 
+Fixture prep harus selesai dengan exit 0 sebelum melanjutkan. Buka **Terminal A** dan jalankan server berikut; proses ini foreground dan harus tetap hidup. Jangan jalankan server di Terminal B atau di dalam urutan command.
+
+```powershell
+./ops/dev/serve.ps1 -BrowserTest -Port 8031
+```
+
+Kembali ke **Terminal B yang sama** dengan fungsi `Invoke-CheckedNative`, lalu jalankan sisa pemeriksaan mobile. Bila Terminal B ditutup, definisikan kembali helper sebelum menjalankan perintah ini.
+
+```powershell
 # Civora Siswa — cwd apps/student
 Push-Location apps/student
-flutter analyze
-flutter test
-flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1
-flutter test integration_test/student_workflow_test.dart --dart-define-from-file=../../docs/qa/mobile.student.json
-Pop-Location
+try {
+    Invoke-CheckedNative 'Analyze Civora Siswa' { flutter analyze }
+    Invoke-CheckedNative 'Test Civora Siswa' { flutter test }
+    Invoke-CheckedNative 'Build debug Civora Siswa' { flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1 }
+    Invoke-CheckedNative 'Workflow perangkat Civora Siswa' { flutter test integration_test/student_workflow_test.dart --dart-define-from-file=../../docs/qa/mobile.student.json }
+} finally { Pop-Location }
 
 # Civora Guru — cwd apps/teacher
 Push-Location apps/teacher
-flutter analyze
-flutter test
-flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1
-flutter test integration_test/teacher_workflow_test.dart --dart-define-from-file=../../docs/qa/mobile.teacher.json
-Pop-Location
+try {
+    Invoke-CheckedNative 'Analyze Civora Guru' { flutter analyze }
+    Invoke-CheckedNative 'Test Civora Guru' { flutter test }
+    Invoke-CheckedNative 'Build debug Civora Guru' { flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1 }
+    Invoke-CheckedNative 'Workflow perangkat Civora Guru' { flutter test integration_test/teacher_workflow_test.dart --dart-define-from-file=../../docs/qa/mobile.teacher.json }
+} finally { Pop-Location }
 ```
 
-Sebelum perintah backend yang memakai database, pastikan runtime marker dan identitas koneksi menunjuk ke database proyek disposable `civora_test`, bukan data sekolah; fixture QA menolak target tak sesuai dan file config yang sudah ada. Native integration memerlukan emulator/perangkat yang tersambung, API lokal yang berjalan, dan file konfigurasi QA ignored berisi akun sintetis. Dusk dan test tetap dinilai lewat exit code serta hasil aktual; jangan menganggap perintah sukses hanya karena proses dapat dimulai.
+Sebelum perintah backend yang memakai database, pastikan runtime marker dan identitas koneksi menunjuk ke database proyek disposable `civora_test`, bukan data sekolah; fixture QA menolak target tak sesuai dan file config yang sudah ada. Untuk dua aplikasi, URL API dibaca dari `CIVORA_API_BASE_URL` melalui `String.fromEnvironment` di `app_config.dart`; perintah build menyetel URL emulator, sedangkan integration test membaca key yang sama dari `mobile.student.json` / `mobile.teacher.json`. Pilih endpoint sesuai perangkat pada [QA mobile](mobile.md). Dusk dan test tetap dinilai lewat exit code serta hasil aktual; jangan menganggap perintah sukses hanya karena proses dapat dimulai.
 
 Untuk restore final, gunakan prosedur lengkap pada [runbook backup dan restore](../operations/backup-restore.md). Target wajib berupa instance PostgreSQL terpisah dan database baru bernama `civora_restore_YYYYMMDD`, role disposable, direktori storage privat kosong, aplikasi terisolasi tanpa route/credential production, dan egress FCM diblokir. Verifikasi host/port/data directory/database/owner dengan `psql` sebelum menjalankan Artisan; worker dan scheduler tetap berhenti sepanjang drill. Jangan menjalankan drill terhadap production, jangan replay pending outbox, dan jangan menyalin state hasil restore ke layanan live. Jika identitas target atau custody key tidak terbukti, hentikan drill dan catat `BLOCKED`.
 

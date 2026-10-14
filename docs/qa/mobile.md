@@ -25,13 +25,26 @@ Use the project-owned PostgreSQL cluster and Laravel wrapper described in [devel
 
 The command creates two active synthetic accounts, one semester, one point type, and a seeded record reserved for the native student UI objection flow. It generates random passwords directly into ignored `docs/qa/mobile.*.json` files. Those files are local secrets; do not commit or share them. The teacher UI test creates a separate record and correction request. The API smoke uses those same credentials and exercises actual Laravel endpoints with the shared `ApiClient`/`SessionController`; it creates its own record through QR redemption and submits the smoke objection to that record, leaving the seeded native UI fixture without a pending review. It verifies that invariant after the smoke and never prints the raw QR token.
 
-Start the API server in one terminal:
+Start the API server in a separate PowerShell terminal and leave it running in the foreground. Run fixture preparation and Flutter commands from another terminal; do not put the blocking server command into a sequence that must continue afterward.
 
 ```powershell
 ./ops/dev/serve.ps1 -BrowserTest -Port 8031
 ```
 
-For an Android emulator, `10.0.2.2` reaches the host loopback. For a physical Android device, use an address reachable on the local network and reverse/forward the port only for this QA session. HTTP is for local debug use. Use HTTPS for a non-loopback staging endpoint.
+For an Android emulator, `10.0.2.2` reaches the host loopback. The generated ignored JSON files use `http://10.0.2.2:8031/api/v1` by default.
+
+For a physical Android device, use ADB reverse so the phone's loopback port forwards to the host's loopback server. This works with `serve.ps1` listening only on `127.0.0.1` and does not expose the development server on the LAN. First inspect connected devices and select the intended serial; always pass it explicitly so a second attached device cannot receive the forwarding rule by mistake:
+
+```powershell
+$deviceSerial = '<DEVICE_SERIAL from adb devices -l>'
+adb devices -l
+adb -s $deviceSerial reverse tcp:8031 tcp:8031
+adb -s $deviceSerial reverse --list
+```
+
+For the physical-device run, change only `CIVORA_API_BASE_URL` in both ignored `docs/qa/mobile.student.json` and `docs/qa/mobile.teacher.json` to `http://127.0.0.1:8031/api/v1`. Keep all generated account fields local. The Flutter integration tests pass these JSON values through `--dart-define-from-file`; `CIVORA_API_BASE_URL` is read by each app's `String.fromEnvironment` configuration and passed to the shared `ApiClient`. The debug APK build must use the same device-appropriate URL explicitly with `--dart-define=CIVORA_API_BASE_URL=...`; use `10.0.2.2` for emulator APKs or `127.0.0.1` for an APK tested through the selected device's ADB reverse rule. Remove the reverse rule after the QA session with `adb -s $deviceSerial reverse --remove tcp:8031`. These commands are instructions for the later device session; they were not run during I-04 preparation.
+
+HTTP is for local debug use. Use HTTPS for a non-loopback staging endpoint.
 
 Run the actual API/client smoke from `apps/student` after the API server starts:
 
@@ -68,11 +81,13 @@ Build with the API URL only. Do not embed the private QA login JSON in APKs:
 
 ```powershell
 Push-Location apps/student
-flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1
+flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1 # emulator
+# For a physical device with adb reverse configured, replace the URL with http://127.0.0.1:8031/api/v1
 Pop-Location
 
 Push-Location apps/teacher
-flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1
+flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1 # emulator
+# For a physical device with adb reverse configured, replace the URL with http://127.0.0.1:8031/api/v1
 Pop-Location
 ```
 
