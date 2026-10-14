@@ -76,13 +76,28 @@ Fixture prep harus selesai dengan exit 0 sebelum melanjutkan. Buka **Terminal A*
 
 Kembali ke **Terminal B yang sama** dengan fungsi `Invoke-CheckedNative`, lalu jalankan sisa pemeriksaan mobile. Bila Terminal B ditutup, definisikan kembali helper sebelum menjalankan perintah ini.
 
+Pilih `emulator` untuk Android emulator, atau `physical` hanya setelah mengikuti setup ADB reverse pada [QA mobile](mobile.md) dan mengubah `CIVORA_API_BASE_URL` pada kedua file QA lokal ke `http://127.0.0.1:8031/api/v1`. Pemeriksaan di bawah menghentikan urutan bila kedua file tidak cocok dengan target yang dipilih.
+
 ```powershell
+$qaApiTarget = 'emulator' # ubah ke 'physical' hanya sesudah ADB reverse disiapkan
+switch ($qaApiTarget) {
+    'emulator' { $qaApiBaseUrl = 'http://10.0.2.2:8031/api/v1' }
+    'physical' { $qaApiBaseUrl = 'http://127.0.0.1:8031/api/v1' }
+    default { throw "Target QA tidak dikenal: $qaApiTarget" }
+}
+foreach ($path in @('docs/qa/mobile.student.json', 'docs/qa/mobile.teacher.json')) {
+    $config = Get-Content -Raw -LiteralPath $path | ConvertFrom-Json
+    if ($config.CIVORA_API_BASE_URL -ne $qaApiBaseUrl) {
+        throw "CIVORA_API_BASE_URL di $path tidak cocok dengan target $qaApiTarget."
+    }
+}
+
 # Civora Siswa — cwd apps/student
 Push-Location apps/student
 try {
     Invoke-CheckedNative 'Analyze Civora Siswa' { flutter analyze }
     Invoke-CheckedNative 'Test Civora Siswa' { flutter test }
-    Invoke-CheckedNative 'Build debug Civora Siswa' { flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1 }
+    Invoke-CheckedNative 'Build debug Civora Siswa' { flutter build apk --debug "--dart-define=CIVORA_API_BASE_URL=$qaApiBaseUrl" }
     Invoke-CheckedNative 'Workflow perangkat Civora Siswa' { flutter test integration_test/student_workflow_test.dart --dart-define-from-file=../../docs/qa/mobile.student.json }
 } finally { Pop-Location }
 
@@ -91,12 +106,12 @@ Push-Location apps/teacher
 try {
     Invoke-CheckedNative 'Analyze Civora Guru' { flutter analyze }
     Invoke-CheckedNative 'Test Civora Guru' { flutter test }
-    Invoke-CheckedNative 'Build debug Civora Guru' { flutter build apk --debug --dart-define=CIVORA_API_BASE_URL=http://10.0.2.2:8031/api/v1 }
+    Invoke-CheckedNative 'Build debug Civora Guru' { flutter build apk --debug "--dart-define=CIVORA_API_BASE_URL=$qaApiBaseUrl" }
     Invoke-CheckedNative 'Workflow perangkat Civora Guru' { flutter test integration_test/teacher_workflow_test.dart --dart-define-from-file=../../docs/qa/mobile.teacher.json }
 } finally { Pop-Location }
 ```
 
-Sebelum perintah backend yang memakai database, pastikan runtime marker dan identitas koneksi menunjuk ke database proyek disposable `civora_test`, bukan data sekolah; fixture QA menolak target tak sesuai dan file config yang sudah ada. Untuk dua aplikasi, URL API dibaca dari `CIVORA_API_BASE_URL` melalui `String.fromEnvironment` di `app_config.dart`; perintah build menyetel URL emulator, sedangkan integration test membaca key yang sama dari `mobile.student.json` / `mobile.teacher.json`. Pilih endpoint sesuai perangkat pada [QA mobile](mobile.md). Dusk dan test tetap dinilai lewat exit code serta hasil aktual; jangan menganggap perintah sukses hanya karena proses dapat dimulai.
+Sebelum perintah backend yang memakai database, pastikan runtime marker dan identitas koneksi menunjuk ke database proyek disposable `civora_test`, bukan data sekolah; fixture QA menolak target tak sesuai dan file config yang sudah ada. Untuk dua aplikasi, URL API dibaca dari `CIVORA_API_BASE_URL` melalui `String.fromEnvironment` di `app_config.dart`; satu target URL dipilih, diverifikasi terhadap kedua file QA, lalu dipakai untuk build dan integration test. Dusk dan test tetap dinilai lewat exit code serta hasil aktual; jangan menganggap perintah sukses hanya karena proses dapat dimulai.
 
 Untuk restore final, gunakan prosedur lengkap pada [runbook backup dan restore](../operations/backup-restore.md). Target wajib berupa instance PostgreSQL terpisah dan database baru bernama `civora_restore_YYYYMMDD`, role disposable, direktori storage privat kosong, aplikasi terisolasi tanpa route/credential production, dan egress FCM diblokir. Verifikasi host/port/data directory/database/owner dengan `psql` sebelum menjalankan Artisan; worker dan scheduler tetap berhenti sepanjang drill. Jangan menjalankan drill terhadap production, jangan replay pending outbox, dan jangan menyalin state hasil restore ke layanan live. Jika identitas target atau custody key tidak terbukti, hentikan drill dan catat `BLOCKED`.
 
