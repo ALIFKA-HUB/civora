@@ -10,6 +10,10 @@ Preferensi model pengguna (13 Oktober 2026): setiap subagent baru, termasuk impl
 
 Sekolah dapat mengelola data melalui website admin; guru memilih siswa melalui QR/manual dan mencatat poin; siswa melihat catatan serta mengajukan keberatan. Seluruh platform menggunakan identitas, semester, nilai efektif, dan aturan akses yang sama. Prestasi dan pelanggaran tetap terpisah, dan perubahan dapat ditelusuri.
 
+## Tambahan goal visual
+
+Konsep visual yang disetujui dicatat pada [paket redesign](redesign/README.md). RD-01–RD-04 memiliki Definition of Done dan gate review tersendiri pada [goals redesign](redesign/verification-goals.md). Task tersebut tidak mengubah hitungan 26 task produk, milestone, atau status acceptance kamera, push, restore, dan kapasitas. Konsep, build, serta test widget tidak menggantikan penerimaan produk yang sudah ditetapkan di bawah.
+
 ## Milestone dan kriteria kelulusan
 
 | Goal | Tugas | Lulus ketika | Bukti wajib |

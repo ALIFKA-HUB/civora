@@ -37,6 +37,8 @@ Tanggal rancangan: 11 Oktober 2026. Implementasi diizinkan pengguna pada 12 Okto
 
 ## Peta rencana dan urutan
 
+Pekerjaan visual yang disetujui setelah rencana awal dikelola terpisah pada [paket redesign](redesign/README.md) dan [rencana RD-01–RD-04](redesign/TASKS.md). Task RD belum dimulai dan tidak menambah/mengubah hitungan 26 task utama pada tabel serta milestone di bawah. Domain/integrasi tetap memakai dependensi dan bukti yang sama.
+
 | Bagian | Acuan tugas | Hasil yang dapat diperiksa |
 | --- | --- | --- |
 | 1 | [Backend/API](tasks/01-backend.md) | API, domain, migration, dan kontrol akses yang dapat diuji tanpa UI |

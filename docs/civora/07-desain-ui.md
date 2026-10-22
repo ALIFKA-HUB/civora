@@ -2,43 +2,43 @@
 
 [Kembali ke indeks](README.md)
 
+> **Acuan visual terkini:** [Paket redesign yang disetujui](redesign/README.md), terutama [spesifikasi visual](redesign/visual-spec.md), menggantikan token awal dan bentuk visual pada dokumen ini. Tabel layar, aksi, aksesibilitas, dan state produk di bawah tetap menjadi cakupan fungsional. Layar QR tetap wajib menampilkan NISN walau konsep raster menghilangkannya.
+
 ## Arah desain
 
-Civora adalah aplikasi sekolah yang ramah bagi siswa, jelas untuk pekerjaan guru, dan tertib untuk administrasi. Identitasnya putih + teal, dengan huruf sans-serif mudah dibaca, ruang yang cukup, sudut agak membulat, dan animasi singkat yang memberi umpan balik.
+Civora adalah aplikasi sekolah yang ramah bagi siswa, jelas untuk pekerjaan guru, dan tertib untuk administrasi. Arah visual terkini memakai latar abu netral dan charcoal, dengan teal sebagai aksen terbatas; detail palet ada di paket redesign.
 
 Desain menghindari tampilan yang mempermalukan siswa: tidak ada ranking pelanggaran publik, perbandingan antarsiswa di aplikasi siswa, atau label pribadi seperti "siswa buruk". Istilah yang digunakan adalah catatan, prestasi, pelanggaran, pemeriksaan, dan tindak lanjut.
 
 Skill design-taste-frontend dipakai sebagai panduan warna, tipografi, konsistensi bentuk, dan hierarki. Pola landing page seperti hero besar, marquee, dan dekorasi promosi tidak diterapkan pada aplikasi sekolah. Mobile mengikuti komponen Material 3 yang disesuaikan; admin mengikuti kebutuhan formulir dan tabel.
 
-## Token visual awal
+## Token visual redesign
 
-Token ini rincian desain turunan yang akan diverifikasi pada prototipe, bukan klaim kontras yang sudah diuji pada aplikasi.
+Rincian token baru yang disetujui ada pada [spesifikasi redesign](redesign/visual-spec.md). Tabel berikut menandai nilai lama yang sudah digantikan agar tidak menjadi acuan implementasi.
 
 | Token | Terang | Gelap |
 | --- | --- | --- |
-| Background | #F7FAFA | #101919 |
-| Surface | #FFFFFF | #182323 |
-| Primary | #0F766E | #5EEAD4 |
-| On primary | #FFFFFF | #062E29 |
-| Main text | #172B2A | #EDF5F4 |
-| Secondary text | #526866 | #A7BFBC |
-| Border | #D3E0DE | #38514D |
-| Control border | #708884 | #78938E |
-| Prestasi | #166534 | #86EFAC |
-| Pelanggaran/error | #B42318 | #FDA29B |
-| Pending/warning | #92400E | #FCD34D |
+| Background | #F5F5F6 | #141719 |
+| Data card | #FFFFFF | #24292D |
+| Emphasis panel | #E3E5E8 | #30363B |
+| Raised/nav layer | #FFFFFF | #2E3439 |
+| Main text | #151719 | #F3F5F6 |
+| Secondary text | #45484D | #BAC2C8 |
+| Primary/selected nav | #172225 with white text | #172225 with #E3E5E8 text |
+| Text teal | #0B625A | #63D1C1 |
+| Pelanggaran/error | Ukur sesuai permukaan; selalu berlabel | #FF989F |
 
-Teal adalah aksen utama. Border biasa hanya untuk pemisah dekoratif; batas input dan kontrol penting memakai Control border atau focus ring Primary. Warna semantik dipakai hanya untuk status, selalu dengan label/ikon. Jangan mewarnai seluruh layar merah ketika siswa memiliki pelanggaran. Teks status tidak boleh bergantung pada warna saja.
+Palet/tokens lama tidak berlaku. Aksen teal dibatasi untuk tautan dan teks semantik prestasi. Warna semantik selalu memiliki label, tidak menjadi satu-satunya penanda status. Radius, kartu, tombol, navigasi, kontras, dan motion mengikuti spesifikasi redesign. Kontras aktual state kontrol/fokus wajib diukur; token saja tidak membuktikan lulus.
 
-Mode default mengikuti sistem; pengguna dapat memilih Terang, Gelap, atau Ikuti Perangkat dari Profil/Pengaturan. QR selalu hitam pada putih dan tidak mengikuti inversi tema.
+Mode default mengikuti sistem; pengguna dapat memilih Terang, Gelap, atau Ikuti Perangkat dari Profil/Pengaturan. QR selalu hitam pada putih, memakai quiet zone, dan tidak mengikuti inversi tema.
 
 ## Tipografi, ruang, dan bentuk
 
 - Font: Noto Sans untuk Flutter dan web, dibundel/self-host dengan lisensi font disertakan; fallback sans-serif.
 - Mobile: judul layar 24 px, judul bagian 18 px, body 16 px, metadata 14 px. Angka total 28-32 px tanpa mendominasi semua layar.
 - Web: judul 28 px, body 16 px, tabel 14 px dengan jarak baris yang nyaman. Jangan memakai teks sangat kecil untuk menjejalkan tabel.
-- Skala ruang: 4, 8, 12, 16, 24, 32, 48 px. Padding layar mobile 16-20 px.
-- Radius: input/tombol 12 px, panel ringkasan 16 px, dialog/sheet 20 px; avatar lingkaran. Tidak ada campuran bentuk tanpa aturan.
+- Skala ruang: 4, 8, 12, 16, 24, 32, 48 px. Padding layar mobile mengikuti spesifikasi redesign.
+- Radius dan bentuk mengikuti spesifikasi redesign: input 12 px, kartu data 20 px, panel emphasis 24 px, tombol pill dan nav kapsul. Tidak ada campuran bentuk tanpa aturan.
 - Target sentuh mobile minimum 48 x 48 logical pixels. Aksi berbahaya tidak berdekatan dengan tombol simpan utama.
 - Ikon mobile memakai satu keluarga Material Symbols; web memakai satu keluarga ikon setara yang dipilih saat fondasi. Ikon bukan pengganti label tindakan penting.
 - Bayangan tipis hanya untuk membedakan lapisan seperti dialog; daftar riwayat memakai ruang/divider ringan, bukan banyak panel bertumpuk.
