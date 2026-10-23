@@ -87,31 +87,37 @@ class _TeacherCorrectionScreenState extends State<TeacherCorrectionScreen> {
     if (_review != null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Permintaan koreksi')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.hourglass_top, size: 48),
-                const SizedBox(height: 16),
-                Text(
-                  'Permintaan koreksi menunggu pemeriksaan.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.titleLarge,
+        body: ListView(
+          padding: const EdgeInsets.all(24),
+          children: [
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.hourglass_top, size: 48),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Permintaan koreksi menunggu pemeriksaan.',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Poin pada catatan tetap berlaku sampai keputusan admin.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Selesai'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Poin pada catatan tetap berlaku sampai keputusan admin.',
-                ),
-                const SizedBox(height: 20),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Selesai'),
-                ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       );
     }
@@ -120,12 +126,22 @@ class _TeacherCorrectionScreenState extends State<TeacherCorrectionScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text(
-            '${latest['name'] ?? 'Catatan'} · ${latest['points'] ?? '—'} poin',
-            style: Theme.of(context).textTheme.titleLarge,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${latest['name'] ?? 'Catatan'} · ${latest['points'] ?? '—'} poin',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(latest['description'] as String? ?? 'Tanpa keterangan'),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(latest['description'] as String? ?? 'Tanpa keterangan'),
           const SizedBox(height: 20),
           SegmentedButton<String>(
             segments: const [

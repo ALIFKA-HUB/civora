@@ -125,18 +125,18 @@ class _TeacherStudentSearchScreenState
         if (_loading) const LinearProgressIndicator(),
         if (_error != null)
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_error!),
-                  const SizedBox(height: 8),
-                  TextButton(
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(_error!, textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton(
                     onPressed: _search,
                     child: const Text('Coba lagi'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         if (!_loading && _error == null && _students.isEmpty)
@@ -147,19 +147,22 @@ class _TeacherStudentSearchScreenState
           Expanded(
             child: ListView.separated(
               itemCount: _students.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final student = _students[index];
-                return Semantics(
-                  button: true,
-                  label: student.accessibleLabel,
-                  child: ListTile(
-                    title: Text(student.name),
-                    subtitle: Text(
-                      'NISN ${student.nisn} · ${student.classroom}${student.major.isEmpty ? '' : ' · ${student.major}'}',
+                return Card(
+                  child: Semantics(
+                    button: true,
+                    label: student.accessibleLabel,
+                    child: ListTile(
+                      title: Text(student.name),
+                      subtitle: Text(
+                        'NISN ${student.nisn} · ${student.classroom}${student.major.isEmpty ? '' : ' · ${student.major}'}',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => widget.onSelected(student),
                     ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => widget.onSelected(student),
                   ),
                 );
               },

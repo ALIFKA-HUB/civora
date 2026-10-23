@@ -116,14 +116,17 @@ class _TeacherRecordsScreenState extends State<TeacherRecordsScreen> {
         if (_loading) const LinearProgressIndicator(),
         if (_error != null)
           Expanded(
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_error!),
-                  TextButton(onPressed: _load, child: const Text('Coba lagi')),
-                ],
-              ),
+            child: ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(_error!, textAlign: TextAlign.center),
+                Center(
+                  child: TextButton(
+                    onPressed: _load,
+                    child: const Text('Coba lagi'),
+                  ),
+                ),
+              ],
             ),
           ),
         if (!_loading && _error == null && _records.isEmpty)
@@ -141,18 +144,20 @@ class _TeacherRecordsScreenState extends State<TeacherRecordsScreen> {
                     row['latest_revision'] as Map<String, dynamic>? ?? const {};
                 final student =
                     row['student'] as Map<String, dynamic>? ?? const {};
-                return ListTile(
-                  title: Text(student['name'] as String? ?? 'Siswa'),
-                  subtitle: Text(
-                    '${revision['name'] ?? 'Catatan'} · ${row['semester']?['name'] ?? '—'} · ${revision['status'] == 'cancelled' ? 'Dibatalkan' : 'Berlaku'}',
-                  ),
-                  trailing: Text('${revision['points'] ?? '—'} poin'),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => TeacherRecordDetailScreen(
-                        api: widget.api,
-                        recordId: row['id'] as String,
+                return Card(
+                  child: ListTile(
+                    title: Text(student['name'] as String? ?? 'Siswa'),
+                    subtitle: Text(
+                      '${revision['name'] ?? 'Catatan'} · ${row['semester']?['name'] ?? '—'} · ${revision['status'] == 'cancelled' ? 'Dibatalkan' : 'Berlaku'}',
+                    ),
+                    trailing: Text('${revision['points'] ?? '—'} poin'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute<void>(
+                        builder: (_) => TeacherRecordDetailScreen(
+                          api: widget.api,
+                          recordId: row['id'] as String,
+                        ),
                       ),
                     ),
                   ),
@@ -228,35 +233,51 @@ class _TeacherRecordDetailScreenState extends State<TeacherRecordDetailScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_error!),
-                  TextButton(onPressed: _load, child: const Text('Coba lagi')),
-                ],
-              ),
+          ? ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Text(_error!, textAlign: TextAlign.center),
+                Center(
+                  child: TextButton(
+                    onPressed: _load,
+                    child: const Text('Coba lagi'),
+                  ),
+                ),
+              ],
             )
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text(
-                  record['student']?['name'] as String? ?? 'Siswa',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          record['student']?['name'] as String? ?? 'Siswa',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        Text(
+                          '${record['semester']?['name'] ?? '—'} · ${record['source'] == 'qr' ? 'QR' : 'Manual'}',
+                        ),
+                        const Divider(height: 32),
+                        Text(
+                          revision['name'] as String? ?? 'Catatan',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        Text(
+                          '${revision['category'] == 'achievement' ? 'Prestasi' : 'Pelanggaran'} · ${revision['points'] ?? '—'} poin',
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          revision['description'] as String? ??
+                              'Tanpa keterangan',
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                Text(
-                  '${record['semester']?['name'] ?? '—'} · ${record['source'] == 'qr' ? 'QR' : 'Manual'}',
-                ),
-                const Divider(height: 32),
-                Text(
-                  revision['name'] as String? ?? 'Catatan',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                Text(
-                  '${revision['category'] == 'achievement' ? 'Prestasi' : 'Pelanggaran'} · ${revision['points'] ?? '—'} poin',
-                ),
-                const SizedBox(height: 12),
-                Text(revision['description'] as String? ?? 'Tanpa keterangan'),
                 const SizedBox(height: 12),
                 Text(
                   'Status: ${revision['status'] == 'cancelled' ? 'Dibatalkan' : 'Berlaku'}',

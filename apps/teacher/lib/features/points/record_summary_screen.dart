@@ -49,11 +49,24 @@ class _RecordSummaryScreenState extends State<RecordSummaryScreen> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 8),
-            Text('ID ${record!.id}', textAlign: TextAlign.center),
-            Text(
-              formatSchoolDate(record.occurredAt, widget.schoolTimezone) ??
-                  'Waktu server tersedia',
-              textAlign: TextAlign.center,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text('ID ${record!.id}', textAlign: TextAlign.center),
+                    const SizedBox(height: 4),
+                    Text(
+                      formatSchoolDate(
+                            record.occurredAt,
+                            widget.schoolTimezone,
+                          ) ??
+                          'Waktu server tersedia',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             Text(
@@ -61,8 +74,29 @@ class _RecordSummaryScreenState extends State<RecordSummaryScreen> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 12),
-            Text('Prestasi: ${c.currentTotalAchievement ?? '—'} poin'),
-            Text('Pelanggaran: ${c.currentTotalViolation ?? '—'} poin'),
+            Card(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _Total(
+                        label: 'Prestasi',
+                        value: c.currentTotalAchievement,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _Total(
+                        label: 'Pelanggaran',
+                        value: c.currentTotalViolation,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
             FilledButton(
               onPressed: () =>
@@ -76,28 +110,41 @@ class _RecordSummaryScreenState extends State<RecordSummaryScreen> {
               child: const Text('Kembali ke beranda'),
             ),
           ] else ...[
-            Text(profileName, style: Theme.of(context).textTheme.titleLarge),
-            Text('NISN ${student['nisn'] ?? '—'} · $classroom'),
-            const Divider(height: 32),
-            _Row(
-              label: 'Semester',
-              value: c.currentSemesterName ?? 'Belum tersedia',
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profileName,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text('NISN ${student['nisn'] ?? '—'} · $classroom'),
+                    const Divider(height: 32),
+                    _Row(
+                      label: 'Semester',
+                      value: c.currentSemesterName ?? 'Belum tersedia',
+                    ),
+                    _Row(label: 'Jenis poin', value: type?.name ?? '—'),
+                    _Row(
+                      label: 'Kategori',
+                      value: type?.category == 'achievement'
+                          ? 'Prestasi'
+                          : type?.category == 'violation'
+                          ? 'Pelanggaran'
+                          : '—',
+                    ),
+                    _Row(
+                      label: 'Nilai',
+                      value: type == null ? '—' : '${type.points} poin',
+                    ),
+                    _Row(label: 'Keterangan', value: c.description.trim()),
+                    _Row(label: 'Bukti', value: c.photoName ?? 'Tidak ada'),
+                  ],
+                ),
+              ),
             ),
-            _Row(label: 'Jenis poin', value: type?.name ?? '—'),
-            _Row(
-              label: 'Kategori',
-              value: type?.category == 'achievement'
-                  ? 'Prestasi'
-                  : type?.category == 'violation'
-                  ? 'Pelanggaran'
-                  : '—',
-            ),
-            _Row(
-              label: 'Nilai',
-              value: type == null ? '—' : '${type.points} poin',
-            ),
-            _Row(label: 'Keterangan', value: c.description.trim()),
-            _Row(label: 'Bukti', value: c.photoName ?? 'Tidak ada'),
             if (c.selectionExpired)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
@@ -132,18 +179,33 @@ class _RecordSummaryScreenState extends State<RecordSummaryScreen> {
                 ),
             ] else if (c.hasUnknownAttempt) ...[
               const SizedBox(height: 12),
-              const Text(
-                'Hasil simpan belum diketahui. Periksa status atau kirim ulang dengan kunci yang sama sebelum membuat catatan baru.',
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: _checking ? null : _resolve,
-                child: Text(_checking ? 'Memeriksa…' : 'Periksa status simpan'),
-              ),
-              OutlinedButton(
-                onPressed: _saving ? null : _retry,
-                child: Text(
-                  _saving ? 'Mengirim…' : 'Kirim ulang dengan kunci yang sama',
+              Card(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Hasil simpan belum diketahui. Periksa status atau kirim ulang dengan kunci yang sama sebelum membuat catatan baru.',
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: _checking ? null : _resolve,
+                        child: Text(
+                          _checking ? 'Memeriksa…' : 'Periksa status simpan',
+                        ),
+                      ),
+                      OutlinedButton(
+                        onPressed: _saving ? null : _retry,
+                        child: Text(
+                          _saving
+                              ? 'Mengirim…'
+                              : 'Kirim ulang dengan kunci yang sama',
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ] else ...[
@@ -249,5 +311,24 @@ class _Row extends StatelessWidget {
         Text(value),
       ],
     ),
+  );
+}
+
+class _Total extends StatelessWidget {
+  const _Total({required this.label, required this.value});
+  final String label;
+  final int? value;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(label, style: Theme.of(context).textTheme.bodySmall),
+      const SizedBox(height: 4),
+      Text(
+        value?.toString() ?? '—',
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
+    ],
   );
 }

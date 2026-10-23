@@ -91,45 +91,77 @@ class _StudentRecordDetailScreenState extends State<StudentRecordDetailScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 20),
-            _DetailRow(label: 'Semester', value: record.semester.name),
-            _DetailRow(
-              label: 'Waktu',
-              value:
-                  formatSchoolDate(record.occurredAt, widget.schoolTimezone) ??
-                  'Waktu sekolah belum tersedia',
-            ),
-            _DetailRow(
-              label: 'Guru pencatat',
-              value: record.teacher['name'] as String? ?? '—',
-            ),
-            _DetailRow(label: 'Status catatan', value: _recordStatus(status)),
-            if (revisionNumber != null)
-              _DetailRow(
-                label: 'Revisi terakhir',
-                value: 'Revisi $revisionNumber',
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _DetailRow(label: 'Semester', value: record.semester.name),
+                    _DetailRow(
+                      label: 'Waktu',
+                      value:
+                          formatSchoolDate(
+                            record.occurredAt,
+                            widget.schoolTimezone,
+                          ) ??
+                          'Waktu sekolah belum tersedia',
+                    ),
+                    _DetailRow(
+                      label: 'Guru pencatat',
+                      value: record.teacher['name'] as String? ?? '—',
+                    ),
+                    _DetailRow(
+                      label: 'Status catatan',
+                      value: _recordStatus(status),
+                    ),
+                    if (revisionNumber != null)
+                      _DetailRow(
+                        label: 'Revisi terakhir',
+                        value: 'Revisi $revisionNumber',
+                      ),
+                  ],
+                ),
               ),
+            ),
             const SizedBox(height: 16),
-            Text('Keterangan', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            Text(
-              description?.isNotEmpty == true
-                  ? description!
-                  : 'Tidak ada keterangan.',
-            ),
-            if (attachmentId != null) ...[
-              const SizedBox(height: 20),
-              Text(
-                'Bukti foto',
-                style: Theme.of(context).textTheme.titleMedium,
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Keterangan',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      description?.isNotEmpty == true
+                          ? description!
+                          : 'Tidak ada keterangan.',
+                    ),
+                    if (attachmentId != null) ...[
+                      const SizedBox(height: 20),
+                      Text(
+                        'Bukti foto',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      _PrivateEvidence(
+                        api: widget.api,
+                        attachmentId: attachmentId,
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              _PrivateEvidence(api: widget.api, attachmentId: attachmentId),
-            ],
+            ),
             const SizedBox(height: 20),
             _ReviewStatus(status: record.reviewStatus),
             if (record.reviewStatus != 'pending') ...[
               const SizedBox(height: 16),
-              OutlinedButton.icon(
+              FilledButton.icon(
                 onPressed: () async {
                   final submitted = await Navigator.of(context).push<bool>(
                     MaterialPageRoute(

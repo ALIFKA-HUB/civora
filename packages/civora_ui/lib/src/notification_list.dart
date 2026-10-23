@@ -22,14 +22,18 @@ class NotificationList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(errorMessage!),
-            TextButton(onPressed: onRetry, child: const Text('Coba lagi')),
-          ],
-        ),
+      return ListView(
+        padding: const EdgeInsets.all(24),
+        children: [
+          Text(errorMessage!, textAlign: TextAlign.center),
+          const SizedBox(height: 8),
+          Center(
+            child: TextButton(
+              onPressed: onRetry,
+              child: const Text('Coba lagi'),
+            ),
+          ),
+        ],
       );
     }
     if (items.isEmpty) {
@@ -51,27 +55,30 @@ class NotificationList extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: onRefresh,
       child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         itemCount: items.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
+        separatorBuilder: (_, _) => const SizedBox(height: 8),
         itemBuilder: (context, index) {
           final item = items[index];
-          return ListTile(
-            leading: Icon(
-              item.readAt == null
-                  ? Icons.notifications_active_outlined
-                  : Icons.notifications_none,
-              color: item.readAt == null
-                  ? Theme.of(context).colorScheme.primary
-                  : null,
+          return Card(
+            child: ListTile(
+              leading: Icon(
+                item.readAt == null
+                    ? Icons.notifications_active_outlined
+                    : Icons.notifications_none,
+                color: item.readAt == null
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              title: Text(item.message),
+              subtitle: Text(
+                MaterialLocalizations.of(
+                  context,
+                ).formatMediumDate(item.createdAt.toLocal()),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => onOpen(item),
             ),
-            title: Text(item.message),
-            subtitle: Text(
-              MaterialLocalizations.of(
-                context,
-              ).formatMediumDate(item.createdAt.toLocal()),
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => onOpen(item),
           );
         },
       ),

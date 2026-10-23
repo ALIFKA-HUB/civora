@@ -70,15 +70,31 @@ class _StudentObjectionScreenState extends State<StudentObjectionScreen> {
     body: ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
       children: [
-        Text(
-          widget.record.latestRevision?['name'] as String? ?? 'Catatan poin',
-          style: Theme.of(context).textTheme.titleLarge,
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.record.latestRevision?['name'] as String? ??
+                      'Catatan poin',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${widget.record.latestRevision?['points'] ?? '—'} poin · ${widget.record.semester.name}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 20),
         const Text(
           'Jelaskan bagian catatan yang perlu diperiksa. Alasan harus berisi 5–1.000 karakter.',
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 12),
         if (_submitted) ...[
           const Card(
             child: Padding(
@@ -123,8 +139,13 @@ class _StudentObjectionScreenState extends State<StudentObjectionScreen> {
                 semanticsLabel: 'Kesalahan: $_error',
               ),
             ),
-          const Text(
-            'Poin pada catatan tetap berlaku sampai admin menyetujui perubahan.',
+          const Card(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Poin pada catatan tetap berlaku sampai admin menyetujui perubahan.',
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           FilledButton.icon(

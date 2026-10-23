@@ -49,47 +49,73 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _ProfileValue(label: 'Nama', value: profile?.account.name ?? '—'),
-          _ProfileValue(label: 'NIP', value: profile?.teacher?.nip ?? '—'),
-          _ProfileValue(
-            label: 'Kode guru',
-            value: profile?.teacher?.teacherCode ?? '—',
-          ),
-          _ProfileValue(
-            label: 'Semester aktif',
-            value: profile?.currentSemester?.name ?? 'Belum tersedia',
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _ProfileValue(
+                    label: 'Nama',
+                    value: profile?.account.name ?? '—',
+                  ),
+                  _ProfileValue(
+                    label: 'NIP',
+                    value: profile?.teacher?.nip ?? '—',
+                  ),
+                  _ProfileValue(
+                    label: 'Kode guru',
+                    value: profile?.teacher?.teacherCode ?? '—',
+                  ),
+                  _ProfileValue(
+                    label: 'Semester aktif',
+                    value: profile?.currentSemester?.name ?? 'Belum tersedia',
+                  ),
+                ],
+              ),
+            ),
           ),
           const SizedBox(height: 24),
           Text('Tampilan', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
-          DropdownButtonFormField<ThemePreference>(
-            initialValue: widget.themePreference.preference,
-            decoration: const InputDecoration(labelText: 'Tema aplikasi'),
-            items: const [
-              DropdownMenuItem(
-                value: ThemePreference.system,
-                child: Text('Ikuti perangkat'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: DropdownButtonFormField<ThemePreference>(
+                initialValue: widget.themePreference.preference,
+                decoration: const InputDecoration(labelText: 'Tema aplikasi'),
+                items: const [
+                  DropdownMenuItem(
+                    value: ThemePreference.system,
+                    child: Text('Ikuti perangkat'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemePreference.light,
+                    child: Text('Terang'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemePreference.dark,
+                    child: Text('Gelap'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) widget.themePreference.set(value);
+                },
               ),
-              DropdownMenuItem(
-                value: ThemePreference.light,
-                child: Text('Terang'),
-              ),
-              DropdownMenuItem(
-                value: ThemePreference.dark,
-                child: Text('Gelap'),
-              ),
-            ],
-            onChanged: (value) {
-              if (value != null) widget.themePreference.set(value);
-            },
+            ),
           ),
           const SizedBox(height: 24),
           Text('Ganti password', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
-          PasswordForm(
-            isBusy: widget.session.isBusy,
-            errorMessage: _error,
-            onSubmit: _changePassword,
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: PasswordForm(
+                isBusy: widget.session.isBusy,
+                errorMessage: _error,
+                onSubmit: _changePassword,
+              ),
+            ),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(

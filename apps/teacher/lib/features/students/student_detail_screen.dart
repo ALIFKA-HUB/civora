@@ -57,15 +57,25 @@ class _TeacherStudentDetailScreenState
         : ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Text(
-                widget.student.name,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              const SizedBox(height: 8),
-              Text('NISN ${widget.student.nisn}'),
-              const SizedBox(height: 4),
-              Text(
-                '${_profile?['enrollment']?['classroom']?['name'] ?? widget.student.classroom} · ${_profile?['enrollment']?['major']?['name'] ?? widget.student.major}',
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.student.name,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      Text('NISN ${widget.student.nisn}'),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${_profile?['enrollment']?['classroom']?['name'] ?? widget.student.classroom} · ${_profile?['enrollment']?['major']?['name'] ?? widget.student.major}',
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               Text(
@@ -73,22 +83,28 @@ class _TeacherStudentDetailScreenState
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _Total(
-                      label: 'Prestasi',
-                      value: _profile?['totals']?['achievement'],
-                    ),
+              Card(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _Total(
+                          label: 'Prestasi',
+                          value: _profile?['totals']?['achievement'],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _Total(
+                          label: 'Pelanggaran',
+                          value: _profile?['totals']?['violation'],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _Total(
-                      label: 'Pelanggaran',
-                      value: _profile?['totals']?['violation'],
-                    ),
-                  ),
-                ],
+                ),
               ),
               const SizedBox(height: 20),
               _credentialHelp(context),
@@ -113,13 +129,14 @@ class _TeacherStudentDetailScreenState
                 final revision =
                     record['latest_revision'] as Map<String, dynamic>? ??
                     const {};
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(revision['name'] as String? ?? 'Catatan'),
-                  subtitle: Text(
-                    '${revision['category'] ?? '—'} · ${revision['description'] ?? ''}',
+                return Card(
+                  child: ListTile(
+                    title: Text(revision['name'] as String? ?? 'Catatan'),
+                    subtitle: Text(
+                      '${revision['category'] ?? '—'} · ${revision['description'] ?? ''}',
+                    ),
+                    trailing: Text('${revision['points'] ?? '—'} poin'),
                   ),
-                  trailing: Text('${revision['points'] ?? '—'} poin'),
                 );
               }),
             ],

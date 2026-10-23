@@ -204,7 +204,7 @@ void main() {
         CivoraApp(roleLabel: 'Guru', transport: transport, tokenStore: store),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Profil'));
+      await tester.tap(find.text('Profil').last);
       await tester.pumpAndSettle();
       expect(find.text('Guru Rahasia'), findsOneWidget);
       await tester.drag(find.byType(ListView).last, const Offset(0, -700));
@@ -234,7 +234,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Profil'));
+      await tester.tap(find.text('Profil').last);
       await tester.pumpAndSettle();
       await tester.drag(find.byType(ListView).last, const Offset(0, -500));
       await tester.pumpAndSettle();
@@ -289,7 +289,7 @@ void main() {
         CivoraApp(roleLabel: 'Guru', transport: transport, tokenStore: store),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('Profil'));
+      await tester.tap(find.text('Profil').last);
       await tester.pumpAndSettle();
       final root = tester.widget<CivoraFoundationScreen>(
         find.byType(CivoraFoundationScreen, skipOffstage: false),

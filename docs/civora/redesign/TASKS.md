@@ -18,7 +18,7 @@
 - Noto Sans dan keluarga ikon proyek tetap dipakai; tidak ada dependency UI baru tanpa keputusan.
 - Target sentuh 48 px; radius kartu 20, emphasis 24, input 12; spasi 4/8/12/16/24/32/48; motion 150–220 ms dan hormati reduced motion.
 - Konsep sintetis tidak membuktikan akurasi piksel, perilaku, kamera, push, atau kebijakan sekolah.
-- RD-01 lulus review implementasi lokal; RD-02–RD-04 belum lulus. Acceptance perangkat tetap terpisah. Pekerjaan visual ini tidak mengubah status 21 dari 26 task utama yang lulus.
+- RD-01 dan RD-02 lulus review implementasi lokal; RD-03–RD-04 belum lulus. Acceptance perangkat tetap terpisah. Pekerjaan visual ini tidak mengubah status 21 dari 26 task utama yang lulus.
 
 ## Review focus
 
@@ -50,11 +50,13 @@
 
 **Interfaces:** Semua action memakai controller/API/DTO yang ada. Field dan urutannya mengikuti `03-alur-pengguna.md`; tidak menambah navigasi atau mengubah endpoint.
 
-- [ ] Terapkan pola visual ke layar siswa/guru yang belum tercakup dalam RD-01 dan daftar turunan di `screen-coverage.md`, termasuk empty/loading/offline/error dan unknown-save lock.
-- [ ] Pertahankan validasi password/keterangan/bukti, state objection/correction, notifikasi login-required, autentikasi ulang, dan teks bahwa data pending belum diputuskan.
-- [ ] Uji regresi terarah QR selection, record retry, correction, auth/session, notification bila perubahan menyentuh state tersebut; verifikasi UI terang/gelap, teks besar, screen reader labels, focus, dan reduced motion.
-- [ ] Dari `apps/student`, jalankan `flutter test test/auth_flow_test.dart test/student_record_flow_test.dart test/notification_flow_test.dart` dan `flutter analyze`; dari `apps/teacher`, jalankan `flutter test test/auth_flow_test.dart test/student_search_test.dart test/record_retry_test.dart test/teacher_correction_test.dart test/notification_flow_test.dart test/credential_help_test.dart` dan `flutter analyze`. Expected: exit 0; catat hasil setelah perubahan. Pengecekan scanner/push fisik tetap dicatat di M-03/M-06/I-01.
-- [ ] Review terpisah lulus; commit/push bukti yang relevan; task belum dicentang sebelum gate lulus.
+- [x] Terapkan pola visual ke layar siswa/guru yang belum tercakup dalam RD-01 dan daftar turunan di `screen-coverage.md`, termasuk empty/loading/offline/error dan unknown-save lock.
+- [x] Pertahankan validasi password/keterangan/bukti, state objection/correction, notifikasi login-required, autentikasi ulang, dan teks bahwa data pending belum diputuskan.
+- [x] Uji regresi terarah QR selection, record retry, correction, auth/session, notification bila perubahan menyentuh state tersebut; verifikasi UI terang/gelap, teks besar, screen reader labels, focus, dan reduced motion.
+- [x] Dari `apps/student`, jalankan `flutter test test/auth_flow_test.dart test/student_record_flow_test.dart test/notification_flow_test.dart` dan `flutter analyze`; dari `apps/teacher`, jalankan `flutter test test/auth_flow_test.dart test/student_search_test.dart test/record_retry_test.dart test/teacher_correction_test.dart test/notification_flow_test.dart test/credential_help_test.dart` dan `flutter analyze`. Expected: exit 0; catat hasil setelah perubahan. Pengecekan scanner/push fisik tetap dicatat di M-03/M-06/I-01.
+- [x] Review terpisah lulus; commit/push bukti yang relevan; task belum dicentang sebelum gate lulus.
+
+**Batas penerimaan:** Gate implementasi lokal RD-02 lulus. Render baru hanya detail siswa terang/gelap; audit visual seluruh layar/state, focus dan perangkat tetap RD-04, belum dinyatakan lulus.
 
 ### RD-03: Tata letak admin konsisten dan responsif
 

@@ -74,12 +74,19 @@ class _TeacherRecordPointScreenState extends State<TeacherRecordPointScreen> {
                         : 'Semester atau penempatan berubah. Pilih siswa kembali untuk menggunakan data terbaru.',
                     color: Theme.of(context).colorScheme.error,
                   ),
-                Text(
-                  profile['name'] as String? ?? 'Siswa',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                Text(
-                  'NISN ${profile['nisn'] ?? '—'} · ${classroom['name'] ?? '—'} · ${major['name'] ?? '—'}',
+                Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      child: const Icon(Icons.person_outline),
+                    ),
+                    title: Text(profile['name'] as String? ?? 'Siswa'),
+                    subtitle: Text(
+                      'NISN ${profile['nisn'] ?? '—'} · ${classroom['name'] ?? '—'} · ${major['name'] ?? '—'}',
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 DropdownButtonFormField<String>(

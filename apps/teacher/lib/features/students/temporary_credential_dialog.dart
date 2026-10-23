@@ -155,6 +155,7 @@ class _TemporaryCredentialDialogState extends State<TemporaryCredentialDialog>
 
   @override
   Widget build(BuildContext context) => AlertDialog(
+    scrollable: true,
     title: const Text('Bantuan akun siswa'),
     content: widget.controller.canReveal
         ? Column(
@@ -178,7 +179,11 @@ class _TemporaryCredentialDialogState extends State<TemporaryCredentialDialog>
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text(_error!),
+                    child: Semantics(
+                      liveRegion: true,
+                      label: 'Kesalahan: $_error',
+                      child: Text(_error!),
+                    ),
                   ),
               ] else ...[
                 const Text(

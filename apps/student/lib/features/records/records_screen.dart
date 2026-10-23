@@ -280,18 +280,20 @@ class _StudentRecordsScreenState extends State<StudentRecordsScreen> {
                 );
                 final points = revision['points'] as int?;
                 final statusLabel = _statusLabel(record, revision);
-                return ListTile(
-                  minVerticalPadding: 10,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                  title: Text(revision['name'] as String? ?? 'Catatan poin'),
-                  subtitle: Text(
-                    '${date ?? 'Waktu sekolah belum tersedia'} · ${record.semester.name}\n$statusLabel',
+                return Card(
+                  child: ListTile(
+                    minVerticalPadding: 12,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                    title: Text(revision['name'] as String? ?? 'Catatan poin'),
+                    subtitle: Text(
+                      '${date ?? 'Waktu sekolah belum tersedia'} · ${record.semester.name}\n$statusLabel',
+                    ),
+                    isThreeLine: true,
+                    trailing: points == null
+                        ? const Icon(Icons.chevron_right)
+                        : Text('$points poin'),
+                    onTap: () => widget.onOpenRecord(record.id),
                   ),
-                  isThreeLine: true,
-                  trailing: points == null
-                      ? const Icon(Icons.chevron_right)
-                      : Text('$points poin'),
-                  onTap: () => widget.onOpenRecord(record.id),
                 );
               },
             ),

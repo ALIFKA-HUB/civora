@@ -43,11 +43,26 @@ class _StudentAuthScreenState extends State<StudentAuthScreen> {
           padding: const EdgeInsets.all(24),
           shrinkWrap: true,
           children: [
-            const Icon(Icons.school_outlined, size: 44),
-            const SizedBox(height: 16),
             Text(
-              widget.activation ? 'Buat password baru' : 'Civora Siswa',
+              'Civora',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              widget.activation ? 'Buat password baru' : 'Masuk ke Civora',
               style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            Text(
+              widget.activation
+                  ? 'Ganti password sementara sebelum menggunakan Civora.'
+                  : 'Aplikasi siswa',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

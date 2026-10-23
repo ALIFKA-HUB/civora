@@ -79,7 +79,7 @@ void main() {
     await tester.pumpWidget(CivoraApp(roleLabel: 'Siswa', tokenStore: _EmptyTokenStore()));
     await tester.pumpAndSettle();
     expect(find.text('Masuk sebagai siswa'), findsOneWidget);
-    expect(find.text('Civora Siswa'), findsOneWidget);
+    expect(find.text('Masuk ke Civora'), findsOneWidget);
   });
 
   testWidgets('student root uses the compile-time API base URL when config is omitted', (tester) async {
