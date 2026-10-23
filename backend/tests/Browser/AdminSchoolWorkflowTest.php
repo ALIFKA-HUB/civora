@@ -49,12 +49,15 @@ class AdminSchoolWorkflowTest extends DuskTestCase
             $this->browse(function (Browser $browser) use ($adminPassword, $semester, $studentCsv, $teacherCsv): void {
                 $browser->visit('/admin/login')->type('#username', 'workflowadmin')->type('#password', $adminPassword)
                     ->press('Masuk')->waitForLocation('/admin')
+                    ->select('#theme-select', 'light')
+                    ->screenshot('rd03-admin-dashboard-light')
                     ->visit('/admin/confirm-password')->type('#current-password', $adminPassword)
                     ->press('Konfirmasi')->waitForLocation('/admin');
 
                 $browser->visit('/admin/imports')->select('#import-semester', $semester->id)->attach('#import-file', $studentCsv)
                     ->waitForText('Berkas siap diperiksa:', 10)->press('Pratinjau berkas')->waitForText('Pratinjau batch', 15)
-                    ->assertSee('Tidak ada kesalahan')->press('Konfirmasi dan buat 1 akun')->waitForText('Import selesai.', 15);
+                    ->assertSee('Tidak ada kesalahan')->screenshot('rd03-admin-import-preview-light')
+                    ->press('Konfirmasi dan buat 1 akun')->waitForText('Import selesai.', 15);
 
                 $browser->visit('/admin/imports')->select('#import-type', 'teacher')->attach('#import-file', $teacherCsv)
                     ->waitForText('Berkas siap diperiksa:', 10)->press('Pratinjau berkas')->waitForText('Pratinjau batch', 15)
@@ -62,9 +65,11 @@ class AdminSchoolWorkflowTest extends DuskTestCase
 
                 $browser->visit('/admin/point-types')->type('#point-code', 'WF01')->select('#point-category', 'violation')
                     ->type('#point-name', 'Catatan Workflow')->type('#point-value', '5')->type('#point-description', 'Jenis poin untuk pemeriksaan workflow sekolah.')
-                    ->press('Tambah jenis poin')->waitForText('Jenis poin dibuat pada versi katalog 1.');
+                    ->press('Tambah jenis poin')->waitForText('Jenis poin dibuat pada versi katalog 1.')
+                    ->screenshot('rd03-admin-point-catalog-light');
 
-                $browser->visit('/admin/academic')->press('Buka semester')->waitForText('Semester dibuka. Penempatan siswa telah diperiksa.');
+                $browser->visit('/admin/academic')->press('Buka semester')->waitForText('Semester dibuka. Penempatan siswa telah diperiksa.')
+                    ->screenshot('rd03-admin-academic-light');
                 $student = Student::where('nisn', '0000000901')->firstOrFail();
                 $teacher = Teacher::where('nip', '0000000902')->firstOrFail();
                 $version = PointTypeVersion::whereHas('pointType', fn ($query) => $query->where('code', 'WF01'))->firstOrFail();
@@ -102,7 +107,7 @@ class AdminSchoolWorkflowTest extends DuskTestCase
                 self::assertSame('active', $student->user->fresh()->account_status);
                 self::assertSame(0, TemporaryCredential::where('user_id', $student->user_id)->count());
 
-                $browser->visit('/admin/teachers');
+                $browser->visit('/admin/teachers')->screenshot('rd03-admin-teachers-light');
                 $browser->script("Array.from(document.querySelectorAll('tbody tr')).find(row => row.textContent.includes('Guru Workflow'))?.querySelector('button:nth-of-type(2)')?.click();");
                 $browser->waitForText('Target pembukaan password sementara: '.$teacher->id, 10)->press('Tampilkan password sementara')->waitForText('Password sementara guru', 10);
                 $temporaryPassword = $browser->script("return document.querySelector('section[aria-labelledby=teachers-list-title] + section code, code')?.textContent.trim();")[0];
@@ -161,7 +166,8 @@ class AdminSchoolWorkflowTest extends DuskTestCase
                     ->type('#review-decision-reason', 'Catatan diperbaiki melalui pemeriksaan browser.')
                     ->press('Simpan keputusan')->waitForText('Pemeriksaan disetujui.', 10);
                 $browser->visit('/admin/reports')->select('#report-semester', $semester->id)->press('Tampilkan laporan')
-                    ->waitForText('Total pelanggaran berlaku', 10)->assertSee('5')->assertSee('Catatan Workflow');
+                    ->waitForText('Total pelanggaran berlaku', 10)->assertSee('5')->assertSee('Catatan Workflow')
+                    ->screenshot('rd03-admin-reports-light');
             });
         } finally {
             @unlink($studentCsv);

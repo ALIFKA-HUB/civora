@@ -101,7 +101,7 @@
                         <option value="dark">Gelap</option>
                     </select>
                     @if ($adminUser)
-                        <span class="hidden max-w-40 truncate text-sm sm:inline">{{ $adminUser->name }}</span>
+                        <span class="max-w-40 break-words text-sm text-right">{{ $adminUser->name }}</span>
                     @endif
                 </div>
             </header>

@@ -95,10 +95,10 @@ Gunakan dua terminal PowerShell. Server membaca `.env.testing` secara eksplisit 
 
 ```powershell
 $env:APP_ENV = 'testing'
-./ops/dev/php.ps1 artisan serve --host=127.0.0.1 --port=8031
+./ops/dev/php.ps1 artisan serve --host=127.0.0.1 --port=8031 --no-reload
 ```
 
-Di terminal lain, jalankan Dusk dengan `APP_ENV` tidak disetel agar Dusk memuat `.env.dusk.local` untuk proses browser:
+Gunakan `--no-reload` agar server tidak memutus request ketika Laravel Dusk menukar `.env` untuk memuat `.env.dusk.local` lalu memulihkannya. Di terminal lain, jalankan Dusk dengan `APP_ENV` tidak disetel agar Dusk memuat `.env.dusk.local` untuk proses browser:
 
 ```powershell
 $env:APP_ENV = $null

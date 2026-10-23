@@ -18,7 +18,7 @@
 - Noto Sans dan keluarga ikon proyek tetap dipakai; tidak ada dependency UI baru tanpa keputusan.
 - Target sentuh 48 px; radius kartu 20, emphasis 24, input 12; spasi 4/8/12/16/24/32/48; motion 150–220 ms dan hormati reduced motion.
 - Konsep sintetis tidak membuktikan akurasi piksel, perilaku, kamera, push, atau kebijakan sekolah.
-- RD-01 dan RD-02 lulus review implementasi lokal; RD-03–RD-04 belum lulus. Acceptance perangkat tetap terpisah. Pekerjaan visual ini tidak mengubah status 21 dari 26 task utama yang lulus.
+- RD-01–RD-03 lulus review implementasi lokal; RD-04 belum lulus. Acceptance perangkat tetap terpisah. Pekerjaan visual ini tidak mengubah status 21 dari 26 task utama yang lulus.
 
 ## Review focus
 
@@ -66,11 +66,13 @@
 
 **Interfaces:** Pertahankan route/action Livewire, field order, session idle/role guards, modal semantics, focus handling dan kontrak laporan/import.
 
-- [ ] Terapkan palet/bentuk/spasi, tautan teal, state fokus/disabled, layout sidebar responsif dan kartu data berkelompok. Teks/aksi tidak disembunyikan saat viewport menyempit.
-- [ ] Lengkapi layar turunan admin yang ada pada coverage, termasuk login, detail/form, import lifecycle, akademik, edit katalog/kebijakan, daftar catatan dan dialog. Tambah tema gelap hanya mengikuti tokens yang disetujui.
-- [ ] Dari `backend`, jalankan `php artisan test --filter=AdminSchoolWorkflowTest`, `php artisan test --filter=AdminReviewWorkflowBrowserTest`, feature test yang dimiliki layar berubah, dan `npm run build`. Expected: seluruh command yang relevan exit 0; catat test/viewport dan hasil. Jangan menafsirkan build sebagai penerimaan layar.
-- [ ] Ukur kontras pada komponen dan state aktif; periksa keyboard/focus, dialog/drawer, viewport kecil, dan reduced motion.
-- [ ] Reviewer independen lulus; commit/push perubahan; task tetap unchecked sebelum gate selesai.
+- [x] Terapkan palet/bentuk/spasi, tautan teal, state fokus/disabled, layout sidebar responsif dan kartu data berkelompok. Teks/aksi tidak disembunyikan saat viewport menyempit.
+- [x] Lengkapi layar turunan admin yang ada pada coverage, termasuk login, detail/form, import lifecycle, akademik, edit katalog/kebijakan, daftar catatan dan dialog. Tambah tema gelap hanya mengikuti tokens yang disetujui.
+- [x] Dari root repositori, jalankan `./ops/dev/php.ps1 artisan dusk --filter=AdminSchoolWorkflowTest` dan `./ops/dev/php.ps1 artisan dusk --filter=AdminReviewWorkflowBrowserTest`; jalankan feature test pemilik perilaku yang berubah melalui `./ops/dev/php.ps1 artisan test --filter=<NamaFeatureTest>`. Dari `backend`, jalankan `npm run build`. Expected: seluruh command yang relevan exit 0; catat test/viewport dan hasil. Jangan menafsirkan build sebagai penerimaan layar.
+- [x] Ukur kontras pada komponen dan state aktif; periksa keyboard/focus, dialog/drawer, viewport kecil, dan reduced motion.
+- [x] Reviewer independen lulus; commit/push perubahan; task tetap unchecked sebelum gate selesai.
+
+**Batas penerimaan:** Implementasi lokal disetujui; screenshot/browser mewakili halaman yang diuji, bukan seluruh route/state. Minor spasi warisan 20 px dicatat untuk audit RD-04. Penerimaan luas/perangkat tetap terpisah.
 
 ### RD-04: Penerimaan visual lintas permukaan dan status
 
