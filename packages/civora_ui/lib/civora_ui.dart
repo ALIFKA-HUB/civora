@@ -1,4 +1,5 @@
 export 'src/async_content.dart';
+export 'src/capsule_navigation_bar.dart';
 export 'src/civora_theme.dart';
 export 'src/theme_preference_controller.dart';
 export 'src/notification_list.dart';

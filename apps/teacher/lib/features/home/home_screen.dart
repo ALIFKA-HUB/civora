@@ -109,7 +109,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         ),
       ],
     ),
-    bottomNavigationBar: NavigationBar(
+    bottomNavigationBar: CivoraCapsuleNavigationBar(
       selectedIndex: _tab,
       onDestinationSelected: (index) => setState(() => _tab = index),
       destinations: const [
@@ -146,16 +146,87 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           const SizedBox(height: 4),
           Text('Semester ${profile?.currentSemester?.name ?? 'aktif'}'),
           const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _openScanner,
-            icon: const Icon(Icons.qr_code_scanner),
-            label: const Text('Scan QR'),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.center_focus_weak,
+                      size: 56,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      semanticLabel: 'Pemindai QR',
+                    ),
+                    Container(
+                      width: 1,
+                      height: 64,
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Catat poin siswa',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Mulai dengan memindai QR siswa.',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _openScanner,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('Scan QR'),
+                        const SizedBox(width: 12),
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: const BoxDecoration(
+                            color: Color(0x332E3439),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_outlined,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => setState(() => _tab = 1),
-            icon: const Icon(Icons.search),
-            label: const Text('Cari Siswa'),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => setState(() => _tab = 1),
+              icon: const Icon(Icons.search),
+              label: const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Cari siswa secara manual'),
+              ),
+            ),
           ),
           const SizedBox(height: 28),
           Text(

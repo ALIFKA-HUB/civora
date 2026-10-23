@@ -75,6 +75,7 @@ class _TeacherStudentSearchScreenState
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   initialValue: _classroomId,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Kelas'),
                   items: [
                     const DropdownMenuItem(
@@ -98,6 +99,7 @@ class _TeacherStudentSearchScreenState
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   initialValue: _majorId,
+                  isExpanded: true,
                   decoration: const InputDecoration(labelText: 'Jurusan'),
                   items: [
                     const DropdownMenuItem(

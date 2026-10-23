@@ -7,8 +7,17 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'qr_controller.dart';
 
 class StudentQrScreen extends StatefulWidget {
-  const StudentQrScreen({super.key, required this.api});
+  const StudentQrScreen({
+    super.key,
+    required this.api,
+    required this.studentName,
+    required this.nisn,
+    required this.classLabel,
+  });
   final ApiClient api;
+  final String studentName;
+  final String nisn;
+  final String classLabel;
 
   @override
   State<StudentQrScreen> createState() => _StudentQrScreenState();
@@ -49,48 +58,101 @@ class _StudentQrScreenState extends State<StudentQrScreen>
       return Scaffold(
         appBar: AppBar(title: const Text('QR kehadiran')),
         body: ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
             Text(
               'Tunjukkan kode ini kepada guru untuk memilih akunmu.',
               style: Theme.of(context).textTheme.bodyLarge,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            Center(
-              child: Container(
-                constraints: const BoxConstraints(
-                  minWidth: 280,
-                  minHeight: 280,
-                ),
-                padding: const EdgeInsets.all(12),
-                color: Colors.white,
-                child: qr == null
-                    ? Center(
-                        child: _controller.isLoading
-                            ? const CircularProgressIndicator(
-                                semanticsLabel: 'Memuat QR',
-                              )
-                            : const Icon(
-                                Icons.qr_code_2,
-                                size: 72,
-                                color: Color(0xFF526866),
-                              ),
-                      )
-                    : QrImageView(
-                        data: qr.token,
-                        size: 256,
-                        backgroundColor: Colors.white,
-                        eyeStyle: const QrEyeStyle(color: Colors.black),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          color: Colors.black,
-                        ),
-                        errorCorrectionLevel: QrErrorCorrectLevel.M,
-                        semanticsLabel: 'QR Civora untuk pemilihan siswa',
-                      ),
-              ),
+            const SizedBox(height: 20),
+            Text(
+              widget.studentName,
+              style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'NISN ${widget.nisn} · ${widget.classLabel}',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Builder(
+                  builder: (context) {
+                    final qrSize = (MediaQuery.sizeOf(context).width - 112)
+                        .clamp(180.0, 256.0);
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: qr == null
+                          ? SizedBox(
+                              width: qrSize,
+                              height: qrSize,
+                              child: Center(
+                                child: _controller.isLoading
+                                    ? const CircularProgressIndicator(
+                                        semanticsLabel: 'Memuat QR',
+                                      )
+                                    : const Icon(
+                                        Icons.qr_code_2,
+                                        size: 72,
+                                        color: Colors.black,
+                                      ),
+                              ),
+                            )
+                          : QrImageView(
+                              data: qr.token,
+                              size: qrSize,
+                              backgroundColor: Colors.white,
+                              eyeStyle: const QrEyeStyle(color: Colors.black),
+                              dataModuleStyle: const QrDataModuleStyle(
+                                color: Colors.black,
+                              ),
+                              errorCorrectionLevel: QrErrorCorrectLevel.M,
+                              semanticsLabel: 'QR Civora untuk pemilihan siswa',
+                            ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Semantics(
+              label: 'Status koneksi',
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    qr != null ? Icons.wifi : Icons.wifi_off,
+                    size: 20,
+                    semanticLabel: qr != null
+                        ? 'Terhubung ke server'
+                        : 'Tidak terhubung ke server',
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    qr != null
+                        ? 'Terhubung'
+                        : _controller.isLoading
+                        ? 'Menghubungkan'
+                        : 'Tidak terhubung',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
             if (qr != null)
               Semantics(
                 label: 'Sisa waktu QR',

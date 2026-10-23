@@ -14,8 +14,8 @@ Pakai tata letak bersih ala Digcy dengan navigasi bawah kapsul mengambang. Hiera
 | Lapisan terangkat/nav | `#FFFFFF` | `#2E3439` |
 | Teks utama | `#151719` | `#F3F5F6` |
 | Label/teks sekunder | `#45484D` | `#BAC2C8` |
-| Tombol utama | `#172225` dengan teks `#FFFFFF` | `#172225` dengan teks `#E3E5E8` |
-| Pilihan nav aktif | kapsul `#172225`, teks putih | kapsul `#172225`, teks `#E3E5E8` |
+| Tombol utama | `#172225` dengan teks `#FFFFFF` | `#E3E5E8` dengan teks `#172225` |
+| Pilihan nav aktif | kapsul `#172225`, teks putih | kapsul `#E3E5E8`, teks `#172225` |
 | Aksen teks teal | `#0B625A` | `#63D1C1` |
 | Pelanggaran/error | merah semantik dengan label; ukur pada permukaan aktual | `#FF989F` |
 

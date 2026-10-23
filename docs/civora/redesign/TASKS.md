@@ -14,11 +14,11 @@
 
 - Pertahankan backend endpoints, Livewire actions, role/access, routes, navigasi/tab, urutan field, idempotency, dan stale-session protection.
 - Latar terang `#F5F5F6`, kartu data putih, panel emphasis `#E3E5E8`; teks utama `#151719`, secondary `#45484D`; teks teal terang `#0B625A`.
-- Tema gelap memakai nilai pada `visual-spec.md`; tombol utama/nav aktif memakai `#172225` dengan teks `#E3E5E8`; QR hitam pada putih dengan quiet zone dalam kedua tema.
+- Tema gelap memakai nilai pada `visual-spec.md`; tombol utama/nav aktif memakai fill `#E3E5E8` dengan foreground `#172225`; QR hitam pada putih dengan quiet zone dalam kedua tema.
 - Noto Sans dan keluarga ikon proyek tetap dipakai; tidak ada dependency UI baru tanpa keputusan.
 - Target sentuh 48 px; radius kartu 20, emphasis 24, input 12; spasi 4/8/12/16/24/32/48; motion 150–220 ms dan hormati reduced motion.
 - Konsep sintetis tidak membuktikan akurasi piksel, perilaku, kamera, push, atau kebijakan sekolah.
-- Semua task RD belum mulai dan tidak mengubah status 21 dari 26 task utama yang lulus.
+- RD-01 lulus review implementasi lokal; RD-02–RD-04 belum lulus. Acceptance perangkat tetap terpisah. Pekerjaan visual ini tidak mengubah status 21 dari 26 task utama yang lulus.
 
 ## Review focus
 
@@ -36,11 +36,11 @@
 
 **Interfaces:** Hasilkan theme light/dark sesuai `visual-spec.md` dan gaya kapsul navigasi yang memakai tab/routing saat ini. QR tetap menyajikan NISN, countdown server, dan status koneksi; scanner tetap menyediakan jalur pencarian manual.
 
-- [ ] Periksa theme dan struktur route/widget yang ada; tulis/ubah test perilaku hanya untuk regresi nyata yang disentuh, bukan snapshot kosmetik.
-- [ ] Terapkan token bersama, kartu/radius/tombol dan nav kapsul; pastikan underline kelas tidak menavigasi dan QR menampilkan NISN.
-- [ ] Periksa kedua tema, target 48 px, teks besar, quiet zone hitam-putih, denied camera/manual fallback, dan reduced motion.
-- [ ] Jalankan `flutter test test/civora_theme_test.dart` lalu `flutter analyze` dari `packages/civora_ui`; jalankan `flutter test test/widget_test.dart test/qr_flow_test.dart` dan `flutter analyze` dari `apps/student`; jalankan `flutter test test/widget_test.dart test/teacher_selection_test.dart` dan `flutter analyze` dari `apps/teacher`. Expected: exit 0; catat command/exit code. Tidak ada perangkat fisik yang disimpulkan dari test ini.
-- [ ] Review independen menyetujui dan seluruh temuan blocking diperbaiki; baru setelah itu commit/push dan catat bukti. Tetap unchecked sebelum gate lulus.
+- [x] Periksa theme dan struktur route/widget yang ada; tulis/ubah test perilaku hanya untuk regresi nyata yang disentuh, bukan snapshot kosmetik.
+- [x] Terapkan token bersama, kartu/radius/tombol dan nav kapsul; pastikan underline kelas tidak menavigasi dan QR menampilkan NISN.
+- [x] Periksa kedua tema, target 48 px, teks besar, quiet zone hitam-putih, denied camera/manual fallback, dan reduced motion.
+- [x] Jalankan `flutter test test/civora_theme_test.dart` lalu `flutter analyze` dari `packages/civora_ui`; jalankan `flutter test test/widget_test.dart test/qr_flow_test.dart` dan `flutter analyze` dari `apps/student`; jalankan `flutter test test/widget_test.dart test/teacher_selection_test.dart` dan `flutter analyze` dari `apps/teacher`. Expected: exit 0; catat command/exit code. Tidak ada perangkat fisik yang disimpulkan dari test ini.
+- [x] Review independen menyetujui dan seluruh temuan blocking diperbaiki; baru setelah itu commit/push dan catat bukti. Tetap unchecked sebelum gate lulus.
 
 ### RD-02: Layar siswa/guru dan keadaan alur turunan
 

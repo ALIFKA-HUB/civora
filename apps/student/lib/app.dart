@@ -203,7 +203,16 @@ class _StudentTabsState extends State<StudentTabs> {
       const ['Beranda', 'Riwayat', 'Notifikasi', 'Profil'][_index];
 
   void _openQr() => Navigator.of(context).push<void>(
-    MaterialPageRoute(builder: (_) => StudentQrScreen(api: widget.api)),
+    MaterialPageRoute(
+      builder: (_) => StudentQrScreen(
+        api: widget.api,
+        studentName: widget.session.profile!.account.name,
+        nisn: widget.session.profile!.student?.nisn ?? 'Tidak tersedia',
+        classLabel:
+            widget.session.profile!.ownEnrollment?.classroom.name ??
+            'Kelas belum tersedia',
+      ),
+    ),
   );
 
   void _openRecord(String id) => Navigator.of(context).push<void>(
@@ -248,7 +257,7 @@ class _StudentTabsState extends State<StudentTabs> {
           ),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
+      bottomNavigationBar: CivoraCapsuleNavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (index) => setState(() => _index = index),
         destinations: const [

@@ -6,6 +6,7 @@ import 'package:civora_student/features/home/home_screen.dart';
 import 'package:civora_student/features/records/record_detail_screen.dart';
 import 'package:civora_student/features/records/records_screen.dart';
 import 'package:civora_student/features/reviews/objection_screen.dart';
+import 'package:civora_ui/civora_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -71,6 +72,77 @@ Map<String, dynamic> _record({
 };
 
 void main() {
+  testWidgets('home remains usable at 2x text scale on a small screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    for (final theme in [CivoraTheme.light, CivoraTheme.dark]) {
+      final transport = _Transport()
+        ..responses.add(
+          _json({
+            'data': {
+              'semester': {
+                'id': 'semester-current',
+                'name': 'Ganjil 2026/2027',
+              },
+              'totals': {'achievement': 10, 'violation': 5},
+              'latest_threshold_status': null,
+            },
+          }),
+        )
+        ..responses.add(
+          _json({
+            'data': [],
+            'meta': {'current_page': 1, 'last_page': 1},
+          }),
+        );
+      final api = ApiClient(
+        baseUrl: Uri.parse('https://civora.test/api/v1'),
+        transport: transport,
+      );
+      var qrOpened = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: StudentHomeScreen(
+              api: api,
+              profile: _profile(),
+              onOpenQr: () => qrOpened = true,
+              onOpenRecord: (_) {},
+              onOpenHistory: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Poin semester ini'), findsOneWidget);
+      expect(find.text('Prestasi'), findsOneWidget);
+      expect(find.text('Pelanggaran'), findsOneWidget);
+      final qrAction = find.widgetWithText(FilledButton, 'Tampilkan QR');
+      await tester.drag(find.byType(ListView).first, const Offset(0, -500));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(qrAction);
+      expect(qrOpened, isTrue);
+      expect(tester.takeException(), isNull);
+      api.close();
+    }
+  });
+
   testWidgets(
     'home displays separate server totals and enrollment, without inventing zero',
     (tester) async {

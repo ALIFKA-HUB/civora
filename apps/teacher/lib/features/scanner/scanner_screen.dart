@@ -48,7 +48,7 @@ class _TeacherScannerScreenState extends State<TeacherScannerScreen> {
         SizedBox(
           height: 360,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             child:
                 widget.cameraViewBuilder?.call(context) ??
                 MobileScanner(

@@ -71,39 +71,83 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 4),
-            Text(
-              _placementLabel(widget.profile),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              widget.profile.currentSemester?.name ??
-                  'Semester aktif belum tersedia',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 24),
-            Row(
+            Wrap(
+              spacing: 16,
+              runSpacing: 4,
               children: [
-                Expanded(
-                  child: _TotalTile(
-                    label: 'Prestasi',
-                    value: data.summary.achievement,
-                    icon: Icons.emoji_events_outlined,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF86EFAC)
-                        : const Color(0xFF166534),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _TotalTile(
-                    label: 'Pelanggaran',
-                    value: data.summary.violation,
-                    icon: Icons.assignment_late_outlined,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+                _PlacementLabel(profile: widget.profile),
+                Text(
+                  widget.profile.currentSemester?.name ??
+                      'Semester aktif belum tersedia',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Poin semester ini',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _TotalTile(
+                          label: 'Prestasi',
+                          value: data.summary.achievement,
+                        ),
+                      ),
+                      Container(
+                        width: 1,
+                        height: 72,
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                      Expanded(
+                        child: _TotalTile(
+                          label: 'Pelanggaran',
+                          value: data.summary.violation,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: widget.onOpenQr,
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 12,
+                        runSpacing: 4,
+                        children: [
+                          const Text('Tampilkan QR'),
+                          Container(
+                            width: 36,
+                            height: 36,
+                            decoration: const BoxDecoration(
+                              color: Color(0x332E3439),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.qr_code_2, size: 20),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (data.summary.achievement == null ||
                 data.summary.violation == null)
@@ -123,20 +167,15 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   subtitle: Text('${status['recommended_action'] ?? ''}'),
                 ),
               ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: widget.onOpenQr,
-              icon: const Icon(Icons.qr_code_2),
-              label: const Text('Tampilkan QR'),
-            ),
             const SizedBox(height: 28),
-            Row(
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
               children: [
-                Expanded(
-                  child: Text(
-                    'Catatan terbaru',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
+                Text(
+                  'Catatan terbaru',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
                 TextButton(
                   onPressed: widget.onOpenHistory,
@@ -164,10 +203,32 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   );
 }
 
-String _placementLabel(MeDto profile) {
-  final enrollment = profile.ownEnrollment;
-  if (enrollment == null) return 'Belum ada penempatan aktif';
-  return '${enrollment.classroom.name} · ${enrollment.major.name}';
+class _PlacementLabel extends StatelessWidget {
+  const _PlacementLabel({required this.profile});
+  final MeDto profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final enrollment = profile.ownEnrollment;
+    if (enrollment == null) {
+      return Text(
+        'Belum ada penempatan aktif',
+        style: Theme.of(context).textTheme.bodyMedium,
+      );
+    }
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: enrollment.classroom.name,
+            style: const TextStyle(decoration: TextDecoration.underline),
+          ),
+          TextSpan(text: ' · ${enrollment.major.name}'),
+        ],
+      ),
+      style: Theme.of(context).textTheme.bodyMedium,
+    );
+  }
 }
 
 class _HomeData {
@@ -177,33 +238,25 @@ class _HomeData {
 }
 
 class _TotalTile extends StatelessWidget {
-  const _TotalTile({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
+  const _TotalTile({required this.label, required this.value});
   final String label;
   final int? value;
-  final IconData icon;
-  final Color color;
 
   @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, semanticLabel: label),
-          const SizedBox(height: 12),
-          Text(
-            value?.toString() ?? '—',
-            style: Theme.of(context).textTheme.headlineMedium,
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 8),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          value?.toString() ?? '—',
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        ],
-      ),
+        ),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+      ],
     ),
   );
 }

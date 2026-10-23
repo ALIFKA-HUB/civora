@@ -15,6 +15,7 @@ Status: seluruh arah visual berikut disetujui pengguna. Log ini hanya mengatur p
 | RD-D09 | QR hitam di atas putih dengan quiet zone pada semua tema. |
 | RD-D10 | Font Noto Sans dan satu keluarga ikon konsisten yang sudah ada; tidak ada dependensi/font baru tanpa bukti kebutuhan dan keputusan. |
 | RD-D11 | Kartu data menyusun label/nilai dengan ringkas dan terbaca, bukan angka tebal tersebar. |
+| RD-D12 | Koreksi preflight mengikat mode gelap: tombol utama dan nav terpilih memakai fill `#E3E5E8` dengan foreground `#172225`, sesuai mockup gelap yang disetujui. |
 
 ## Batas pembacaan konsep
 

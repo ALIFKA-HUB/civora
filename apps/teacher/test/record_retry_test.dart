@@ -84,6 +84,100 @@ const _record = {
 };
 
 void main() {
+  testWidgets(
+    'home actions remain reachable at 2x text scale on a small screen',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      for (final theme in [CivoraTheme.light, CivoraTheme.dark]) {
+        final transport = _Transport()
+          ..responses.addAll([
+            ApiResponse(200, jsonEncode({'data': []})),
+            ApiResponse(200, jsonEncode({'data': []})),
+          ]);
+        final api = ApiClient(
+          baseUrl: Uri.parse('https://civora.test/api/v1'),
+          transport: transport,
+        );
+        final session = SessionController(role: 'teacher', tokenStore: _Store())
+          ..state = SessionState.authenticated
+          ..profile = const MeDto(
+            account: AccountDto(
+              id: 'teacher-1',
+              name: 'Guru Uji',
+              role: 'teacher',
+              accountStatus: 'active',
+              mustChangePassword: false,
+            ),
+          );
+        final notifications = NotificationController(
+          api: api,
+          session: session,
+        );
+        final themePreference = ThemePreferenceController();
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(2)),
+              child: child!,
+            ),
+            home: TeacherHomeScreen(
+              key: ValueKey(theme.brightness),
+              api: api,
+              session: session,
+              notifications: notifications,
+              themePreference: themePreference,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        final scanAction = find.widgetWithText(FilledButton, 'Scan QR');
+        await Scrollable.ensureVisible(
+          tester.element(scanAction),
+          alignment: 0.5,
+          duration: Duration.zero,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(scanAction);
+        await tester.pumpAndSettle();
+        expect(find.text('Scan QR siswa'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+
+        await tester.pageBack();
+        await tester.pumpAndSettle();
+        final manualSearch = find.text('Cari siswa secara manual').first;
+        await Scrollable.ensureVisible(
+          tester.element(manualSearch),
+          alignment: 0.5,
+          duration: Duration.zero,
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(manualSearch);
+        await tester.pumpAndSettle();
+        expect(find.text('Cari siswa'), findsOneWidget);
+        final selectedPill = find.byKey(const Key('capsule-nav-selected-pill'));
+        expect(
+          find.descendant(of: selectedPill, matching: find.text('Siswa')),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+        api.close();
+        notifications.dispose();
+        themePreference.dispose();
+        session.dispose();
+      }
+    },
+  );
+
   test(
     'late manual selection cannot replace a save that became unknown',
     () async {

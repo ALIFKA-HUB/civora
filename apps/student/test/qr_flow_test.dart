@@ -187,14 +187,24 @@ void main() {
   testWidgets('QR is generated as black modules on white in both themes', (
     tester,
   ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
     for (final dark in [false, true]) {
       final harness = _Harness()..respondWithQr('server-issued-qr-token');
       await tester.pumpWidget(
         MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: CivoraTheme.light,
           darkTheme: CivoraTheme.dark,
           themeMode: dark ? ThemeMode.dark : ThemeMode.light,
-          home: StudentQrScreen(api: harness.api),
+          home: StudentQrScreen(
+            api: harness.api,
+            studentName: 'Alya Sari',
+            nisn: '0012345678',
+            classLabel: 'XI RPL 2',
+          ),
         ),
       );
       await tester.pump();
@@ -203,12 +213,58 @@ void main() {
         find.bySemanticsLabel('QR Civora untuk pemilihan siswa'),
         findsOneWidget,
       );
+      expect(find.text('NISN 0012345678 · XI RPL 2'), findsOneWidget);
+      expect(find.text('Terhubung'), findsOneWidget);
       final qr = tester.widget<QrImageView>(find.byType(QrImageView));
+      final quietZone = tester.widget<Container>(
+        find
+            .ancestor(
+              of: find.byType(QrImageView),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
       expect(qr.backgroundColor, Colors.white);
       expect(qr.eyeStyle.color, Colors.black);
       expect(qr.dataModuleStyle.color, Colors.black);
+      expect(quietZone.padding, const EdgeInsets.all(12));
       await tester.pumpWidget(const SizedBox.shrink());
       harness.api.close();
     }
+  });
+
+  testWidgets('QR identity remains laid out at larger text size', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final harness = _Harness()..respondWithQr('large-text-qr-token');
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: CivoraTheme.light,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: const TextScaler.linear(2)),
+          child: child!,
+        ),
+        home: StudentQrScreen(
+          api: harness.api,
+          studentName: 'Alya Sari',
+          nisn: '0012345678',
+          classLabel: 'XI RPL 2',
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('NISN 0012345678 · XI RPL 2'), findsOneWidget);
+    expect(find.byType(ListView), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    harness.api.close();
   });
 }

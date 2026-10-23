@@ -24,7 +24,7 @@ Rincian token baru yang disetujui ada pada [spesifikasi redesign](redesign/visua
 | Raised/nav layer | #FFFFFF | #2E3439 |
 | Main text | #151719 | #F3F5F6 |
 | Secondary text | #45484D | #BAC2C8 |
-| Primary/selected nav | #172225 with white text | #172225 with #E3E5E8 text |
+| Primary/selected nav | #172225 with white text | #E3E5E8 with #172225 text |
 | Text teal | #0B625A | #63D1C1 |
 | Pelanggaran/error | Ukur sesuai permukaan; selalu berlabel | #FF989F |
 
