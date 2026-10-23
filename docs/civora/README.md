@@ -17,6 +17,7 @@ Civora adalah sistem pencatatan prestasi dan pelanggaran untuk satu sekolah. Sis
 | [07-desain-ui.md](07-desain-ui.md) | Tema, token visual, navigasi, layar, dan keadaan antarmuka |
 | [08-verifikasi-dan-operasi.md](08-verifikasi-dan-operasi.md) | Skenario penerimaan, deployment, backup, dan dependensi operasional |
 | [09-keputusan.md](09-keputusan.md) | Keputusan hasil brainstorming dan rincian teknis turunannya |
+| [Paket acuan redesign](redesign/README.md) | Spesifikasi visual dan 21 konsep yang disetujui; terpisah dari aturan domain |
 | [TASKS.md](TASKS.md) | Indeks tugas backend, admin, mobile, dan integrasi/release |
 | [GOALS.md](GOALS.md) | Target milestone, kriteria selesai, bukti verifikasi, dan aturan kelulusan |
 | [PROGRESS.md](PROGRESS.md) | Status pengerjaan dan bukti kemajuan yang sebenarnya |
@@ -38,10 +39,12 @@ Paket rancangan telah ditinjau dan disetujui pengguna pada 11 Oktober 2026. Impl
 - Admin mengimpor Excel/CSV dan mengedit data satu per satu; laporan dapat diunduh sebagai Excel/PDF.
 - Siswa pindah/lulus dinonaktifkan; riwayat tetap memakai kelas dan semester saat kejadian.
 - Notifikasi di aplikasi dan push; detail dibuka setelah login.
-- Putih dengan aksen teal; mode terang/gelap mengikuti perangkat, dengan pilihan manual.
+- Latar netral dengan aksen teal terbatas; mode terang/gelap mengikuti perangkat, dengan pilihan manual.
 
 ## Prioritas acuan
 
 Dokumen 09 membedakan keputusan yang dipilih pengguna dari rincian teknis yang diturunkan saat penulisan. Aturan domain merujuk dokumen 04, akses merujuk dokumen 02, dan kontrak integrasi merujuk dokumen 06. Jika perubahan rancangan diperlukan, perbarui seluruh dokumen yang terdampak beserta log keputusan; jangan hanya mengubah tugas pengerjaan.
+
+Untuk presentasi visual, [paket redesign](redesign/README.md) dan spesifikasi visualnya menggantikan token/pola visual lama pada dokumen 07. Alur, field, akses, data, route, dan kontrak API tetap mengikuti dokumen produk terkait; mockup bukan bukti implementasi atau perilaku.
 
 Folder ini belum berada di repository Git ketika rancangan awal dibuat. Repository dan lingkungan eksekusi disiapkan pada tahap implementasi; status setup tidak berarti fitur aplikasi sudah selesai.

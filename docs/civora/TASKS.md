@@ -37,6 +37,8 @@ Tanggal rancangan: 11 Oktober 2026. Implementasi diizinkan pengguna pada 12 Okto
 
 ## Peta rencana dan urutan
 
+Pekerjaan visual yang disetujui setelah rencana awal dikelola terpisah pada [paket redesign](redesign/README.md) dan [rencana RD-01–RD-04](redesign/TASKS.md). Task RD belum dimulai dan tidak menambah/mengubah hitungan 26 task utama pada tabel serta milestone di bawah. Domain/integrasi tetap memakai dependensi dan bukti yang sama.
+
 | Bagian | Acuan tugas | Hasil yang dapat diperiksa |
 | --- | --- | --- |
 | 1 | [Backend/API](tasks/01-backend.md) | API, domain, migration, dan kontrol akses yang dapat diuji tanpa UI |
@@ -61,8 +63,8 @@ Admin dan mobile baru diintegrasikan setelah kontrak backend yang dikonsumsi tug
 
 ## Status milestone
 
-- [ ] R1: Backend/API dan kontrol domain lulus.
-- [ ] R2: Website admin terhubung ke action backend dan lulus alur browser.
+- [x] R1: Backend/API dan kontrol domain lulus.
+- [x] R2: Website admin terhubung ke action backend dan lulus alur browser.
 - [ ] R3: Dua aplikasi Android terhubung dan lulus alur perangkat.
 - [ ] R4: Integrasi, laporan, backup/restore, dan operasi diverifikasi.
 

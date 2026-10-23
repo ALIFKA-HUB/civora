@@ -82,6 +82,8 @@ Admin menyiapkan tahun ajaran, semester, dan kelas; menempatkan siswa; lalu memb
 
 Untuk pindah kelas di semester yang sama, penempatan lama diberi tanggal akhir dan penempatan baru dimulai. Catatan lama tetap menunjuk penempatan saat kejadian. Untuk pindah/lulus, admin mengubah status siswa, mengakhiri penempatan, dan menonaktifkan akun secara atomik.
 
+Penempatan yang sedang berlaku dan dimulai sebelum waktu keluar diakhiri pada waktu keluar. Penempatan persiapan dengan awal pada/sesudah waktu keluar tetap tersimpan; rentangnya tidak dibuat nol/negatif dan tidak dipakai oleh akun/status pendidikan nonaktif. Siswa nonaktif tidak termasuk pemeriksaan kesiapan penempatan saat membuka semester.
+
 ## I. Peringatan dan tindak lanjut
 
 Setelah catatan/koreksi berlaku, sistem menghitung ulang pelanggaran semester dan menentukan ambang yang sudah dicapai. Admin melihat daftar siswa yang perlu tindak lanjut dan mencatat tindakan serta keterangannya. Siswa dan guru melihat status, tetapi tindakan ditentukan sekolah, bukan dipicu otomatis sebagai sanksi.

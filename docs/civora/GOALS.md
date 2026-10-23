@@ -4,9 +4,15 @@ Tanggal: 12 Oktober 2026. Acuan: [rancangan](README.md), [tugas](TASKS.md), dan 
 
 Pengguna mengizinkan tahap implementasi dan memilih subagent dengan review per tugas. Satu implementer mengerjakan satu tugas; reviewer lain memeriksa kesesuaian rancangan serta kualitasnya sebelum pekerjaan lanjut. Kriteria ini mengatur bukti yang diperlukan, bukan menyatakan aplikasi sudah selesai.
 
+Preferensi model pengguna (13 Oktober 2026): setiap subagent baru, termasuk implementer, reviewer, dan re-reviewer, memakai GPT-6 Luna (`gpt-6-luna`) dengan reasoning effort high. Orchestrator yang diminta adalah GPT-6.1 (`gpt-6.1-sol`) dengan effort medium; pemilihan model chat utama dilakukan melalui pengaturan chat, bukan tool spawn. Subagent yang sudah berjalan sebelum instruksi ini menyelesaikan tugasnya tanpa pengulangan pekerjaan. Preferensi pengguna ini mengatasi pilihan model bawaan skill.
+
 ## Goal utama
 
 Sekolah dapat mengelola data melalui website admin; guru memilih siswa melalui QR/manual dan mencatat poin; siswa melihat catatan serta mengajukan keberatan. Seluruh platform menggunakan identitas, semester, nilai efektif, dan aturan akses yang sama. Prestasi dan pelanggaran tetap terpisah, dan perubahan dapat ditelusuri.
+
+## Tambahan goal visual
+
+Konsep visual yang disetujui dicatat pada [paket redesign](redesign/README.md). RD-01–RD-04 memiliki Definition of Done dan gate review tersendiri pada [goals redesign](redesign/verification-goals.md). Task tersebut tidak mengubah hitungan 26 task produk, milestone, atau status acceptance kamera, push, restore, dan kapasitas. Konsep, build, serta test widget tidak menggantikan penerimaan produk yang sudah ditetapkan di bawah.
 
 ## Milestone dan kriteria kelulusan
 
@@ -90,3 +96,7 @@ Persentase fitur tidak diperkirakan dari jumlah baris kode. Jika dibutuhkan, lap
 ## Kriteria berhenti atau release ditunda
 
 Pekerjaan lokal yang masih bermakna tetap dilanjutkan. Release ditunda jika akses lintas role bocor, test konsistensi gagal, review blocking belum selesai, backup/restore belum terbukti, atau dependency produksi belum tersedia. Perubahan destruktif terhadap data yang sudah ada, publikasi, dan perubahan layanan eksternal memerlukan konteks serta otorisasi yang sesuai; izin membuat aplikasi tidak menggantikan tujuan deployment yang belum ditentukan.
+
+## Acuan kapasitas sekolah
+
+Pengguna menetapkan sampai 3.000 siswa dan 200 guru sebagai skala data acuan untuk I-04. Ini bukan angka pengguna concurrent maupun jaminan kapasitas server produksi. Laporan uji harus mencatat skenario concurrent, hardware/runtime, latensi/error, dan batasan; kesiapan produksi tetap menunggu infrastruktur serta penerimaan sekolah.

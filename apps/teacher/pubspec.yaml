@@ -1,0 +1,24 @@
+name: civora_teacher
+description: Civora teacher Android application.
+publish_to: none
+version: 0.1.0+1
+environment:
+  sdk: ^3.11.0
+  flutter: '>=3.41.0'
+dependencies:
+  flutter:
+    sdk: flutter
+  civora_core:
+    path: ../../packages/civora_core
+  civora_ui:
+    path: ../../packages/civora_ui
+  image_picker: ^1.2.4
+  mobile_scanner: ^7.4.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+flutter:
+  uses-material-design: true

@@ -44,6 +44,7 @@ Tanggal brainstorming: 11 Oktober 2026. Pengguna memilih jawaban melalui pilihan
 | D-34 | Pengguna meninjau paket rancangan melalui indeks/log keputusan, menyetujuinya, dan meminta penyusunan file tugas pengerjaan |
 | D-35 | Pada 12 Oktober 2026 pengguna mengizinkan implementasi, meminta kriteria goals/verifikasi, dan memilih subagent dengan review per tugas |
 | D-36 | Pengguna memilih kode dikerjakan langsung di folder Civora yang sekarang, pada branch khusus, tanpa worktree tambahan |
+| RD-D01–RD-D11 | Pengguna menyetujui arah visual redesign dan 21 konsep sintetis; token/pola beserta batas mock dicatat pada [paket redesign](redesign/README.md). Hanya presentasi visual yang berubah; keputusan domain D-01–D-36 tidak diganti. |
 
 ## Rincian teknis turunan untuk ditinjau bersama paket rancangan
 
@@ -65,9 +66,11 @@ Rincian di bawah tidak ditanyakan sebagai pilihan tersendiri. Ia dipilih untuk m
 | T-12 | Sanctum mobile TTL 7 hari; admin session 30 menit idle | Fondasi sesi sederhana dan dapat dicabut |
 | T-13 | Queue/cache/session database; outbox untuk event; FCM untuk push | Tidak mewajibkan Redis dan tidak kehilangan event setelah commit |
 | T-14 | Storage privat awal, ekspor/import expired 7 hari, staged file 24 jam | Mencegah akses publik dan membersihkan data sementara |
-| T-15 | Font Noto Sans, token warna/radius/motion pada dokumen 07 | Memperjelas tema yang sudah dipilih; kontras harus diverifikasi |
+| T-15 | Font Noto Sans, token warna/radius/motion pada dokumen 07 | Font tetap Noto Sans; token/radius visual terbaru digantikan oleh [spesifikasi redesign](redesign/visual-spec.md); kontras harus diverifikasi |
 | T-16 | Backup harian/offsite terenkripsi, retensi 30 hari, target restore 4 jam | Default operasional yang harus diuji sebelum release |
 | T-17 | Satu peringatan per siswa/semester/tingkat kebijakan; status dapat turun setelah koreksi | Riwayat tetap ada tanpa duplikasi peringatan |
 | T-18 | Guru tetap melihat catatan buatan sendiri untuk siswa nonaktif; arsip siswa lain hanya admin | Riwayat kerja guru tidak hilang ketika siswa lulus |
+| T-19 | UUID untuk model domain; ID native untuk tabel auth/session/queue; FK sesi QR SET NULL | Kompatibilitas framework tanpa menghapus metadata; QR sesi dicabut tetap ditolak |
+| T-20 | Server UTC, timezone sekolah default Asia/Jakarta, format datetime PostgreSQL mempertahankan offset | Review menemukan pergeseran tujuh jam pada model; diuji dengan model nyata dan tanggal kalender |
 
 Perubahan terhadap rincian teknis dapat dilakukan pada tinjauan dokumen, dengan seluruh acuan terkait diperbarui. Tidak ada layanan eksternal, dependency produk, aplikasi, atau database yang dibuat ketika menulis paket ini.

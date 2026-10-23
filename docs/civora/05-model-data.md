@@ -2,7 +2,7 @@
 
 [Kembali ke indeks](README.md)
 
-Model ini merupakan rancangan relasional, bukan migration yang sudah dijalankan. ID internal memakai UUID; identifier sekolah tetap teks. Timestamp disimpan dengan timezone. Semua relasi ke riwayat memakai pembatasan penghapusan, bukan cascade yang menghapus catatan.
+Model ini merupakan acuan relasional; status migration aktual merujuk PROGRESS.md. ID model domain memakai UUID; tabel auth/session/queue bawaan mempertahankan identifier native framework. Identifier sekolah tetap teks. Timestamp disimpan dengan timezone. Semua relasi ke riwayat bisnis memakai pembatasan penghapusan, bukan cascade yang menghapus catatan.
 
 ## Identitas dan akademik
 
@@ -31,7 +31,7 @@ Perubahan nama/kode jurusan atau kelas bersifat administratif dan diaudit. Pada 
 | point_types | id, code unik, category achievement/violation, active |
 | point_type_versions | id, point_type_id, version, name, description, points, created_by, created_at |
 | student_selections | id, teacher_id, student_id, enrollment_id, semester_id, source qr/manual, expires_at, consumed_at |
-| qr_tokens | id, student_id, session_id, token_hash unik, issued_at, expires_at, consumed_at, revoked_at |
+| qr_tokens | id UUID, student_id, session_id nullable mengacu ID native Sanctum token, token_hash unik, issued_at, expires_at, consumed_at, revoked_at |
 | qr_redemptions | id, qr_token_id unik, teacher_id, request_key, selection_id unik, created_at |
 | point_records | id, student_id, teacher_id, enrollment_id, semester_id, selection_id unik, source, occurred_at, class_snapshot, major_snapshot, idempotency_key, request_hash |
 | record_revisions | id, point_record_id, revision_number, point_type_version_id, points_snapshot, name_snapshot, category_snapshot, description, attachment_id nullable, status active/cancelled, changed_by, reason, created_at |
@@ -39,6 +39,8 @@ Perubahan nama/kode jurusan atau kelas bersifat administratif dan diaudit. Pada 
 | attachments | id, owner_user_id, private_path, mime_type, size, checksum, created_at |
 
 Revisi pertama berasal dari guru dan menyimpan nilai/nama/kategori versi jenis poin saat pencatatan. Revisi berikutnya dibuat admin. Nilai efektif berasal dari revision_number tertinggi. Tidak ada nilai poin yang dihitung dari versi katalog terbaru untuk semua riwayat.
+
+Relasi session_id QR memakai ON DELETE SET NULL agar pencabutan token login tidak menghapus metadata QR. QR tanpa issuing token yang masih sah harus ditolak pada redeem. Token Sanctum mempertahankan primary key native bigint, tetapi tokenable_id memakai UUID agar cocok dengan users domain.
 
 Kepemilikan siswa, guru pencatat, penempatan, dan semester pada point_records tidak diubah oleh revisi. Bukti lama tetap direferensikan oleh revisi lama dan tidak dapat dihapus oleh guru setelah catatan berlaku.
 
@@ -51,7 +53,7 @@ Kepemilikan siswa, guru pencatat, penempatan, dan semester pada point_records ti
 | threshold_alerts | id, student_id, semester_id, threshold_level_id, reached_at, currently_reached, last_evaluated_at |
 | follow_ups | id, threshold_alert_id, performed_by, action, scheduled_or_performed_at, notes, status planned/completed/cancelled |
 | notifications | id, user_id, event_key, type, resource_id, public_message, read_at, created_at |
-| device_tokens | id, user_id, app student/teacher, token unik, platform, active, updated_at |
+| device_tokens | id, user_id, personal_access_token_id nullable native bigint FK Sanctum ON DELETE SET NULL, app student/teacher, token unik, platform, active, updated_at |
 | outbox_events | id, event_key unik, type, resource_id, payload minimal, processed_at, attempts, next_attempt_at |
 | import_batches | id, admin_id, entity_type, file_path privat, semester_id nullable, status, row_count, error_summary, confirmed_at |
 | report_exports | id, admin_id, filters, status, file_path privat, generated_at, expires_at |
@@ -59,6 +61,8 @@ Kepemilikan siswa, guru pencatat, penempatan, dan semester pada point_records ti
 | auth/session/queue tables | Tabel bawaan Laravel untuk Sanctum, session, cache, jobs, dan failed_jobs |
 
 Outbox adalah daftar event yang ditulis dalam transaksi bisnis yang sama, lalu dikirim worker. Ia mencegah hilangnya notifikasi jika proses mati setelah catatan berhasil disimpan. Payload tidak memuat password, QR mentah, atau foto.
+
+Registrasi perangkat mengikat personal_access_token_id dari sesi autentikasi server, bukan ID kiriman klien. Logout menonaktifkan perangkat yang terikat sesi itu sebelum menghapus token login. Reset/penonaktifan menonaktifkan seluruh perangkat pengguna, termasuk baris lama tanpa ikatan sesi.
 
 ## Batasan database
 

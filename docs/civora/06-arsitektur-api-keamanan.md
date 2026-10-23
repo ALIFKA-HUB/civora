@@ -41,6 +41,8 @@ Civora/
 
 Satu backend modular cukup: modul akun, akademik, katalog poin, pencatatan, pemeriksaan, laporan, notifikasi. Controller/Livewire tidak menggandakan aturan domain; keduanya memanggil action/service yang sama. Tidak ada microservice atau event broker eksternal.
 
+Timezone server/aplikasi adalah UTC. Default timezone tampilan dan tanggal kalender sekolah adalah Asia/Jakarta, melalui school_settings.timezone dengan fallback app.school_timezone. Penulisan datetime PostgreSQL mempertahankan offset/microsecond sehingga DateTime +07 dan timestamp otomatis mewakili instant yang sama setelah dibaca sebagai UTC. Field date akademik mempertahankan tanggal kalender, tidak digeser sebagai timestamp.
+
 ## Autentikasi dan sesi
 
 Mobile memakai Laravel Sanctum dengan token per sesi/perangkat, disimpan di penyimpanan aman Android. TTL teknis awal 7 hari, tanpa refresh token buatan sendiri. Login ulang diminta setelah expired; perubahan password/reset/penonaktifan mencabut sesi sesuai dokumen role.
@@ -84,9 +86,21 @@ Status umum: 401 sesi tidak sah, 403 akses ditolak, 404 resource tidak ada/tidak
 | POST /teacher/students/{id}/temporary-credential/reveal | Guru | Body current_password guru; password sementara belum aktivasi; audit dan autentikasi ulang |
 | GET /notifications | Siswa/guru | Daftar milik sendiri |
 | POST /notifications/{id}/read | Siswa/guru | Tandai milik sendiri dibaca |
-| POST /device-tokens | Siswa/guru | Daftarkan token push untuk aplikasi/role yang sesuai |
+| POST /device-tokens | Siswa/guru | Daftarkan token push untuk aplikasi/role yang sesuai; server mengikat sesi Sanctum saat ini |
 | DELETE /device-tokens/{id} | Siswa/guru | Cabut token perangkat milik sendiri |
 | GET /attachments/{id} | Login | Streaming privat setelah policy atas catatan/revisi atau staged owner |
+
+### Bentuk respons profil, ringkasan, dan riwayat
+
+GET `/me` mengembalikan `data` identitas dasar. Untuk akun aktif, siswa juga menerima `student`, `enrollments`, `current_semester`, `own_enrollment`, dan `school_timezone`; `own_enrollment` berisi ID penempatan serta kelas dan jurusan saat ini, atau `null` bila belum ada penempatan yang berlaku. Guru aktif menerima `teacher`, `current_semester`, dan `school_timezone`. `school_timezone` adalah nama zona waktu IANA dari pengaturan sekolah tersimpan (fallback konfigurasi server Asia/Jakarta). Akun yang masih menunggu aktivasi menerima identitas dasar saja.
+
+GET `/student/summary` mengembalikan `data.semester`, `data.totals` (`achievement` dan `violation`), serta `data.latest_threshold_status` untuk kebijakan ambang terbaru. Jika semester aktif tidak tersedia, ketiganya bernilai `null`; klien tidak menampilkan angka nol seolah-olah tersedia.
+
+Riwayat siswa dan guru memakai `PointRecordResource` di setiap elemen `data`, dengan `meta.current_page`, `meta.last_page`, `meta.per_page`, `meta.total`, dan `meta.available_semesters`. Tiap pilihan semester berisi `id`, `name`, `start_date`, `end_date`, dan `is_current`. Filter yang didukung ialah `semester_id`, `category` (`achievement` atau `violation`), `status` (`active` atau `cancelled`), `page`, dan `per_page`. Pilihan semester mencakup riwayat yang boleh dibaca pemanggil serta semester aktif.
+
+GET `/teacher/students` menambahkan `meta.filters.classrooms` (ID dan nama) dan `meta.filters.majors` (ID, nama, dan kode). Pilihan hanya berasal dari kelas dan jurusan aktif pada tahun ajaran semester aktif, termasuk saat halaman hasil pencarian kosong. GET `/teacher/students/{id}` juga memuat `account_status` dan `must_change_password` agar bantuan akun dapat menampilkan status aktivasi tanpa mengungkap kredensial. Kedua field tidak dikirim pada pencarian dan tidak berisi password.
+
+POST keberatan siswa menerima hanya `reason`; respons `data` berisi ID permintaan, ID catatan, `kind`, `reason`, `proposed_change` kosong, `status`, `reviewed_revision`, dan `created_at`. Permintaan koreksi guru memiliki bentuk yang sama dengan usulan eksplisit pada `proposed_change`: `operation` (`cancel` atau `revise`), dan untuk koreksi dapat menyertakan `point_type_version_id`, `description`, atau `attachment_id`. Respons keduanya berstatus pending; usulan tidak mengubah total sampai admin menyetujuinya.
 
 Endpoint admin tidak diwajibkan sebagai API publik terpisah. Livewire memakai session dan action server untuk pengelolaan data, import, pemeriksaan, ambang, tindakan, laporan, serta akun.
 
@@ -98,7 +112,7 @@ Token QR dihasilkan secara kriptografis, 32 byte acak dalam format URL-safe, den
 
 Redeem memakai transaction dan row lock dengan urutan global pada dokumen 05. Permintaan pertama valid membuat selection dan redemption. Retry dengan request_key/token/guru yang sama mengembalikan hasil yang sama, tanpa mengonsumsi token dua kali. Guru lain atau request_key berbeda mendapat penolakan token terpakai. Jika semester/siswa berubah setelah scan, selection tidak mengizinkan simpan.
 
-QR tidak berisi NISN, password, nilai poin, atau tautan yang dapat mengubah data tanpa login guru. Validitas mengikuti waktu server, bukan waktu HP. Tidak ada grace period untuk screenshot kedaluwarsa.
+QR tidak berisi NISN, password, nilai poin, atau tautan yang dapat mengubah data tanpa login guru. Validitas mengikuti waktu server, bukan waktu HP. Tidak ada grace period untuk screenshot kedaluwarsa. QR yang diterbitkan oleh sesi/token login yang sudah dicabut juga ditolak, sekalipun batas 20 detiknya belum habis.
 
 ## Konsistensi dan idempotensi
 
@@ -121,7 +135,7 @@ Event utama: poin dibuat, keputusan keberatan/koreksi, revisi/pembatalan, dan am
 
 Notification dan outbox ditulis bersama perubahan bisnis. Worker membuat push dengan pesan umum dan resource ID; ketika diklik, aplikasi meminta detail melalui sesi login. Jika push gagal atau izin notifikasi ditolak, notifikasi in-app tetap tersedia. Retry dengan event_key sama tidak menggandakan notifikasi.
 
-Token push lama yang tidak valid dicabut; token perangkat yang berpindah pengguna dilepas dari pemilik lama. Logout/penonaktifan mencabut ikatan perangkat. Kegagalan FCM tidak membatalkan pencatatan poin yang sudah commit.
+Token push lama yang tidak valid dicabut; token perangkat yang berpindah pengguna dilepas dari pemilik lama. ID sesi perangkat diambil dari token autentikasi server, tidak diterima dari body. Logout mencabut ikatan perangkat sesi saat ini; reset/penonaktifan mencabut seluruh perangkat pengguna. Kegagalan FCM tidak membatalkan pencatatan poin yang sudah commit.
 
 ## Referensi teknis
 
